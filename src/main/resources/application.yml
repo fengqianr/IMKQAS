@@ -10,7 +10,7 @@ spring:
 
   # 数据源配置
   datasource:
-    url: jdbc:mysql://8.138.40.200:3306
+    url: jdbc:mysql://8.138.40.200:3306/imkqas?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: fqr10292588
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -47,6 +47,15 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
+
+  # Flyway数据库迁移配置
+  flyway:
+    enabled: true
+    baseline-on-migrate: true  # 如果数据库非空，创建基线版本
+    baseline-version: "1"      # 基线版本号
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    clean-disabled: true       # 生产环境禁用clean命令
 
 # 服务器配置
 server:

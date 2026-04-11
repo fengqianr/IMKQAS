@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * @author 系统
  * @version 1.0
  */
-// @Configuration  // 暂时禁用MyBatis Plus配置
+@Configuration  // MyBatis Plus配置
 public class MyBatisPlusConfig {
 
     /**

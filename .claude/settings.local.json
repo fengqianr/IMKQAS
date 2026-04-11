@@ -10,7 +10,9 @@
       "Bash(mvn spring-boot:run -DskipTests)",
       "Bash(mvn spring-boot:run -Dspring-boot.run.jvmArguments=\"-Ddebug\" -DskipTests)",
       "Bash(mv:*)",
-      "Bash(java -cp \"target/classes;$\\(cat classpath.txt\\)\" com.student.ImkqasApplication)"
+      "Bash(java -cp \"target/classes;$\\(cat classpath.txt\\)\" com.student.ImkqasApplication)",
+      "Bash(mvn test:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

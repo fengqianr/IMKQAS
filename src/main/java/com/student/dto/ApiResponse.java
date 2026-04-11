@@ -1,8 +1,7 @@
 package com.student.dto;
 
-import lombok.AllArgsConstructor;
+import com.student.exception.ErrorCode;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * 通用API响应类
@@ -10,11 +9,9 @@ import lombok.NoArgsConstructor;
  *
  * @param <T> 响应数据类型
  * @author 系统
- * @version 1.0
+ * @version 2.0
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ApiResponse<T> {
 
     /**
@@ -33,16 +30,63 @@ public class ApiResponse<T> {
     private T data;
 
     /**
+     * 错误码（成功时为"00000"，失败时为具体错误码）
+     */
+    private String code;
+
+    /**
      * 时间戳
      */
-    private long timestamp = System.currentTimeMillis();
+    private long timestamp;
+
+    /**
+     * 无参构造函数（用于反序列化）
+     */
+    public ApiResponse() {
+        this.timestamp = System.currentTimeMillis();
+        this.code = ErrorCode.SUCCESS.getCode();
+    }
+
+    /**
+     * 全参数构造函数
+     *
+     * @param success 是否成功
+     * @param message 响应消息
+     * @param data 响应数据
+     * @param code 错误码
+     * @param timestamp 时间戳
+     */
+    public ApiResponse(boolean success, String message, T data, String code, long timestamp) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+        this.code = code;
+        this.timestamp = timestamp;
+    }
+
+    /**
+     * 兼容构造函数（保持向后兼容）
+     * 成功时使用SUCCESS错误码，失败时使用SYSTEM_ERROR错误码
+     *
+     * @param success 是否成功
+     * @param message 响应消息
+     * @param data 响应数据
+     * @param timestamp 时间戳
+     */
+    public ApiResponse(boolean success, String message, T data, long timestamp) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+        this.timestamp = timestamp;
+        this.code = success ? ErrorCode.SUCCESS.getCode() : ErrorCode.SYSTEM_ERROR.getCode();
+    }
 
     /**
      * 成功响应（无数据）
      * @return API响应
      */
     public static ApiResponse<Void> success() {
-        return new ApiResponse<Void>(true, "操作成功", null, System.currentTimeMillis());
+        return new ApiResponse<>(true, "操作成功", null, System.currentTimeMillis());
     }
 
     /**
@@ -52,7 +96,7 @@ public class ApiResponse<T> {
      * @return API响应
      */
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<T>(true, "操作成功", data, System.currentTimeMillis());
+        return new ApiResponse<>(true, "操作成功", data, System.currentTimeMillis());
     }
 
     /**
@@ -63,7 +107,19 @@ public class ApiResponse<T> {
      * @return API响应
      */
     public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<T>(true, message, data, System.currentTimeMillis());
+        return new ApiResponse<>(true, message, data, System.currentTimeMillis());
+    }
+
+    /**
+     * 成功响应（带错误码、消息和数据）
+     * @param code 错误码
+     * @param message 响应消息
+     * @param data 响应数据
+     * @param <T> 数据类型
+     * @return API响应
+     */
+    public static <T> ApiResponse<T> success(String code, String message, T data) {
+        return new ApiResponse<>(true, message, data, code, System.currentTimeMillis());
     }
 
     /**
@@ -72,7 +128,7 @@ public class ApiResponse<T> {
      * @return API响应
      */
     public static ApiResponse<Void> error(String message) {
-        return new ApiResponse<Void>(false, message, null, System.currentTimeMillis());
+        return new ApiResponse<>(false, message, null, System.currentTimeMillis());
     }
 
     /**
@@ -83,7 +139,49 @@ public class ApiResponse<T> {
      * @return API响应
      */
     public static <T> ApiResponse<T> error(String message, T data) {
-        return new ApiResponse<T>(false, message, data, System.currentTimeMillis());
+        return new ApiResponse<>(false, message, data, System.currentTimeMillis());
+    }
+
+    /**
+     * 错误响应（带错误码和消息）
+     * @param code 错误码
+     * @param message 错误消息
+     * @return API响应
+     */
+    public static ApiResponse<Void> error(String code, String message) {
+        return new ApiResponse<>(false, message, null, code, System.currentTimeMillis());
+    }
+
+    /**
+     * 错误响应（带错误码、消息和数据）
+     * @param code 错误码
+     * @param message 错误消息
+     * @param data 错误数据
+     * @param <T> 数据类型
+     * @return API响应
+     */
+    public static <T> ApiResponse<T> error(String code, String message, T data) {
+        return new ApiResponse<>(false, message, data, code, System.currentTimeMillis());
+    }
+
+    /**
+     * 使用ErrorCode创建错误响应
+     * @param errorCode 错误码枚举
+     * @return API响应
+     */
+    public static ApiResponse<Void> error(ErrorCode errorCode) {
+        return new ApiResponse<>(false, errorCode.getMessage(), null, errorCode.getCode(), System.currentTimeMillis());
+    }
+
+    /**
+     * 使用ErrorCode创建错误响应（带数据）
+     * @param errorCode 错误码枚举
+     * @param data 错误数据
+     * @param <T> 数据类型
+     * @return API响应
+     */
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, T data) {
+        return new ApiResponse<>(false, errorCode.getMessage(), data, errorCode.getCode(), System.currentTimeMillis());
     }
 
     /**
@@ -105,8 +203,6 @@ public class ApiResponse<T> {
      * @param <T> 数据类型
      */
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class Pagination<T> {
         private T data;
         private long total;
@@ -114,6 +210,19 @@ public class ApiResponse<T> {
         private int size;
         private int totalPages;
 
+        /**
+         * 无参构造函数（用于反序列化）
+         */
+        public Pagination() {
+        }
+
+        /**
+         * 构造函数
+         * @param data 分页数据
+         * @param total 总记录数
+         * @param page 当前页码
+         * @param size 每页大小
+         */
         public Pagination(T data, long total, int page, int size) {
             this.data = data;
             this.total = total;

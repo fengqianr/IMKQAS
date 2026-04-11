@@ -100,8 +100,9 @@ public class JwtUtil {
     @SuppressWarnings("all")
     public Claims parseToken(String token) {
         try {
-            return Jwts.parser()
+            return Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
+                    .build()
                     .parseClaimsJws(token)
                     .getBody();
         } catch (RuntimeException e) {

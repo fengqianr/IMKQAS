@@ -7,6 +7,7 @@ import com.student.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class AuthService {
     private final UserService userService;
     private final CodeService codeService;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${imkqas.security.jwt.expiration:86400000}")
     private Long jwtExpiration;
@@ -88,6 +90,7 @@ public class AuthService {
             user = User.builder()
                     .phone(phone)
                     .username(generateUsername(phone))
+                    .password(passwordEncoder.encode(generateRandomPassword())) // 设置随机加密密码
                     .role(User.Role.USER)
                     .build();
             boolean saved = userService.save(user);
@@ -193,6 +196,22 @@ public class AuthService {
         // 如有需要，可将令牌加入黑名单（需要Redis）
         log.info("用户登出: token={}", token);
         return true;
+    }
+
+    /**
+     * 生成随机密码
+     * 用于自动注册用户的默认密码
+     *
+     * @return 随机密码字符串
+     */
+    private String generateRandomPassword() {
+        // 生成16位随机字符串作为密码
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder password = new StringBuilder(16);
+        for (int i = 0; i < 16; i++) {
+            password.append(chars.charAt((int) (Math.random() * chars.length())));
+        }
+        return password.toString();
     }
 
     /**

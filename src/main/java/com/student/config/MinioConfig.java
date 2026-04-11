@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
  * @author 系统
  * @version 1.0
  */
-@Configuration  // 暂时禁用MinIO配置
+@Configuration  // MinIO配置
 @Slf4j
 public class MinioConfig {
 
