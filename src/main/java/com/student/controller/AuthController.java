@@ -66,7 +66,7 @@ public class AuthController {
         } else {
             log.warn("用户登录失败: username={}, message={}", request.getUsername(), response.getMessage());
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.<LoginResponse>error(response.getMessage(), null));
+                    .body(ApiResponse.<LoginResponse>error(response.getMessage(), response));
         }
     }
 

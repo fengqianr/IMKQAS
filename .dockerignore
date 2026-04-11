@@ -1,0 +1,44 @@
+# 忽略构建输出
+target/
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# 忽略IDE文件
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# 忽略操作系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略日志
+logs/
+*.log
+
+# 忽略测试相关
+src/test/
+
+# 忽略配置文件和敏感数据
+*.properties
+*.yml
+*.yaml
+!src/main/resources/application-prod.yml
+!src/main/resources/application.yml
+*.key
+*.pem
+*.crt
+
+# 忽略Git
+.git/
+.gitignore
+
+# 忽略临时文件
+tmp/
+temp/

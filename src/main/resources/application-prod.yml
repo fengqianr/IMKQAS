@@ -1,0 +1,144 @@
+# IMKQAS 生产环境配置文件
+# 使用环境变量覆盖配置
+
+debug: false
+
+spring:
+  application:
+    name: imkqas
+
+  # 数据源配置（通过环境变量注入）
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://8.138.40.200:3306?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:fqr10292588}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  # 缓存配置
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000  # 1小时
+      cache-null-values: false
+
+  # Redis配置（通过环境变量注入）
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:8.138.40.200}
+      port: ${SPRING_REDIS_PORT:6379}
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+
+  # Flyway数据库迁移配置
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: "1"
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    clean-disabled: true
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# 日志配置
+logging:
+  level:
+    com.student: INFO
+    org.springframework: INFO
+    org.hibernate.SQL: WARN
+  file:
+    name: /app/logs/imkqas.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+# 应用自定义配置
+imkqas:
+  # RAG配置（生产环境使用优化配置）
+  rag:
+    embedding:
+      model: bge-large-zh
+      dimension: 1024
+    reranker:
+      model: bge-reranker-v2-m3
+    retrieval:
+      top-k: 30
+      rerank-top-k: 10
+
+  # 安全配置
+  security:
+    jwt:
+      secret: ${IMKQAS_SECURITY_JWT_SECRET:imkqas-medical-rag-secret-key-2026}
+      expiration: ${IMKQAS_SECURITY_JWT_EXPIRATION:86400000}  # 24小时
+
+    # 限流配置（生产环境调整）
+    rate-limit:
+      user:
+        default: 20  # 20请求/秒
+        burst: 40    # 突发容量
+      admin:
+        default: 100  # 100请求/秒
+        burst: 200    # 突发容量
+      upload: 5       # 文档上传接口限制
+
+  # 文件存储配置（通过环境变量注入）
+  storage:
+    type: minio
+    minio:
+      endpoint: ${IMKQAS_MINIO_ENDPOINT:http://8.138.40.200:9000}
+      access-key: ${IMKQAS_MINIO_ACCESS_KEY:IVL8IthgH8OjCEDLhFKT}
+      secret-key: ${IMKQAS_MINIO_SECRET_KEY:MaJEjDYQYSKfWVadxSPM2knEIKkVrXLgWvvxB8M8}
+      bucket: medical-documents
+
+  # 向量数据库配置（通过环境变量注入）
+  vector-db:
+    type: milvus
+    milvus:
+      host: ${IMKQAS_MILVUS_HOST:8.138.40.200}
+      port: ${IMKQAS_MILVUS_PORT:19530}
+      collection: medical_documents
+      dimension: 1024
+
+# 健康检查端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: true
