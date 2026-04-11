@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn compile:*)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:milvus-io.github.io)",
+      "WebSearch",
+      "WebFetch(domain:milvus.io)",
+      "Bash(mvn dependency:tree)",
+      "Bash(mvn spring-boot:run -DskipTests)",
+      "Bash(mvn spring-boot:run -Dspring-boot.run.jvmArguments=\"-Ddebug\" -DskipTests)",
+      "Bash(mv:*)",
+      "Bash(java -cp \"target/classes;$\\(cat classpath.txt\\)\" com.student.ImkqasApplication)"
+    ]
+  }
+}

@@ -1,0 +1,123 @@
+# IMKQAS 医疗知识问答系统配置文件
+# 版本: 1.0
+# 日期: 2026-04-06
+
+debug: true
+
+spring:
+  application:
+    name: imkqas
+
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://8.138.40.200:3306
+    username: root
+    password: fqr10292588
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  # 缓存配置
+  cache:
+     type: redis
+     redis:
+       time-to-live: 3600000  # 1小时
+       cache-null-values: false
+
+
+  # Redis配置
+  data:
+    redis:
+      host: 8.138.40.200
+      port: 6379
+      database: 0
+      password:
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# 日志配置
+logging:
+  level:
+    com.student: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  file:
+    name: logs/imkqas.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 应用自定义配置
+imkqas:
+  # RAG配置
+  rag:
+    embedding:
+      model: bge-large-zh
+      dimension: 1024
+    reranker:
+      model: bge-reranker-v2-m3
+    retrieval:
+      top-k: 20
+      rerank-top-k: 5
+
+  # 安全配置
+  security:
+    jwt:
+      secret: imkqas-medical-rag-secret-key-2026
+      expiration: 86400000  # 24小时
+
+    # 限流配置
+    rate-limit:
+      user:
+        default: 10  # 10请求/秒
+        burst: 20    # 突发容量
+      admin:
+        default: 50  # 50请求/秒
+        burst: 100   # 突发容量
+      upload: 2      # 文档上传接口限制
+
+  # 文件存储配置
+  storage:
+    type: minio
+    minio:
+      endpoint: http://8.138.40.200:9000
+      access-key: IVL8IthgH8OjCEDLhFKT
+      secret-key: MaJEjDYQYSKfWVadxSPM2knEIKkVrXLgWvvxB8M8
+      bucket: medical-documents
+
+  # 向量数据库配置
+  vector-db:
+    type: milvus
+    milvus:
+      host: 8.138.40.200
+      port: 19530
+      collection: medical_documents
+      dimension: 1024
