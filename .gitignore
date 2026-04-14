@@ -36,3 +36,34 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### IMKQAS 项目特定 ###
+
+# 本地模型文件 (通常较大，不上传Git)
+src/main/resources/models/*.onnx
+src/main/resources/models/*.bin
+src/main/resources/models/*.pt
+src/main/resources/models/*.pth
+src/main/resources/models/*.gguf
+!src/main/resources/models/.gitkeep
+
+# 本地配置和密钥文件 (包含敏感信息)
+*.env
+.env.local
+.env.production
+.env.development
+application-local.yml
+
+# 日志文件
+logs/
+*.log
+
+# 临时文件
+tmp/
+temp/
+
+# 上传的文档文件 (生产环境中由用户上传)
+uploads/
+
+# Git 工作树目录 (避免提交工作树内容)
+.worktrees/
