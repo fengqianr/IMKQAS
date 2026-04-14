@@ -6,6 +6,10 @@ import lombok.Data;
 
 /**
  * 急诊症状检查请求
+ * 用于接收用户症状描述并进行急诊症状检查
+ *
+ * @author 系统生成
+ * @version 1.0
  */
 @Data
 public class EmergencyCheckRequest {
