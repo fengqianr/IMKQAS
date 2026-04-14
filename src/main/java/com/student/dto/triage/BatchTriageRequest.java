@@ -1,13 +1,17 @@
 package com.student.dto.triage;
 
+import java.util.List;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * 批量症状分流请求
+ * 用于接收批量症状描述并进行科室分流
+ *
+ * @author 系统生成
+ * @version 1.0
  */
 @Data
 public class BatchTriageRequest {

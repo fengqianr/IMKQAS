@@ -4,6 +4,10 @@ import lombok.Getter;
 
 /**
  * 急诊症状分级枚举
+ * 定义急诊症状的严重级别和相应的就医建议
+ *
+ * @author 系统生成
+ * @version 1.0
  */
 @Getter
 public enum EmergencyLevel {
@@ -16,7 +20,7 @@ public enum EmergencyLevel {
     private final String levelName;
     private final String action;
 
-    EmergencyLevel(int priority, String levelName, String action) {
+    private EmergencyLevel(int priority, String levelName, String action) {
         this.priority = priority;
         this.levelName = levelName;
         this.action = action;

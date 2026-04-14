@@ -1,13 +1,18 @@
 package com.student.dto.triage;
 
-import com.student.model.triage.DepartmentKnowledge;
-import lombok.Data;
-
 import java.util.List;
 import java.util.Map;
 
+import lombok.Data;
+
+import com.student.model.triage.DepartmentKnowledge;
+
 /**
  * 科室知识库配置
+ * 用于存储科室知识库的完整配置信息
+ *
+ * @author 系统生成
+ * @version 1.0
  */
 @Data
 public class DepartmentKnowledgeBase {
