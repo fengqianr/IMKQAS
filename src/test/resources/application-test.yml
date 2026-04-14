@@ -1,0 +1,166 @@
+# IMKQAS 测试环境配置文件
+# 使用H2内存数据库，模拟外部服务
+
+spring:
+  application:
+    name: imkqas-test
+
+  # H2内存数据库配置
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      maximum-pool-size: 5
+
+  # 禁用Flyway数据库迁移（测试中使用H2，无需迁移）
+  flyway:
+    enabled: false
+
+  # Redis配置 - 使用模拟或禁用
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 5000ms
+
+  # 禁用缓存
+  cache:
+    type: none
+
+  # 禁用文件上传限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+# 服务器配置（测试中使用随机端口）
+server:
+  port: 0
+  servlet:
+    context-path: /api
+
+# 日志配置
+logging:
+  level:
+    com.student: DEBUG
+    org.springframework: WARN
+    org.hibernate: WARN
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 应用自定义配置 - 测试环境
+imkqas:
+  # RAG配置 - 全部使用本地模式，避免外部API调用
+  rag:
+    # 重排序模型配置
+    reranker:
+      model: gte-rerank
+      deployment: local
+      model-path: test-models/reranker.onnx
+      api-endpoint: http://localhost:8080/mock/rerank
+      api-key: test-key
+
+    # 嵌入模型配置
+    embedding:
+      model: text-embedding-v3
+      dimension: 1024
+      api-endpoint: http://localhost:8080/mock/embedding
+      api-key: test-key
+      cache-enabled: false
+      timeout: 1000
+      cache-ttl: 1800
+      deployment: local
+
+    # 检索配置
+    retrieval:
+      mode: hybrid
+      weights:
+        vector: 0.6
+        keyword: 0.4
+      initial-top-k: 10
+      rerank-top-k: 5
+      rrf-k: 60
+      timeout: 5000
+      keyword-index:
+        path: test-lucene-index
+        synonyms:
+          enabled: false
+
+    # 大语言模型配置
+    llm:
+      base-url: http://localhost:8080/mock/llm
+      api-key: test-key
+      model: qwen-turbo
+      embedding-model: text-embedding-v3
+      timeout: 5
+      deployment: local
+
+    # 文档处理配置
+    document:
+      supported-formats: txt
+      chunk:
+        size: 200
+        overlap: 20
+        strategy: fixed
+      extraction:
+        pdf:
+          strategy: pdfbox
+          extract-images: false
+        docx:
+          strategy: poi
+
+    # 缓存配置 - 测试中禁用
+    cache:
+      query:
+        enabled: false
+        ttl: 3600
+        max-size: 100
+      embedding:
+        enabled: false
+        ttl: 86400
+        max-size: 1000
+      llm:
+        enabled: false
+        ttl: 1800
+        max-size: 50
+
+    # 性能监控配置 - 禁用
+    monitoring:
+      enabled: false
+      interval: 60
+      slow-query-threshold: 5000
+      error-rate-threshold: 5.0
+
+  # 安全配置 - 简化
+  security:
+    jwt:
+      secret: test-secret-key-123
+      expiration: 3600000  # 1小时
+
+    # 限流配置 - 放宽限制
+    rate-limit:
+      user:
+        default: 100
+        burst: 200
+      admin:
+        default: 200
+        burst: 400
+      upload: 10
+
+  # 文件存储配置 - 使用内存模拟
+  storage:
+    type: local
+    local:
+      path: ./test-uploads
+
+  # 向量数据库配置 - 使用内存模拟
+  vector-db:
+    type: memory
+    milvus:
+      host: localhost
+      port: 19530
+      collection: test_documents
+      dimension: 1024

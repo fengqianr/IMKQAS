@@ -9,7 +9,7 @@ spring:
 
   # 数据源配置（通过环境变量注入）
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://8.138.40.200:3306?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://8.138.40.200:3306?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:fqr10292588}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -88,10 +88,10 @@ imkqas:
   # RAG配置（生产环境使用优化配置）
   rag:
     embedding:
-      model: bge-large-zh
+      model: text-embedding-v3
       dimension: 1024
     reranker:
-      model: bge-reranker-v2-m3
+      model: gte-rerank
     retrieval:
       top-k: 30
       rerank-top-k: 10

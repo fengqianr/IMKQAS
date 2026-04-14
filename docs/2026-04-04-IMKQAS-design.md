@@ -90,7 +90,73 @@
 
 #### 3.1.2 科室导诊分流
 用户描述症状后，系统基于检索到的医学知识自动判断可能涉及的科室，给出就诊建议。
-- **实现方式**: 在 Prompt 中添加科室判断指令
+
+##### 设计：三层混合架构
+采用三层混合架构，结合规则引擎的实时性和LLM的语义理解能力：
+
+```
+┌─────────────────────────────────────────┐
+│          DepartmentTriageService         │
+├─────────────────────────────────────────┤
+│ 1. 症状预处理层                          │
+│   - 症状文本清洗/标准化                  │
+│   - 医学术语标准化                      │
+├─────────────────────────────────────────┤
+│ 2. 规则引擎层 (第一层)                   │
+│   - JSON知识库快速匹配                   │
+│   - 关键词/症状规则匹配                  │
+│   - 置信度计算与阈值判断                 │
+├─────────────────────────────────────────┤
+│ 3. LLM分析层 (第二层，降级)              │
+│   - 调用现有LlmService                   │
+│   - 复杂症状语义分析                     │
+│   - 急诊症状识别                         │
+├─────────────────────────────────────────┤
+│ 4. 结果后处理层                          │
+│   - 多科室概率分布生成                   │
+│   - 急诊提醒标记                         │
+│   - 结果缓存(Redis)                      │
+└─────────────────────────────────────────┘
+```
+
+##### 核心设计原则
+1. **性能优先**：80%常见症状通过规则引擎处理（<100ms响应）
+2. **智能降级**：规则引擎匹配失败或低置信度时自动调用LLM
+3. **成本控制**：利用Redis缓存LLM分析结果，减少重复调用
+4. **医疗安全**：急诊症状识别和紧急就医提醒
+5. **渐进优化**：LLM分析结果可反馈更新规则知识库
+
+##### 与现有系统的集成
+- **复用LlmService**：直接调用项目已有的`LlmService`接口
+- **复用RedisService**：使用现有的`RedisService`进行结果缓存
+- **复用配置体系**：遵循`RagConfig`的配置管理模式
+- **统一异常处理**：继承项目的`GlobalExceptionHandler`
+
+##### 数据模型
+```json
+// 科室-症状知识库 (JSON配置)
+{
+  "departments": [
+    {
+      "id": "cardiology",
+      "name": "心血管内科",
+      "symptoms": ["胸痛", "心悸", "气短", "头晕"],
+      "keywords": ["心脏", "血压", "心跳", "胸闷"],
+      "priority": 1,
+      "emergency": false
+    },
+    {
+      "id": "emergency",
+      "name": "急诊科",
+      "symptoms": ["剧烈胸痛", "意识丧失", "呼吸困难", "大量出血"],
+      "keywords": ["晕倒", "昏迷", "窒息", "吐血"],
+      "priority": 0,
+      "emergency": true
+    }
+  ]
+}
+```
+
 - **演示价值**: 答辩加分项，展示医疗专业性
 
 #### 3.1.3 药物查询与用药提醒
@@ -223,6 +289,79 @@ public class RrfFusionService {
 public class CrossEncoderRerankService {
     // 使用 bge-reranker-v2-m3 进行医疗语义重排序
     public List<DocumentChunk> rerank(String query, List<DocumentChunk> candidates) {}
+}
+```
+
+#### 4.2.6 DepartmentTriageService (科室导诊服务)
+```java
+@Service
+public class DepartmentTriageService {
+    
+    /**
+     * 症状科室分流
+     * @param symptoms 症状描述
+     * @param includeEmergency 是否包含急诊检查
+     * @return 科室推荐结果
+     */
+    public DepartmentTriageResult triage(String symptoms, boolean includeEmergency) {
+        // 1. 症状预处理（清洗、标准化）
+        // 2. 规则引擎匹配（JSON知识库）
+        // 3. 置信度判断，低于阈值则调用LLM
+        // 4. 返回多科室概率分布
+    }
+    
+    /**
+     * 批量症状分流
+     */
+    public List<DepartmentTriageResult> triageBatch(List<String> symptomsList) {}
+    
+    /**
+     * 获取急诊症状识别结果
+     * @param symptoms 症状描述
+     * @return 是否需急诊，以及紧急程度
+     */
+    public EmergencyCheckResult checkEmergency(String symptoms) {}
+    
+    /**
+     * 更新科室-症状知识库
+     */
+    public void updateKnowledgeBase(DepartmentKnowledgeBase knowledgeBase) {}
+    
+    /**
+     * 获取分流统计信息
+     */
+    public TriageStats getStats() {}
+}
+
+// 科室推荐结果
+@Data
+class DepartmentTriageResult {
+    private String symptoms;
+    private List<DepartmentRecommendation> recommendations; // 科室推荐列表
+    private boolean requiresEmergency; // 是否需要急诊
+    private double confidence; // 总体置信度
+    private String source; // 结果来源：RULE/LLM
+    private long processingTime; // 处理时间
+}
+
+// 科室推荐项
+@Data
+class DepartmentRecommendation {
+    private String departmentId; // 科室ID
+    private String departmentName; // 科室名称
+    private double confidence; // 推荐置信度
+    private String reasoning; // 推荐理由
+    private List<String> matchedSymptoms; // 匹配的症状
+    private boolean emergencyDepartment; // 是否为急诊科室
+}
+
+// 急诊检查结果
+@Data
+class EmergencyCheckResult {
+    private boolean isEmergency; // 是否为急诊
+    private String emergencyLevel; // 紧急程度：CRITICAL/HIGH/MEDIUM/LOW
+    private List<String> emergencySymptoms; // 识别的急诊症状
+    private String immediateAction; // 紧急行动建议
 }
 ```
 
