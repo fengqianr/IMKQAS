@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Spring Boot应用 (仅运行应用服务)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: imkqas-app
+    environment:
+      # 应用运行环境
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # ==================== 外部服务连接配置 ====================
+      # MySQL数据库连接 (默认指向宿主机)
+      SPRING_DATASOURCE_URL: jdbc:mysql://${EXTERNAL_MYSQL_HOST:-host.docker.internal}:${EXTERNAL_MYSQL_PORT:-3306}/${MYSQL_DATABASE:-imkqas}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: ${EXTERNAL_MYSQL_USERNAME:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-fqr10292588}
+
+      # Redis缓存连接 (默认指向宿主机)
+      SPRING_REDIS_HOST: ${EXTERNAL_REDIS_HOST:-host.docker.internal}
+      SPRING_REDIS_PORT: ${EXTERNAL_REDIS_PORT:-6379}
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+
+      # MinIO对象存储连接 (默认指向宿主机)
+      IMKQAS_MINIO_ENDPOINT: http://${EXTERNAL_MINIO_HOST:-host.docker.internal}:${EXTERNAL_MINIO_PORT:-9000}
+      IMKQAS_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-IVL8IthgH8OjCEDLhFKT}
+      IMKQAS_MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-MaJEjDYQYSKfWVadxSPM2knEIKkVrXLgWvvxB8M8}
+
+      # Milvus向量数据库连接 (默认指向宿主机)
+      IMKQAS_MILVUS_HOST: ${EXTERNAL_MILVUS_HOST:-host.docker.internal}
+      IMKQAS_MILVUS_PORT: ${EXTERNAL_MILVUS_PORT:-19530}
+
+      # ==================== 安全配置 ====================
+      IMKQAS_SECURITY_JWT_SECRET: ${IMKQAS_SECURITY_JWT_SECRET:-imkqas-medical-rag-secret-key-2026}
+      IMKQAS_SECURITY_JWT_EXPIRATION: ${IMKQAS_SECURITY_JWT_EXPIRATION:-86400000}
+
+      # ==================== RAG API密钥配置 ====================
+      RAG_EMBEDDING_API_KEY: ${RAG_EMBEDDING_API_KEY:-}
+      RAG_RERANKER_API_KEY: ${RAG_RERANKER_API_KEY:-}
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+
+      # ==================== 网络配置 ====================
+      # 使用host.docker.internal在Linux/macOS上访问宿主机服务
+      # 在Windows上可能需要额外配置
+      EXTRA_HOSTS: ${EXTRA_HOSTS:-host.docker.internal:host-gateway}
+
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_logs:/app/logs
+    # 添加健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  app_logs:
+
+# 注意: 使用此配置前，请确保以下外部服务已启动并可用:
+# 1. MySQL数据库 (端口: 3306)
+# 2. Redis缓存 (端口: 6379)
+# 3. MinIO对象存储 (端口: 9000)
+# 4. Milvus向量数据库 (端口: 19530)
+# 5. etcd (Milvus依赖，端口: 2379)
+
+# 使用方法:
+# 1. 确保所有外部服务已启动
+# 2. 创建 .env 文件或设置环境变量
+# 3. 运行: docker-compose -f docker-compose-app-only.yml up -d
+
+# 配置示例 (.env):
+# EXTERNAL_MYSQL_HOST=192.168.1.100
+# EXTERNAL_REDIS_HOST=192.168.1.101
+# EXTERNAL_MINIO_HOST=192.168.1.102
+# EXTERNAL_MILVUS_HOST=192.168.1.103
+# MYSQL_ROOT_PASSWORD=your_mysql_password
+# MINIO_ROOT_USER=your_minio_user
+# MINIO_ROOT_PASSWORD=your_minio_password

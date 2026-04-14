@@ -1,0 +1,2 @@
+# 此文件用于保持models目录在Git仓库中
+# 实际模型文件(.onnx, .bin等)已被.gitignore排除

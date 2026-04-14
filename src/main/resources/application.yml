@@ -10,7 +10,7 @@ spring:
 
   # 数据源配置
   datasource:
-    url: jdbc:mysql://8.138.40.200:3306/imkqas?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://8.138.40.200:3306/imkqas?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
     password: fqr10292588
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -88,14 +88,117 @@ logging:
 imkqas:
   # RAG配置
   rag:
-    embedding:
-      model: bge-large-zh
-      dimension: 1024
+    # 重排序模型配置
     reranker:
-      model: bge-reranker-v2-m3
+      model: gte-rerank
+      # 部署方式: local(本地ONNX), api(远程API)
+      deployment: api
+      # 远程API配置（阿里云DashScope）
+      api-endpoint: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
+      api-url: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
+      api-key: ${BAILIAN_API_KEY}
+      # 重排序top-k
+      top-k: 5
+      # 缓存配置
+      cache-enabled: true
+      cache-ttl: 1800  # 30分钟
+      # 超时配置 (毫秒)
+      timeout: 3000
+
+    # 嵌入模型配置
+    embedding:
+      # 模型名称
+      model: text-embedding-v3
+      # 输出维度
+      dimension: 1024
+      # API端点 (阿里云百炼)
+      api-endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings
+      # API密钥 (从环境变量读取)
+      api-key: sk-706cf44145e64d96b9f53fcb4db86f9f
+      # 是否启用缓存
+      cache-enabled: true
+      # 超时时间 (毫秒)
+      timeout: 10000
+      # 缓存TTL (秒)
+      cache-ttl: 1800
+      # 部署方式: api(远程API), local(本地模型)
+      deployment: api
+
+    # 检索配置
     retrieval:
-      top-k: 20
+      # 检索模式: vector(向量), keyword(关键词), hybrid(混合)
+      mode: hybrid
+      # 各检索方式权重
+      weights:
+        vector: 0.6
+        keyword: 0.4
+      # top-k配置
+      initial-top-k: 20
       rerank-top-k: 5
+      # RRF融合参数
+      rrf-k: 60
+      # 超时配置 (毫秒)
+      timeout: 10000
+
+      # 关键词索引配置
+      keyword-index:
+        path: lucene-index
+        synonyms:
+          enabled: true
+
+    # 大语言模型配置 (阿里云百炼 DashScope，兼容 OpenAI 接口格式)
+    llm:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: sk-706cf44145e64d96b9f53fcb4db86f9f
+      model: qwen-plus                      # 可选: qwen-turbo / qwen-plus / qwen-max
+      embedding-model: text-embedding-v3   # 输出维度 1024，与 Milvus 一致
+      timeout: 60                           # 超时时间 (秒)
+
+    # 文档处理配置
+    document:
+      # 支持的文件类型
+      supported-formats: pdf,docx,doc,txt
+      # 分块配置
+      chunk:
+        size: 500
+        overlap: 50
+        # 分块策略: fixed(固定大小), semantic(语义分割)
+        strategy: semantic
+      # 文本提取配置
+      extraction:
+        pdf:
+          strategy: pdfbox
+          extract-images: false
+        docx:
+          strategy: poi
+
+    # 缓存配置
+    cache:
+      # 查询结果缓存
+      query:
+        enabled: true
+        ttl: 3600  # 1小时
+        max-size: 1000
+      # 嵌入向量缓存
+      embedding:
+        enabled: true
+        ttl: 86400  # 24小时
+        max-size: 10000
+      # LLM响应缓存
+      llm:
+        enabled: true
+        ttl: 1800  # 30分钟
+        max-size: 500
+
+    # 性能监控配置
+    monitoring:
+      enabled: true
+      # 指标采集间隔 (秒)
+      interval: 60
+      # 慢查询阈值 (毫秒)
+      slow-query-threshold: 5000
+      # 错误率阈值 (%)
+      error-rate-threshold: 5.0
 
   # 安全配置
   security:

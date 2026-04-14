@@ -12,7 +12,8 @@
       "Bash(mv:*)",
       "Bash(java -cp \"target/classes;$\\(cat classpath.txt\\)\" com.student.ImkqasApplication)",
       "Bash(mvn test:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(mvn test-compile:*)"
     ]
   }
 }
