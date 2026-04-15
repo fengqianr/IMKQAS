@@ -1,0 +1,123 @@
+departments:
+  # 急诊科室
+  - id: "emergency"
+    name: "急诊科"
+    symptoms:
+      - "剧烈胸痛"
+      - "意识丧失"
+      - "呼吸困难"
+      - "大出血"
+      - "窒息"
+      - "持续高热"
+      - "剧烈腹痛"
+      - "视力模糊"
+      - "言语不清"
+      - "惊厥"
+    keywords:
+      - "晕倒"
+      - "昏迷"
+      - "吐血"
+      - "休克"
+      - "抽搐"
+    priority: 0
+    emergency: true
+    emergencyLevel: "CRITICAL"
+    description: "急危重症抢救治疗"
+
+  # 内科科室
+  - id: "cardiology"
+    name: "心血管内科"
+    symptoms:
+      - "胸痛"
+      - "心悸"
+      - "气短"
+      - "头晕"
+      - "胸闷"
+      - "心律不齐"
+    keywords:
+      - "心脏"
+      - "血压"
+      - "心跳"
+      - "脉搏"
+      - "心电图"
+      - "冠心病"
+    priority: 1
+    emergency: false
+    description: "心血管系统疾病诊疗"
+
+  - id: "gastroenterology"
+    name: "消化内科"
+    symptoms:
+      - "腹痛"
+      - "腹泻"
+      - "恶心"
+      - "呕吐"
+      - "胃痛"
+      - "反酸"
+      - "便血"
+    keywords:
+      - "胃"
+      - "肠"
+      - "消化"
+      - "胃炎"
+      - "溃疡"
+      - "肝脏"
+    priority: 2
+    emergency: false
+    description: "消化系统疾病诊疗"
+
+  - id: "respiratory"
+    name: "呼吸内科"
+    symptoms:
+      - "咳嗽"
+      - "咳痰"
+      - "气促"
+      - "胸痛"
+      - "发热"
+      - "呼吸困难"
+    keywords:
+      - "肺"
+      - "支气管"
+      - "哮喘"
+      - "肺炎"
+      - "结核"
+    priority: 3
+    emergency: false
+    description: "呼吸系统疾病诊疗"
+
+  - id: "neurology"
+    name: "神经内科"
+    symptoms:
+      - "头痛"
+      - "头晕"
+      - "肢体麻木"
+      - "抽搐"
+      - "记忆力下降"
+    keywords:
+      - "神经"
+      - "脑"
+      - "瘫痪"
+      - "癫痫"
+      - "中风"
+    priority: 4
+    emergency: false
+    description: "神经系统疾病诊疗"
+
+  - id: "orthopedics"
+    name: "骨科"
+    symptoms:
+      - "骨折"
+      - "关节痛"
+      - "腰痛"
+      - "颈椎痛"
+      - "扭伤"
+      - "脱臼"
+    keywords:
+      - "骨头"
+      - "关节"
+      - "脊柱"
+      - "腰椎"
+      - "骨折"
+    priority: 5
+    emergency: false
+    description: "骨科疾病诊疗"

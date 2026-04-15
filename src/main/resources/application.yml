@@ -233,3 +233,25 @@ imkqas:
       port: 19530
       collection: medical_documents
       dimension: 1024
+
+  # 科室导诊服务配置
+  triage:
+    # 知识库配置路径
+    knowledge-base-path: config/department-knowledge.yml
+    synonyms-path: config/symptom-synonyms.yml
+
+    # 缓存配置
+    enable-cache: true
+    cache-ttl: 3600  # 1小时
+
+    # 引擎配置
+    rule-engine-threshold: 0.8  # 规则引擎匹配阈值，80%症状通过规则引擎处理
+    llm-fallback-timeout: 3000  # LLM降级分析超时时间（毫秒）
+
+    # 性能配置
+    max-batch-size: 20  # 批量处理最大数量
+    emergency-check-enabled: true  # 是否启用急诊检查
+
+    # 统计配置
+    enable-stats: true  # 是否启用统计
+    stats-log-interval: 300  # 统计日志输出间隔（秒）
