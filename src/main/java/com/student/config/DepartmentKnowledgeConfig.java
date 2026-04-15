@@ -1,7 +1,9 @@
 package com.student.config;
 
-import com.student.dto.triage.DepartmentKnowledgeBase;
-import com.student.model.triage.DepartmentKnowledge;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,13 +12,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
+import com.student.dto.triage.DepartmentKnowledgeBase;
+import com.student.model.triage.DepartmentKnowledge;
 
 /**
  * 科室知识库配置类
  * 加载科室知识库配置和症状同义词配置
+ *
+ * @author 系统生成
+ * @version 1.0
  */
 @Slf4j
 @Configuration
