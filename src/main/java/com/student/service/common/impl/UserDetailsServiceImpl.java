@@ -1,4 +1,4 @@
-package com.student.service.common;
+package com.student.service.common.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.student.entity.User;

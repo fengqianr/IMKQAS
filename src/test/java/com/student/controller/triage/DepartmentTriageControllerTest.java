@@ -34,7 +34,7 @@ import com.student.model.triage.TriageStats;
 import com.student.service.triage.TriageService;
 import com.student.filter.JwtAuthenticationFilter;
 import com.student.utils.JwtUtil;
-import com.student.service.common.UserDetailsServiceImpl;
+import com.student.service.common.impl.UserDetailsServiceImpl;
 
 /**
  * DepartmentTriageController 单元测试
