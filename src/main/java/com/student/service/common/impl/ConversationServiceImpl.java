@@ -1,4 +1,4 @@
-package com.student.service.impl;
+package com.student.service.common.impl;
 
 import com.student.entity.Conversation;
 import com.student.mapper.ConversationMapper;
