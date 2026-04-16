@@ -2,7 +2,7 @@ package com.student.service.impl;
 
 import com.student.entity.Message;
 import com.student.mapper.MessageMapper;
-import com.student.service.MessageService;
+import com.student.service.common.MessageService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
