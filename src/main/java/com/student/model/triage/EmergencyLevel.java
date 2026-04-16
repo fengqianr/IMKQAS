@@ -27,6 +27,13 @@ public enum EmergencyLevel {
     }
 
     /**
+     * 获取描述信息（用于显示）
+     */
+    public String getDescription() {
+        return levelName + " - " + action;
+    }
+
+    /**
      * 根据优先级获取枚举
      */
     public static EmergencyLevel fromPriority(int priority) {
@@ -36,5 +43,25 @@ public enum EmergencyLevel {
             }
         }
         return LOW;
+    }
+
+    /**
+     * 根据字符串名称获取枚举（不区分大小写）
+     */
+    public static EmergencyLevel fromString(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return LOW;
+        }
+        try {
+            return EmergencyLevel.valueOf(name.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // 尝试匹配 levelName
+            for (EmergencyLevel level : values()) {
+                if (level.getLevelName().equals(name) || level.name().equalsIgnoreCase(name)) {
+                    return level;
+                }
+            }
+            return LOW;
+        }
     }
 }

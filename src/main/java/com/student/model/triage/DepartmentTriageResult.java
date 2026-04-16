@@ -19,7 +19,8 @@ public class DepartmentTriageResult {
     private double confidence = 0.0;
     private String source = "UNKNOWN";
     private long processingTimeMs = 0L;
-    private String recommendationAdvice;
+    private String advice;
+    private Long userId;
 
     /**
      * 获取主要推荐科室

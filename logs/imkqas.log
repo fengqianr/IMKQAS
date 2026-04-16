@@ -1,64 +1,55 @@
-2026-04-14 18:12:15 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1d12m48s120ms994µs500ns).
-2026-04-14 19:42:49 [SpringApplicationShutdownHook] DEBUG o.s.b.a.ApplicationAvailabilityBean - Application availability state ReadinessState changed from ACCEPTING_TRAFFIC to REFUSING_TRAFFIC
-2026-04-14 19:42:49 [SpringApplicationShutdownHook] DEBUG o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Closing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@224b4d61, started on Mon Apr 13 13:45:53 CST 2026
-2026-04-14 19:42:49 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-04-14 19:42:49 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-04-14 19:43:10 [main] INFO  com.student.ImkqasApplication - Starting ImkqasApplication using Java 21.0.4 with PID 20376 (D:\Java\代码\IMKQAS\target\classes started by 冯芊肉 in D:\Java\代码\IMKQAS)
-2026-04-14 19:43:10 [main] DEBUG com.student.ImkqasApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-04-14 19:43:10 [main] INFO  com.student.ImkqasApplication - No active profile set, falling back to 1 default profile: "default"
-2026-04-14 19:43:10 [main] DEBUG o.s.boot.SpringApplication - Loading source class com.student.ImkqasApplication
-2026-04-14 19:43:10 [main] DEBUG o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@66629f63
-2026-04-14 19:43:11 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-04-14 19:43:11 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-04-14 19:43:11 [main] DEBUG o.s.b.a.AutoConfigurationPackages - @EnableAutoConfiguration was declared on a class in the package 'com.student'. Automatic @Repository and @Entity scanning is enabled.
-2026-04-14 19:43:11 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 19 ms. Found 0 Redis repository interfaces.
-2026-04-14 19:43:11 [main] DEBUG o.s.b.w.e.t.TomcatServletWebServerFactory - Code archive: C:\Users\冯芊肉\.m2\repository\org\springframework\boot\spring-boot\3.2.5\spring-boot-3.2.5.jar
-2026-04-14 19:43:11 [main] DEBUG o.s.b.w.e.t.TomcatServletWebServerFactory - Code archive: C:\Users\冯芊肉\.m2\repository\org\springframework\boot\spring-boot\3.2.5\spring-boot-3.2.5.jar
-2026-04-14 19:43:11 [main] DEBUG o.s.b.w.e.t.TomcatServletWebServerFactory - None of the document roots [src/main/webapp, public, static] point to a directory and will be ignored.
-2026-04-14 19:43:11 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
-2026-04-14 19:43:11 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-2026-04-14 19:43:11 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-04-14 19:43:11 [main] INFO  o.a.c.c.C.[.[localhost].[/api] - Initializing Spring embedded WebApplicationContext
-2026-04-14 19:43:11 [main] DEBUG o.s.b.w.s.c.ServletWebServerApplicationContext - Published root WebApplicationContext as ServletContext attribute with name [org.springframework.web.context.WebApplicationContext.ROOT]
-2026-04-14 19:43:11 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1572 ms
-2026-04-14 19:43:12 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-04-14 19:43:12 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@79d49790
-2026-04-14 19:43:12 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-04-14 19:43:12 [main] INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 9.22.3 by Redgate
-2026-04-14 19:43:12 [main] INFO  o.f.c.i.license.VersionPrinter - See release notes here: https://rd.gt/416ObMi
-2026-04-14 19:43:12 [main] INFO  o.f.c.i.license.VersionPrinter - 
-2026-04-14 19:43:12 [main] INFO  org.flywaydb.core.FlywayExecutor - Database: jdbc:mysql://8.138.40.200:3306/imkqas (MySQL 8.0)
-2026-04-14 19:43:12 [main] INFO  o.f.core.internal.command.DbValidate - Successfully validated 2 migrations (execution time 00:00.077s)
-2026-04-14 19:43:12 [main] INFO  o.f.core.internal.command.DbMigrate - Current version of schema `imkqas`: 1
-2026-04-14 19:43:12 [main] INFO  o.f.core.internal.command.DbMigrate - Schema `imkqas` is up to date. No migration necessary.
-2026-04-14 19:43:12 [main] DEBUG o.s.b.w.s.ServletContextInitializerBeans - Mapping filters: springSecurityFilterChain urls=[/*] order=-100, characterEncodingFilter urls=[/*] order=-2147483648, formContentFilter urls=[/*] order=-9900, requestContextFilter urls=[/*] order=-105, jwtAuthenticationFilter urls=[/*] order=2147483647
-2026-04-14 19:43:12 [main] DEBUG o.s.b.w.s.ServletContextInitializerBeans - Mapping servlets: dispatcherServlet urls=[/]
-2026-04-14 19:43:12 [main] DEBUG o.s.b.w.s.f.OrderedRequestContextFilter - Filter 'requestContextFilter' configured for use
-2026-04-14 19:43:12 [main] DEBUG c.s.filter.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
-2026-04-14 19:43:12 [main] DEBUG o.s.b.w.s.f.OrderedCharacterEncodingFilter - Filter 'characterEncodingFilter' configured for use
-2026-04-14 19:43:12 [main] DEBUG o.s.b.w.s.DelegatingFilterProxyRegistrationBean$1 - Filter 'springSecurityFilterChain' configured for use
-2026-04-14 19:43:12 [main] DEBUG o.s.b.w.s.f.OrderedFormContentFilter - Filter 'formContentFilter' configured for use
-2026-04-14 19:43:13 [main] INFO  com.student.config.RagConfig - RAG配置初始化完成
-2026-04-14 19:43:13 [main] INFO  com.student.config.RagConfig - 重排序模型: gte-rerank, 部署方式: api
-2026-04-14 19:43:13 [main] INFO  com.student.config.RagConfig - 检索模式: HYBRID, 权重[向量: 0.6, 关键词: 0.4]
-2026-04-14 19:43:13 [main] INFO  com.student.config.RagConfig - 嵌入模型: text-embedding-v3, 维度: 1024
-2026-04-14 19:43:13 [main] INFO  com.student.config.RagConfig - LLM模型: qwen-plus, 温度: 0.1, 最大token: 2000
-2026-04-14 19:43:13 [main] INFO  c.s.s.i.CrossEncoderRerankServiceImpl - 交叉编码器重排序服务初始化完成，模型: gte-rerank, API端点: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank, topK: 5
-2026-04-14 19:43:13 [main] INFO  com.student.config.MilvusConfig - 初始化Milvus客户端: host=8.138.40.200, port=19530, collection=medical_documents
-2026-04-14 19:43:14 [main] INFO  com.student.config.MilvusConfig - Milvus版本: 2.6.14
-2026-04-14 19:43:14 [main] INFO  com.student.config.MilvusConfig - Milvus连接测试成功
-2026-04-14 19:43:14 [main] INFO  com.student.config.MilvusConfig - Milvus集合已存在: medical_documents
-2026-04-14 19:43:14 [main] INFO  c.s.s.KeywordRetrievalServiceImpl - 医学术语同义词词典初始化完成，共加载 11 个术语
-2026-04-14 19:43:14 [main] INFO  o.a.l.s.MemorySegmentIndexInputProvider - Using MemorySegmentIndexInput with Java 21 or later; to disable start with -Dorg.apache.lucene.store.MMapDirectory.enableMemorySegments=false
-2026-04-14 19:43:14 [main] INFO  c.s.s.KeywordRetrievalServiceImpl - 关键词检索服务初始化完成，索引路径: lucene-index
-2026-04-14 19:43:14 [main] INFO  com.student.config.MinioConfig - 初始化MinIO客户端: endpoint=http://8.138.40.200:9000, bucket=medical-documents
-2026-04-14 19:43:14 [main] INFO  com.student.config.MinioConfig - MinIO连接测试成功
-2026-04-14 19:43:14 [main] DEBUG com.student.config.MinioConfig - 存储桶 medical-documents 已存在
-2026-04-14 19:43:14 [main] INFO  c.s.service.RrfFusionServiceImpl - RRF融合服务初始化完成，rrfK=60
-2026-04-14 19:43:15 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@39d44217, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@3280a79a, org.springframework.security.web.context.SecurityContextHolderFilter@50ac63b2, org.springframework.security.web.header.HeaderWriterFilter@608b74f3, org.springframework.web.filter.CorsFilter@79fbcef4, org.springframework.security.web.authentication.logout.LogoutFilter@1315f1d5, com.student.filter.JwtAuthenticationFilter@4e647f39, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@48dfce5c, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@eccaf1b, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@770be0d0, org.springframework.security.web.session.SessionManagementFilter@12faeada, org.springframework.security.web.access.ExceptionTranslationFilter@6a35cccf, org.springframework.security.web.access.intercept.AuthorizationFilter@10b36d8a]
-2026-04-14 19:43:15 [main] DEBUG o.s.b.a.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin - Application Admin MBean registered with name 'org.springframework.boot:type=Admin,name=SpringApplication'
-2026-04-14 19:43:15 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/api'
-2026-04-14 19:43:15 [main] DEBUG o.s.b.a.l.ConditionEvaluationReportLogger - 
+2026-04-16 09:48:31 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=9h22m11s349ms139µs700ns).
+2026-04-16 10:03:12 [main] INFO  c.s.c.t.DepartmentTriageControllerTest - Starting DepartmentTriageControllerTest using Java 21.0.4 with PID 29596 (started by 冯芊肉 in D:\Java\代码\IMKQAS)
+2026-04-16 10:03:12 [main] DEBUG c.s.c.t.DepartmentTriageControllerTest - Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-04-16 10:03:12 [main] INFO  c.s.c.t.DepartmentTriageControllerTest - No active profile set, falling back to 1 default profile: "default"
+2026-04-16 10:03:12 [main] DEBUG o.s.boot.SpringApplication - Loading source class com.student.ImkqasApplication
+2026-04-16 10:03:14 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-04-16 10:03:14 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-04-16 10:03:14 [main] DEBUG o.s.b.a.AutoConfigurationPackages - @EnableAutoConfiguration was declared on a class in the package 'com.student'. Automatic @Repository and @Entity scanning is enabled.
+2026-04-16 10:03:14 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 47 ms. Found 0 Redis repository interfaces.
+2026-04-16 10:03:17 [main] INFO  com.student.config.RagConfig - RAG配置初始化完成
+2026-04-16 10:03:17 [main] INFO  com.student.config.RagConfig - 重排序模型: gte-rerank, 部署方式: api
+2026-04-16 10:03:17 [main] INFO  com.student.config.RagConfig - 检索模式: HYBRID, 权重[向量: 0.6, 关键词: 0.4]
+2026-04-16 10:03:17 [main] INFO  com.student.config.RagConfig - 嵌入模型: text-embedding-v3, 维度: 1024
+2026-04-16 10:03:17 [main] INFO  com.student.config.RagConfig - LLM模型: qwen-plus, 温度: 0.1, 最大token: 2000
+2026-04-16 10:03:17 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-04-16 10:03:18 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@3462e99a
+2026-04-16 10:03:18 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-04-16 10:03:18 [main] INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 9.22.3 by Redgate
+2026-04-16 10:03:18 [main] INFO  o.f.c.i.license.VersionPrinter - See release notes here: https://rd.gt/416ObMi
+2026-04-16 10:03:18 [main] INFO  o.f.c.i.license.VersionPrinter - 
+2026-04-16 10:03:18 [main] INFO  org.flywaydb.core.FlywayExecutor - Database: jdbc:mysql://8.138.40.200:3306/imkqas (MySQL 8.0)
+2026-04-16 10:03:18 [main] INFO  o.f.core.internal.command.DbValidate - Successfully validated 2 migrations (execution time 00:00.128s)
+2026-04-16 10:03:19 [main] INFO  o.f.core.internal.command.DbMigrate - Current version of schema `imkqas`: 1
+2026-04-16 10:03:19 [main] INFO  o.f.core.internal.command.DbMigrate - Schema `imkqas` is up to date. No migration necessary.
+2026-04-16 10:03:20 [main] INFO  c.s.s.i.CrossEncoderRerankServiceImpl - 交叉编码器重排序服务初始化完成，模型: gte-rerank, API端点: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank, topK: 5
+2026-04-16 10:03:20 [main] INFO  com.student.config.MilvusConfig - 初始化Milvus客户端: host=8.138.40.200, port=19530, collection=medical_documents
+2026-04-16 10:03:21 [main] INFO  com.student.config.MilvusConfig - Milvus版本: 2.6.14
+2026-04-16 10:03:21 [main] INFO  com.student.config.MilvusConfig - Milvus连接测试成功
+2026-04-16 10:03:21 [main] INFO  com.student.config.MilvusConfig - Milvus集合已存在: medical_documents
+2026-04-16 10:03:21 [main] INFO  c.s.s.KeywordRetrievalServiceImpl - 医学术语同义词词典初始化完成，共加载 11 个术语
+2026-04-16 10:03:21 [main] INFO  o.a.l.s.MemorySegmentIndexInputProvider - Using MemorySegmentIndexInput with Java 21 or later; to disable start with -Dorg.apache.lucene.store.MMapDirectory.enableMemorySegments=false
+2026-04-16 10:03:21 [main] INFO  c.s.s.KeywordRetrievalServiceImpl - 关键词检索服务初始化完成，索引路径: lucene-index
+2026-04-16 10:03:21 [main] INFO  com.student.config.MinioConfig - 初始化MinIO客户端: endpoint=http://8.138.40.200:9000, bucket=medical-documents
+2026-04-16 10:03:22 [main] INFO  com.student.config.MinioConfig - MinIO连接测试成功
+2026-04-16 10:03:22 [main] DEBUG com.student.config.MinioConfig - 存储桶 medical-documents 已存在
+2026-04-16 10:03:22 [main] INFO  c.s.service.RrfFusionServiceImpl - RRF融合服务初始化完成，rrfK=60
+2026-04-16 10:03:22 [main] INFO  c.s.config.DepartmentKnowledgeConfig - 成功加载科室知识库配置，共6个科室
+2026-04-16 10:03:22 [main] INFO  c.s.config.DepartmentKnowledgeConfig - 成功加载症状同义词配置，共21组同义词
+2026-04-16 10:03:23 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5c65d5c3, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@72cec2e2, org.springframework.security.web.context.SecurityContextHolderFilter@5137526a, org.springframework.security.web.header.HeaderWriterFilter@6621ab0c, org.springframework.web.filter.CorsFilter@250d3c1b, org.springframework.security.web.authentication.logout.LogoutFilter@36dd68f1, jwtAuthenticationFilter bean, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6724f10e, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5a637c4f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5f709e71, org.springframework.security.web.session.SessionManagementFilter@29b21fa6, org.springframework.security.web.access.ExceptionTranslationFilter@5d852761, org.springframework.security.web.access.intercept.AuthorizationFilter@45b244c4]
+2026-04-16 10:03:23 [main] INFO  c.s.s.t.config.TriageEngineConfig - 创建科室导诊线程池: coreSize=2, maxSize=4, queueCapacity=100
+2026-04-16 10:03:23 [main] INFO  c.s.s.triage.impl.SymptomNormalizer - 症状标准化器初始化完成，同义词组数: 21, 启用模糊匹配: true, 模糊匹配阈值: 0.7
+2026-04-16 10:03:23 [main] INFO  c.s.s.triage.impl.SymptomNormalizer - 症状标准化器初始化完成，同义词组数: 0, 启用模糊匹配: false, 模糊匹配阈值: 0.0
+2026-04-16 10:03:23 [main] INFO  c.s.s.t.config.TriageEngineConfig - 科室导诊引擎配置验证通过
+2026-04-16 10:03:23 [main] INFO  c.s.s.t.config.TriageEngineConfig - 规则引擎阈值: 0.6
+2026-04-16 10:03:23 [main] INFO  c.s.s.t.config.TriageEngineConfig - LLM超时时间: 3000ms
+2026-04-16 10:03:23 [main] INFO  c.s.s.t.config.TriageEngineConfig - 规则引擎权重: 0.8, LLM权重: 0.2
+2026-04-16 10:03:23 [main] INFO  c.s.s.t.config.TriageEngineConfig - 启用急诊检测: true
+2026-04-16 10:03:23 [main] INFO  c.s.s.t.config.TriageEngineConfig - 启用统计收集: true
+2026-04-16 10:03:24 [main] INFO  o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-04-16 10:03:24 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-04-16 10:03:24 [main] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 2 ms
+2026-04-16 10:03:24 [main] DEBUG o.s.b.a.l.ConditionEvaluationReportLogger - 
 
 
 ============================
@@ -99,13 +90,6 @@ Positive matches:
       - @ConditionalOnClass found required class 'org.springframework.jdbc.datasource.init.DatabasePopulator' (OnClassCondition)
       - @ConditionalOnSingleCandidate (types: javax.sql.DataSource; SearchStrategy: all) found a single bean 'dataSource'; @ConditionalOnMissingBean (types: org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer,org.springframework.boot.autoconfigure.sql.init.SqlR2dbcScriptDatabaseInitializer; SearchStrategy: all) did not find any beans (OnBeanCondition)
 
-   DataSourceJmxConfiguration matched:
-      - @ConditionalOnProperty (spring.jmx.enabled=true) matched (OnPropertyCondition)
-
-   DataSourceJmxConfiguration.Hikari matched:
-      - @ConditionalOnClass found required class 'com.zaxxer.hikari.HikariDataSource' (OnClassCondition)
-      - @ConditionalOnSingleCandidate (types: javax.sql.DataSource; SearchStrategy: all) found a single bean 'dataSource' (OnBeanCondition)
-
    DataSourcePoolMetadataProvidersConfiguration.HikariPoolDataSourceMetadataProviderConfiguration matched:
       - @ConditionalOnClass found required class 'com.zaxxer.hikari.HikariDataSource' (OnClassCondition)
 
@@ -132,16 +116,6 @@ Positive matches:
 
    DispatcherServletAutoConfiguration.DispatcherServletRegistrationConfiguration#dispatcherServletRegistration matched:
       - @ConditionalOnBean (names: dispatcherServlet types: org.springframework.web.servlet.DispatcherServlet; SearchStrategy: all) found bean 'dispatcherServlet' (OnBeanCondition)
-
-   EmbeddedWebServerFactoryCustomizerAutoConfiguration matched:
-      - @ConditionalOnWebApplication (required) found 'session' scope (OnWebApplicationCondition)
-      - @ConditionalOnWarDeployment the application is not deployed as a WAR file. (OnWarDeploymentCondition)
-
-   EmbeddedWebServerFactoryCustomizerAutoConfiguration.NettyWebServerFactoryCustomizerConfiguration matched:
-      - @ConditionalOnClass found required class 'reactor.netty.http.server.HttpServer' (OnClassCondition)
-
-   EmbeddedWebServerFactoryCustomizerAutoConfiguration.TomcatWebServerFactoryCustomizerConfiguration matched:
-      - @ConditionalOnClass found required classes 'org.apache.catalina.startup.Tomcat', 'org.apache.coyote.UpgradeProtocol' (OnClassCondition)
 
    ErrorMvcAutoConfiguration matched:
       - @ConditionalOnClass found required classes 'jakarta.servlet.Servlet', 'org.springframework.web.servlet.DispatcherServlet' (OnClassCondition)
@@ -266,19 +240,6 @@ Positive matches:
    JdbcTemplateConfiguration matched:
       - @ConditionalOnMissingBean (types: org.springframework.jdbc.core.JdbcOperations; SearchStrategy: all) did not find any beans (OnBeanCondition)
 
-   JmxAutoConfiguration matched:
-      - @ConditionalOnClass found required class 'org.springframework.jmx.export.MBeanExporter' (OnClassCondition)
-      - @ConditionalOnProperty (spring.jmx.enabled=true) matched (OnPropertyCondition)
-
-   JmxAutoConfiguration#mbeanExporter matched:
-      - @ConditionalOnMissingBean (types: org.springframework.jmx.export.MBeanExporter; SearchStrategy: current) did not find any beans (OnBeanCondition)
-
-   JmxAutoConfiguration#mbeanServer matched:
-      - @ConditionalOnMissingBean (types: javax.management.MBeanServer; SearchStrategy: all) did not find any beans (OnBeanCondition)
-
-   JmxAutoConfiguration#objectNamingStrategy matched:
-      - @ConditionalOnMissingBean (types: org.springframework.jmx.export.naming.ObjectNamingStrategy; SearchStrategy: current) did not find any beans (OnBeanCondition)
-
    LettuceConnectionConfiguration matched:
       - @ConditionalOnClass found required class 'io.lettuce.core.RedisClient' (OnClassCondition)
       - @ConditionalOnProperty (spring.data.redis.client-type=lettuce) matched (OnPropertyCondition)
@@ -292,6 +253,15 @@ Positive matches:
 
    LifecycleAutoConfiguration#defaultLifecycleProcessor matched:
       - @ConditionalOnMissingBean (names: lifecycleProcessor; SearchStrategy: current) did not find any beans (OnBeanCondition)
+
+   MockMvcAutoConfiguration matched:
+      - found 'session' scope (OnWebApplicationCondition)
+
+   MockMvcAutoConfiguration#mockMvc matched:
+      - @ConditionalOnMissingBean (types: org.springframework.test.web.servlet.MockMvc; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   MockMvcAutoConfiguration#mockMvcBuilder matched:
+      - @ConditionalOnMissingBean (types: org.springframework.test.web.servlet.MockMvcBuilder; SearchStrategy: all) did not find any beans (OnBeanCondition)
 
    MultipartAutoConfiguration matched:
       - @ConditionalOnClass found required classes 'jakarta.servlet.Servlet', 'org.springframework.web.multipart.support.StandardServletMultipartResolver', 'jakarta.servlet.MultipartConfigElement' (OnClassCondition)
@@ -412,12 +382,6 @@ Positive matches:
    ServletWebServerFactoryConfiguration.EmbeddedTomcat matched:
       - @ConditionalOnClass found required classes 'jakarta.servlet.Servlet', 'org.apache.catalina.startup.Tomcat', 'org.apache.coyote.UpgradeProtocol' (OnClassCondition)
       - @ConditionalOnMissingBean (types: org.springframework.boot.web.servlet.server.ServletWebServerFactory; SearchStrategy: current) did not find any beans (OnBeanCondition)
-
-   SpringApplicationAdminJmxAutoConfiguration matched:
-      - @ConditionalOnProperty (spring.application.admin.enabled=true) matched (OnPropertyCondition)
-
-   SpringApplicationAdminJmxAutoConfiguration#springApplicationAdminRegistrar matched:
-      - @ConditionalOnMissingBean (types: org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar; SearchStrategy: all) did not find any beans (OnBeanCondition)
 
    SpringBootWebSecurityConfiguration matched:
       - found 'session' scope (OnWebApplicationCondition)
@@ -625,12 +589,6 @@ Positive matches:
    TaskExecutorConfigurations.TaskExecutorBuilderConfiguration#taskExecutorBuilder matched:
       - @ConditionalOnMissingBean (types: org.springframework.boot.task.TaskExecutorBuilder; SearchStrategy: all) did not find any beans (OnBeanCondition)
 
-   TaskExecutorConfigurations.TaskExecutorConfiguration matched:
-      - @ConditionalOnMissingBean (types: java.util.concurrent.Executor; SearchStrategy: all) did not find any beans (OnBeanCondition)
-
-   TaskExecutorConfigurations.TaskExecutorConfiguration#applicationTaskExecutor matched:
-      - @ConditionalOnThreading found PLATFORM (OnThreadingCondition)
-
    TaskExecutorConfigurations.ThreadPoolTaskExecutorBuilderConfiguration#threadPoolTaskExecutorBuilder matched:
       - @ConditionalOnMissingBean (types: org.springframework.boot.task.TaskExecutorBuilder,org.springframework.boot.task.ThreadPoolTaskExecutorBuilder; SearchStrategy: all) did not find any beans (OnBeanCondition)
 
@@ -830,9 +788,9 @@ Negative matches:
       Did not match:
          - @ConditionalOnClass did not find required class 'org.apache.tomcat.jdbc.pool.DataSource' (OnClassCondition)
 
-   DataSourceJmxConfiguration.TomcatDataSourceJmxConfiguration:
+   DataSourceJmxConfiguration:
       Did not match:
-         - @ConditionalOnClass did not find required class 'org.apache.tomcat.jdbc.pool.DataSourceProxy' (OnClassCondition)
+         - @ConditionalOnProperty (spring.jmx.enabled=true) found different value in property 'enabled' (OnPropertyCondition)
 
    DataSourcePoolMetadataProvidersConfiguration.CommonsDbcp2PoolDataSourceMetadataProviderConfiguration:
       Did not match:
@@ -870,17 +828,11 @@ Negative matches:
       Did not match:
          - @ConditionalOnClass did not find required class 'com.unboundid.ldap.listener.InMemoryDirectoryServer' (OnClassCondition)
 
-   EmbeddedWebServerFactoryCustomizerAutoConfiguration.JettyWebServerFactoryCustomizerConfiguration:
+   EmbeddedWebServerFactoryCustomizerAutoConfiguration:
       Did not match:
-         - @ConditionalOnClass did not find required classes 'org.eclipse.jetty.server.Server', 'org.eclipse.jetty.ee10.webapp.WebAppContext' (OnClassCondition)
-
-   EmbeddedWebServerFactoryCustomizerAutoConfiguration.TomcatWebServerFactoryCustomizerConfiguration#tomcatVirtualThreadsProtocolHandlerCustomizer:
-      Did not match:
-         - @ConditionalOnThreading did not find VIRTUAL (OnThreadingCondition)
-
-   EmbeddedWebServerFactoryCustomizerAutoConfiguration.UndertowWebServerFactoryCustomizerConfiguration:
-      Did not match:
-         - @ConditionalOnClass did not find required classes 'io.undertow.Undertow', 'org.xnio.SslClientAuthMode' (OnClassCondition)
+         - Application is deployed as a WAR file. (OnWarDeploymentCondition)
+      Matched:
+         - @ConditionalOnWebApplication (required) found 'session' scope (OnWebApplicationCondition)
 
    ErrorWebFluxAutoConfiguration:
       Did not match:
@@ -1014,6 +966,12 @@ Negative matches:
       Did not match:
          - @ConditionalOnClass did not find required class 'jakarta.jms.Message' (OnClassCondition)
 
+   JmxAutoConfiguration:
+      Did not match:
+         - @ConditionalOnProperty (spring.jmx.enabled=true) found different value in property 'enabled' (OnPropertyCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'org.springframework.jmx.export.MBeanExporter' (OnClassCondition)
+
    JndiConnectionFactoryAutoConfiguration:
       Did not match:
          - @ConditionalOnClass did not find required class 'org.springframework.jms.core.JmsTemplate' (OnClassCondition)
@@ -1075,6 +1033,30 @@ Negative matches:
    MessageSourceAutoConfiguration:
       Did not match:
          - ResourceBundle did not find bundle with basename messages (MessageSourceAutoConfiguration.ResourceBundleCondition)
+
+   MockMvcAutoConfiguration#dispatcherServlet:
+      Did not match:
+         - @ConditionalOnMissingBean (types: org.springframework.web.servlet.DispatcherServlet; SearchStrategy: all) found beans of type 'org.springframework.web.servlet.DispatcherServlet' dispatcherServlet (OnBeanCondition)
+
+   MockMvcAutoConfiguration#dispatcherServletPath:
+      Did not match:
+         - @ConditionalOnMissingBean (types: org.springframework.boot.autoconfigure.web.servlet.DispatcherServletPath; SearchStrategy: all) found beans of type 'org.springframework.boot.autoconfigure.web.servlet.DispatcherServletPath' dispatcherServletRegistration (OnBeanCondition)
+
+   MockMvcAutoConfiguration.WebTestClientMockMvcConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.springframework.web.reactive.function.client.WebClient' (OnClassCondition)
+
+   MockMvcSecurityConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors' (OnClassCondition)
+
+   MockMvcWebClientAutoConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'com.gargoylesoftware.htmlunit.WebClient' (OnClassCondition)
+
+   MockMvcWebDriverAutoConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.openqa.selenium.htmlunit.HtmlUnitDriver' (OnClassCondition)
 
    MongoAutoConfiguration:
       Did not match:
@@ -1327,6 +1309,10 @@ Negative matches:
       Did not match:
          - Cache org.springframework.boot.autoconfigure.cache.SimpleCacheConfiguration unknown cache type (CacheCondition)
 
+   SpringApplicationAdminJmxAutoConfiguration:
+      Did not match:
+         - @ConditionalOnProperty (spring.application.admin.enabled=true) did not find property 'enabled' (OnPropertyCondition)
+
    SpringBootWebSecurityConfiguration.SecurityFilterChainConfiguration:
       Did not match:
          - AllNestedConditions 1 matched 1 did not; NestedCondition on DefaultWebSecurityCondition.Beans @ConditionalOnMissingBean (types: org.springframework.security.web.SecurityFilterChain; SearchStrategy: all) found beans of type 'org.springframework.security.web.SecurityFilterChain' filterChain; NestedCondition on DefaultWebSecurityCondition.Classes @ConditionalOnClass found required classes 'org.springframework.security.web.SecurityFilterChain', 'org.springframework.security.config.annotation.web.builders.HttpSecurity' (DefaultWebSecurityCondition)
@@ -1427,9 +1413,9 @@ Negative matches:
       Did not match:
          - @ConditionalOnMissingBean (types: org.springframework.boot.task.SimpleAsyncTaskExecutorBuilder; SearchStrategy: all) found beans of type 'org.springframework.boot.task.SimpleAsyncTaskExecutorBuilder' simpleAsyncTaskExecutorBuilder (OnBeanCondition)
 
-   TaskExecutorConfigurations.TaskExecutorConfiguration#applicationTaskExecutorVirtualThreads:
+   TaskExecutorConfigurations.TaskExecutorConfiguration:
       Did not match:
-         - @ConditionalOnThreading did not find VIRTUAL (OnThreadingCondition)
+         - @ConditionalOnMissingBean (types: java.util.concurrent.Executor; SearchStrategy: all) found beans of type 'java.util.concurrent.Executor' triageExecutorService (OnBeanCondition)
 
    TaskSchedulingAutoConfiguration#scheduledBeanLazyInitializationExcludeFilter:
       Did not match:
@@ -1519,6 +1505,10 @@ Negative matches:
       Did not match:
          - @ConditionalOnClass did not find required class 'io.undertow.websockets.jsr.Bootstrap' (OnClassCondition)
 
+   WebTestClientAutoConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.springframework.web.reactive.function.client.WebClient' (OnClassCondition)
+
    XADataSourceAutoConfiguration:
       Did not match:
          - @ConditionalOnClass did not find required class 'jakarta.transaction.TransactionManager' (OnClassCondition)
@@ -1549,6 +1539,512 @@ Unconditional classes:
 
 
 
-2026-04-14 19:43:15 [main] INFO  com.student.ImkqasApplication - Started ImkqasApplication in 5.72 seconds (process running for 6.664)
-2026-04-14 19:43:15 [main] DEBUG o.s.b.a.ApplicationAvailabilityBean - Application availability state LivenessState changed to CORRECT
-2026-04-14 19:43:15 [main] DEBUG o.s.b.a.ApplicationAvailabilityBean - Application availability state ReadinessState changed to ACCEPTING_TRAFFIC
+2026-04-16 10:03:24 [main] INFO  c.s.c.t.DepartmentTriageControllerTest - Started DepartmentTriageControllerTest in 12.364 seconds (process running for 29.014)
+2026-04-16 10:03:24 [main] DEBUG o.s.b.a.ApplicationAvailabilityBean - Application availability state LivenessState changed to CORRECT
+2026-04-16 10:03:24 [main] DEBUG o.s.b.a.ApplicationAvailabilityBean - Application availability state ReadinessState changed to ACCEPTING_TRAFFIC
+2026-04-16 10:03:24 [main] INFO  c.s.c.t.DepartmentTriageController - 接收到单次分流请求: userId=123, symptoms='发烧咳嗽'
+2026-04-16 10:03:24 [main] WARN  c.s.c.t.DepartmentTriageController - 分流服务不可用，拒绝请求
+2026-04-16 10:03:24 [main] DEBUG c.s.c.t.DepartmentTriageController - 接收到健康检查请求
+2026-04-16 10:03:24 [main] WARN  c.s.handler.GlobalExceptionHandler - 方法参数验证异常: 症状描述不能为空
+org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<com.student.model.triage.DepartmentTriageResult> com.student.controller.triage.DepartmentTriageController.triage(com.student.dto.triage.TriageRequest): [Field error in object 'triageRequest' on field 'symptoms': rejected value [null]; codes [NotBlank.triageRequest.symptoms,NotBlank.symptoms,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [triageRequest.symptoms,symptoms]; arguments []; default message [symptoms]]; default message [症状描述不能为空]] 
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:144)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:224)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:178)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:165)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201)
+	at com.student.controller.triage.DepartmentTriageControllerTest.testRequestValidation_MissingSymptoms(DepartmentTriageControllerTest.java:318)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2026-04-16 10:03:24 [main] DEBUG c.s.c.t.DepartmentTriageController - 接收到健康检查请求
+2026-04-16 10:03:24 [main] INFO  c.s.c.t.DepartmentTriageController - 接收到单次分流请求: userId=123, symptoms='发烧咳嗽'
+2026-04-16 10:03:24 [main] ERROR c.s.c.t.DepartmentTriageController - 分流处理异常: userId=123
+java.lang.RuntimeException: 数据库连接失败
+	at com.student.controller.triage.DepartmentTriageController.triage(DepartmentTriageController.java:77)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:165)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201)
+	at com.student.controller.triage.DepartmentTriageControllerTest.testTriage_InternalError(DepartmentTriageControllerTest.java:173)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2026-04-16 10:03:24 [main] DEBUG c.s.c.t.DepartmentTriageController - 接收到统计查询请求
+2026-04-16 10:03:24 [main] ERROR c.s.c.t.DepartmentTriageController - 获取统计信息异常
+java.lang.RuntimeException: 统计数据库错误
+	at com.student.controller.triage.DepartmentTriageController.getStats(DepartmentTriageController.java:158)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:165)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201)
+	at com.student.controller.triage.DepartmentTriageControllerTest.testGetStats_ServerError(DepartmentTriageControllerTest.java:252)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2026-04-16 10:03:24 [main] INFO  c.s.c.t.DepartmentTriageController - 接收到单次分流请求: userId=123, symptoms='发烧咳嗽'
+2026-04-16 10:03:24 [main] INFO  c.s.c.t.DepartmentTriageController - 单次分流请求处理完成: userId=123, confidence=0.85, source=RULE_ENGINE
+2026-04-16 10:03:24 [main] INFO  c.s.c.t.DepartmentTriageController - 接收到批量分流请求: userId=123, batchSize=1
+2026-04-16 10:03:24 [main] WARN  c.s.c.t.DepartmentTriageController - 分流服务不可用，拒绝批量请求
+2026-04-16 10:03:25 [main] INFO  c.s.c.t.DepartmentTriageController - 接收到批量分流请求: userId=123, batchSize=2
+2026-04-16 10:03:25 [main] INFO  c.s.c.t.DepartmentTriageController - 批量分流请求处理完成: userId=123, batchSize=2, successCount=2
+2026-04-16 10:03:25 [main] DEBUG c.s.c.t.DepartmentTriageController - 接收到统计查询请求
+2026-04-16 10:03:25 [main] WARN  c.s.handler.GlobalExceptionHandler - 方法参数验证异常: 症状描述不能为空
+org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<com.student.model.triage.DepartmentTriageResult> com.student.controller.triage.DepartmentTriageController.triage(com.student.dto.triage.TriageRequest): [Field error in object 'triageRequest' on field 'symptoms': rejected value []; codes [NotBlank.triageRequest.symptoms,NotBlank.symptoms,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [triageRequest.symptoms,symptoms]; arguments []; default message [symptoms]]; default message [症状描述不能为空]] 
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:144)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:224)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:178)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:165)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201)
+	at com.student.controller.triage.DepartmentTriageControllerTest.testTriage_InvalidRequest(DepartmentTriageControllerTest.java:156)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2026-04-16 10:03:25 [main] WARN  c.s.handler.GlobalExceptionHandler - 方法参数验证异常: 症状描述不能超过500字符
+org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public org.springframework.http.ResponseEntity<com.student.model.triage.DepartmentTriageResult> com.student.controller.triage.DepartmentTriageController.triage(com.student.dto.triage.TriageRequest): [Field error in object 'triageRequest' on field 'symptoms': rejected value [aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]; codes [Size.triageRequest.symptoms,Size.symptoms,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [triageRequest.symptoms,symptoms]; arguments []; default message [symptoms],500,0]; default message [症状描述不能超过500字符]] 
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:144)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:224)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:178)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:165)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201)
+	at com.student.controller.triage.DepartmentTriageControllerTest.testRequestValidation_SymptomsTooLong(DepartmentTriageControllerTest.java:304)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2026-04-16 10:03:25 [main] DEBUG o.s.b.t.c.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [TriageEngineConfigTest]: using SpringBootContextLoader
+2026-04-16 10:03:25 [main] DEBUG o.s.b.t.c.SpringBootTestContextBootstrapper - Using ContextCustomizerFactory implementations for test class [TriageEngineConfigTest]: [ImportsContextCustomizerFactory, ExcludeFilterContextCustomizerFactory, HttpGraphQlTesterContextCustomizerFactory, DuplicateJsonObjectContextCustomizerFactory, MockitoContextCustomizerFactory, TestRestTemplateContextCustomizerFactory, WebTestClientContextCustomizerFactory, OverrideAutoConfigurationContextCustomizerFactory, ObservabilityContextCustomizerFactory, TypeExcludeFiltersContextCustomizerFactory, PropertyMappingContextCustomizerFactory, WebDriverContextCustomizerFactory, MockServerContainerContextCustomizerFactory, DynamicPropertiesContextCustomizerFactory]
+2026-04-16 10:03:25 [main] DEBUG o.s.b.t.c.SpringBootTestContextBootstrapper - Using ContextCustomizers for test class [TriageEngineConfigTest]: [ImportsContextCustomizer, ExcludeFilterContextCustomizer, DuplicateJsonObjectContextCustomizer, MockitoContextCustomizer, TestRestTemplateContextCustomizer, DisableObservabilityContextCustomizer, PropertyMappingContextCustomizer, WebDriverContextCustomizer]
+2026-04-16 10:03:25 [main] DEBUG o.s.b.t.c.SpringBootTestContextBootstrapper - Using TestExecutionListeners for test class [TriageEngineConfigTest]: [ServletTestExecutionListener, DirtiesContextBeforeModesTestExecutionListener, ApplicationEventsTestExecutionListener, MockitoTestExecutionListener, DependencyInjectionTestExecutionListener, DirtiesContextTestExecutionListener, TransactionalTestExecutionListener, SqlScriptsTestExecutionListener, EventPublishingTestExecutionListener, ResetMocksTestExecutionListener, RestDocsTestExecutionListener, MockRestServiceServerResetTestExecutionListener, MockMvcPrintOnlyOnFailureTestExecutionListener, WebDriverTestExecutionListener, MockWebServiceServerTestExecutionListener]
+2026-04-16 10:03:25 [main] DEBUG o.s.boot.env.OriginTrackedYamlLoader - Loading from YAML: class path resource [application.yml]
+2026-04-16 10:03:25 [main] DEBUG o.s.boot.env.OriginTrackedYamlLoader - Merging document (no matchers set): {debug=true, spring={application={name=imkqas}, datasource={url=jdbc:mysql://8.138.40.200:3306/imkqas?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai, username=root, password=fqr10292588, driver-class-name=com.mysql.cj.jdbc.Driver, hikari={connection-timeout=30000, maximum-pool-size=10, minimum-idle=5}}, servlet={multipart={max-file-size=50MB, max-request-size=100MB}}, cache={type=redis, redis={time-to-live=3600000, cache-null-values=false}}, data={redis={host=8.138.40.200, port=6379, database=0, password=, timeout=5000ms, lettuce={pool={max-active=8, max-idle=8, min-idle=0}}}}, flyway={enabled=true, baseline-on-migrate=true, baseline-version=1, locations=classpath:db/migration, validate-on-migrate=true, clean-disabled=true}}, server={port=8080, servlet={context-path=/api, encoding={charset=UTF-8, enabled=true, force=true}}, compression={enabled=true, mime-types=text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json, min-response-size=1024}}, logging={level={com.student=DEBUG, org.springframework.web=INFO, org.hibernate.SQL=DEBUG, org.hibernate.type.descriptor.sql.BasicBinder=TRACE}, file={name=logs/imkqas.log}, pattern={file=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n, console=%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n}}, imkqas={rag={reranker={model=gte-rerank, deployment=api, api-endpoint=https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank, api-url=https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank, api-key=${BAILIAN_API_KEY}, top-k=5, cache-enabled=true, cache-ttl=1800, timeout=3000}, embedding={model=text-embedding-v3, dimension=1024, api-endpoint=https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings, api-key=sk-706cf44145e64d96b9f53fcb4db86f9f, cache-enabled=true, timeout=10000, cache-ttl=1800, deployment=api}, retrieval={mode=hybrid, weights={vector=0.6, keyword=0.4}, initial-top-k=20, rerank-top-k=5, rrf-k=60, timeout=10000, keyword-index={path=lucene-index, synonyms={enabled=true}}}, llm={base-url=https://dashscope.aliyuncs.com/compatible-mode/v1, api-key=sk-706cf44145e64d96b9f53fcb4db86f9f, model=qwen-plus, embedding-model=text-embedding-v3, timeout=60}, document={supported-formats=pdf,docx,doc,txt, chunk={size=500, overlap=50, strategy=semantic}, extraction={pdf={strategy=pdfbox, extract-images=false}, docx={strategy=poi}}}, cache={query={enabled=true, ttl=3600, max-size=1000}, embedding={enabled=true, ttl=86400, max-size=10000}, llm={enabled=true, ttl=1800, max-size=500}}, monitoring={enabled=true, interval=60, slow-query-threshold=5000, error-rate-threshold=5.0}}, security={jwt={secret=imkqas-medical-rag-secret-key-2026, expiration=86400000}, rate-limit={user={default=10, burst=20}, admin={default=50, burst=100}, upload=2}}, storage={type=minio, minio={endpoint=http://8.138.40.200:9000, access-key=IVL8IthgH8OjCEDLhFKT, secret-key=MaJEjDYQYSKfWVadxSPM2knEIKkVrXLgWvvxB8M8, bucket=medical-documents}}, vector-db={type=milvus, milvus={host=8.138.40.200, port=19530, collection=medical_documents, dimension=1024}}, triage={knowledge-base-path=config/department-knowledge.yml, synonyms-path=config/symptom-synonyms.yml, enable-cache=true, cache-ttl=3600, rule-engine-threshold=0.8, llm-fallback-timeout=3000, max-batch-size=20, emergency-check-enabled=true, enable-stats=true, stats-log-interval=300, engine={rule-engine-threshold=0.6, llm-timeout=3000, rule-engine-weight=0.8, llm-weight=0.2, enable-fuzzy-match=true, fuzzy-match-threshold=0.7, min-match-score=0.3, max-recommendations=3, llm-triage-prompt-template=你是一个医疗分诊专家。请根据以下症状描述，推荐最合适的就诊科室。
+症状：{symptoms}
+
+请按以下格式回复：
+1. 主要推荐科室：[科室名称]
+2. 置信度：[0.0-1.0之间的浮点数]
+3. 理由：[简要说明推荐理由]
+4. 备选科室：[科室1, 科室2...]（可选）
+5. 紧急程度：[CRITICAL/HIGH/MEDIUM/LOW]（可选）
+, enable-llm-cache=true, llm-cache-ttl=3600, enable-emergency-detection=true, emergency-detection-timeout=1000, emergency-thresholds={CRITICAL=3, HIGH=2, MEDIUM=1, LOW=0}, stats-retention-days=30, stats-sampling-rate=1.0, thread-pool-core-size=2, thread-pool-max-size=4, thread-pool-queue-capacity=100, thread-pool-keep-alive-seconds=60, batch-processing-max-size=20, batch-processing-timeout=10000, enable-auto-fallback=true, llm-unavailable-fallback=RULE_ENGINE, rule-engine-unavailable-fallback=FALLBACK, fallback-advice=建议咨询医院导诊台或全科医学科}}}}
+2026-04-16 10:03:25 [main] DEBUG o.s.boot.env.OriginTrackedYamlLoader - Loaded 1 document from YAML resource: class path resource [application.yml]
+2026-04-16 10:03:25 [main] DEBUG o.s.b.w.s.c.ApplicationServletEnvironment - Activating profiles []
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.c.TriageEngineConfigTest - Starting TriageEngineConfigTest using Java 21.0.4 with PID 29596 (started by 冯芊肉 in D:\Java\代码\IMKQAS)
+2026-04-16 10:03:25 [main] DEBUG c.s.s.t.c.TriageEngineConfigTest - Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.c.TriageEngineConfigTest - No active profile set, falling back to 1 default profile: "default"
+2026-04-16 10:03:25 [main] DEBUG o.s.boot.SpringApplication - Loading source class com.student.service.triage.config.TriageEngineConfig
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.config.TriageEngineConfig - 创建科室导诊线程池: coreSize=2, maxSize=4, queueCapacity=100
+2026-04-16 10:03:25 [main] INFO  c.s.s.triage.impl.SymptomNormalizer - 症状标准化器初始化完成，同义词组数: 0, 启用模糊匹配: true, 模糊匹配阈值: 0.75
+2026-04-16 10:03:25 [main] INFO  c.s.s.triage.impl.SymptomNormalizer - 症状标准化器初始化完成，同义词组数: 0, 启用模糊匹配: false, 模糊匹配阈值: 0.0
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.config.TriageEngineConfig - 科室导诊引擎配置验证通过
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.config.TriageEngineConfig - 规则引擎阈值: 0.65
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.config.TriageEngineConfig - LLM超时时间: 4000ms
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.config.TriageEngineConfig - 规则引擎权重: 0.7, LLM权重: 0.3
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.config.TriageEngineConfig - 启用急诊检测: true
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.config.TriageEngineConfig - 启用统计收集: true
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.c.TriageEngineConfigTest - Started TriageEngineConfigTest in 0.319 seconds (process running for 30.007)
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.stats.TriageStatsCollector - 分流降级事件: LLM服务不可用
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.stats.TriageStatsCollector - 分流降级事件: 规则引擎超时
+2026-04-16 10:03:25 [main] INFO  c.s.s.t.stats.TriageStatsCollector - 分流统计信息已重置
+2026-04-16 10:03:25 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-04-16 10:03:25 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
