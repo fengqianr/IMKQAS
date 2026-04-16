@@ -18,6 +18,7 @@ public class EmergencyCheckResult {
     private List<String> emergencySymptoms;
     private String immediateAction;
     private String warningMessage;
+    private String advice;
 
     /**
      * 获取急诊建议

@@ -1,7 +1,7 @@
 # IMKQAS 项目进度报告
 
-> 最后更新: 2026-04-11  
-> 当前版本: v1.1  
+> 最后更新: 2026-04-15  
+> 当前版本: v1.2  
 > 报告周期: 每次任务结束时更新
 
 ## 1. 项目概述
@@ -26,7 +26,7 @@
 | **阶段2** | 进行中 | 67% | 第1周完成，第2周第5天完成 |
 | **阶段3** | 未开始 | 0% | 依赖阶段2完成 |
 | **阶段4** | 未开始 | 0% | 依赖阶段3完成 |
-| **阶段5** | 未开始 | 0% | 依赖阶段4完成 |
+| **阶段5** | 进行中 | 30% | 科室导诊基本功能已完成，单元测试进行中 |
 | **阶段6** | 未开始 | 0% | 依赖所有阶段完成 |
 | **总进度** | - | 30% | 基于阶段权重估算 |
 
@@ -101,7 +101,7 @@
 ### 3.3 阶段3-6: 后续阶段 (完成度: 0%)
 - 阶段3: 业务模块 - 未开始
 - 阶段4: 前端界面 - 未开始
-- 阶段5: 高级功能 - 未开始
+- 阶段5: 高级功能 - 进行中 (科室导诊基本功能已完成，单元测试进行中)
 - 阶段6: 测试部署 - 未开始
 
 ## 4. 任务看板
@@ -127,7 +127,12 @@
    - [x] 第10天: 医疗查询改写与意图识别
 
 ### 🟡 进行中 (In Progress)
-- 暂无
+1. **科室导诊组件单元测试完善**
+   - [ ] 修复 EmergencySymptomDetectorTest NullPointerException
+   - [ ] 修复 LlmTriageAdapterTest TimeoutException
+   - [ ] 修复 TriageStatsCollectorTest UnnecessaryStubbingException
+   - [ ] 修复 DepartmentTriageControllerTest Spring Boot 上下文加载问题
+   - [ ] 修复 TriageEngineConfigTest Spring Boot 上下文加载问题
 
 ### ✅ 已完成 (Done)
 - [x] 项目设计文档 (`docs/2026-04-04-IMKQAS-design.md`)
@@ -215,6 +220,7 @@
 | 2026-04-12 | - | 更新LLM配置为阿里云百炼格式（base-url、api-key、model、embedding-model、timeout），验证第7天实现通过编译和测试 | Claude Code |
 | 2026-04-13 | - | 阶段2完成度更新至60%，第8天LLM集成与Prompt工程完成（阿里云百炼API集成），第9天问答服务核心实现完成（完整RAG流程） | Claude Code |
 | 2026-04-13 | - | 阶段2完成度更新至67%，第10天医疗查询改写与意图识别完成（基于规则的方法） | Claude Code |
+| 2026-04-15 | v1.2 | 更新阶段5进度至30%（科室导诊基本功能已完成，单元测试进行中），修复测试报告和进度报告 | Claude Code |
 
 ## 8. 如何使用本报告
 
@@ -232,7 +238,7 @@
 
 ### 相关文档
 - [项目设计文档](2026-04-04-IMKQAS-design.md)
-- [阶段2执行计划](phase2-implementation-plan.md)
+- [阶段2执行计划](implementation/phase2-implementation-plan.md)
 - [测试报告](testing-report.md) - 项目测试状态与覆盖率
 - [CLAUDE.md](../CLAUDE.md) - 项目开发规范
 

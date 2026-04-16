@@ -20,9 +20,9 @@ public class DepartmentRecommendation {
     private String departmentId;
     private String departmentName;
     private double confidence = 0.0;
-    private String reasoning;
+    private String reason;
     private List<String> matchedSymptoms;
-    private boolean emergencyDepartment = false;
+    private boolean emergency = false;
     private int priority = 1;
 
     /**
@@ -30,6 +30,6 @@ public class DepartmentRecommendation {
      */
     public String toDisplayText() {
         return String.format("%s (%.0f%%置信度): %s",
-            departmentName, confidence * 100, reasoning);
+            departmentName, confidence * 100, reason);
     }
 }
