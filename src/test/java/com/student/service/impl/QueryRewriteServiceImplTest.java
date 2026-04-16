@@ -1,6 +1,7 @@
 package com.student.service.impl;
 
-import com.student.service.QueryRewriteService;
+import com.student.service.rag.QueryRewriteService;
+import com.student.service.rag.impl.QueryRewriteServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

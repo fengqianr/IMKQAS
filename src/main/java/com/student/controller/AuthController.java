@@ -3,7 +3,7 @@ package com.student.controller;
 import com.student.dto.ApiResponse;
 import com.student.dto.LoginRequest;
 import com.student.dto.LoginResponse;
-import com.student.service.AuthService;
+import com.student.service.common.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

@@ -2,7 +2,7 @@ package com.student.service.impl;
 
 import com.student.entity.User;
 import com.student.mapper.UserMapper;
-import com.student.service.UserService;
+import com.student.service.common.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;

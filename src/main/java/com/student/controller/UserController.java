@@ -1,7 +1,7 @@
 package com.student.controller;
 
 import com.student.entity.User;
-import com.student.service.UserService;
+import com.student.service.common.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
