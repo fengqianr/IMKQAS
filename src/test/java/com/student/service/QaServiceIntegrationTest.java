@@ -28,6 +28,7 @@ import static org.mockito.Mockito.lenient;
  * @version 1.0
  */
 @SpringBootTest
+@org.springframework.test.context.ActiveProfiles("test")
 @TestPropertySource(properties = {
         "imkqas.rag.embedding.deployment=local",
         "imkqas.rag.llm.deployment=local",

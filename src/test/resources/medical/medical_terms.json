@@ -1,0 +1,118 @@
+{
+  "医学术语词典": "IMKQAS医疗准确性测试用医学术语词典",
+  "version": "1.0",
+  "lastUpdated": "2026-04-16",
+  "terms": [
+    {
+      "term": "高血压",
+      "category": "疾病",
+      "definition": "体循环动脉血压增高为主要特征的临床综合征",
+      "synonyms": ["血压高", "高血压病", "原发性高血压", "继发性高血压"],
+      "abbreviations": ["HTN", "高血压"]
+    },
+    {
+      "term": "糖尿病",
+      "category": "疾病",
+      "definition": "以高血糖为特征的代谢性疾病",
+      "synonyms": ["消渴病", "糖尿病病", "高血糖症"],
+      "abbreviations": ["DM", "糖尿病"]
+    },
+    {
+      "term": "冠心病",
+      "category": "疾病",
+      "definition": "冠状动脉粥样硬化性心脏病",
+      "synonyms": ["冠状动脉粥样硬化性心脏病", "缺血性心脏病", "冠状动脉病"],
+      "abbreviations": ["CHD", "冠心病"]
+    },
+    {
+      "term": "肺炎",
+      "category": "疾病",
+      "definition": "肺部感染引起的炎症",
+      "synonyms": ["肺部感染", "肺感染", "肺部炎症", "肺炎症"],
+      "abbreviations": ["肺炎"]
+    },
+    {
+      "term": "发热",
+      "category": "症状",
+      "definition": "体温升高超过正常范围",
+      "synonyms": ["发烧", "体温升高", "发烧热", "发热热"],
+      "abbreviations": ["发热"]
+    },
+    {
+      "term": "咳嗽",
+      "category": "症状",
+      "definition": "呼吸道受刺激引起的反射性动作",
+      "synonyms": ["咳痰", "咳", "咳嗽咳", "干咳", "湿咳"],
+      "abbreviations": ["咳嗽"]
+    },
+    {
+      "term": "头痛",
+      "category": "症状",
+      "definition": "头部疼痛的不适感",
+      "synonyms": ["头疼", "头部疼痛", "头痛痛", "头胀痛"],
+      "abbreviations": ["头痛"]
+    },
+    {
+      "term": "腹痛",
+      "category": "症状",
+      "definition": "腹部疼痛的不适感",
+      "synonyms": ["肚子疼", "腹部疼痛", "肚子痛", "腹疼"],
+      "abbreviations": ["腹痛"]
+    },
+    {
+      "term": "阿司匹林",
+      "category": "药物",
+      "definition": "非甾体抗炎药，用于解热镇痛抗炎",
+      "synonyms": ["乙酰水杨酸", "阿斯匹林", "阿司匹林片"],
+      "abbreviations": ["ASA", "阿司匹林"]
+    },
+    {
+      "term": "青霉素",
+      "category": "药物",
+      "definition": "β-内酰胺类抗生素",
+      "synonyms": ["盘尼西林", "青霉素G", "苄青霉素"],
+      "abbreviations": ["青霉素"]
+    },
+    {
+      "term": "胰岛素",
+      "category": "药物",
+      "definition": "调节血糖的蛋白质激素",
+      "synonyms": ["胰岛激素", "胰岛素制剂", "胰岛素注射液"],
+      "abbreviations": ["胰岛素"]
+    },
+    {
+      "term": "呼吸内科",
+      "category": "科室",
+      "definition": "诊治呼吸系统疾病的科室",
+      "synonyms": ["呼吸科", "呼吸系统科", "肺科"],
+      "abbreviations": ["呼吸内科"]
+    },
+    {
+      "term": "心内科",
+      "category": "科室",
+      "definition": "诊治心血管系统疾病的科室",
+      "synonyms": ["心血管内科", "心脏病科", "心科"],
+      "abbreviations": ["心内科"]
+    },
+    {
+      "term": "急诊科",
+      "category": "科室",
+      "definition": "处理急症和危重病的科室",
+      "synonyms": ["急诊室", "急救科", "急症科"],
+      "abbreviations": ["急诊科"]
+    },
+    {
+      "term": "消化内科",
+      "category": "科室",
+      "definition": "诊治消化系统疾病的科室",
+      "synonyms": ["消化科", "胃肠科", "消化道科"],
+      "abbreviations": ["消化内科"]
+    }
+  ],
+  "categories": {
+    "疾病": ["高血压", "糖尿病", "冠心病", "肺炎", "哮喘", "胃炎", "肝炎"],
+    "症状": ["发热", "咳嗽", "头痛", "腹痛", "腹泻", "呕吐", "呼吸困难"],
+    "药物": ["阿司匹林", "青霉素", "胰岛素", "降压药", "降糖药", "抗生素"],
+    "科室": ["呼吸内科", "心内科", "急诊科", "消化内科", "神经内科", "儿科"]
+  }
+}
