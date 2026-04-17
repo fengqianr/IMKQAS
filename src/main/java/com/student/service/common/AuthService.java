@@ -2,6 +2,7 @@ package com.student.service.common;
 
 import com.student.dto.LoginRequest;
 import com.student.dto.LoginResponse;
+import com.student.dto.RegisterRequest;
 import com.student.entity.User;
 import com.student.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -91,7 +92,7 @@ public class AuthService {
                     .phone(phone)
                     .username(generateUsername(phone))
                     .password(passwordEncoder.encode(generateRandomPassword())) // 设置随机加密密码
-                    .role(User.Role.USER)
+                    .role(User.Role.PATIENT)
                     .build();
             boolean saved = userService.save(user);
             if (!saved) {
@@ -252,5 +253,49 @@ public class AuthService {
             log.error("从令牌获取用户角色失败", e);
             return null;
         }
+    }
+
+    /**
+     * 用户注册
+     * @param request 注册请求
+     * @return 注册结果，成功返回true，失败返回false
+     */
+    @Transactional
+    public boolean register(RegisterRequest request) {
+        log.info("用户注册请求: username={}, phone={}", request.getUsername(), request.getPhone());
+
+        // 检查用户名是否已存在
+        if (userService.isUsernameExists(request.getUsername())) {
+            log.warn("用户名已存在: {}", request.getUsername());
+            return false;
+        }
+
+        // 检查手机号是否已注册
+        if (userService.isPhoneRegistered(request.getPhone())) {
+            log.warn("手机号已注册: {}", request.getPhone());
+            return false;
+        }
+
+        // 验证密码和确认密码是否匹配
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            log.warn("密码和确认密码不匹配");
+            return false;
+        }
+
+        // 创建用户
+        User user = User.builder()
+                .username(request.getUsername())
+                .phone(request.getPhone())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole() != null ? request.getRole() : User.Role.PATIENT)
+                .build();
+
+        boolean saved = userService.save(user);
+        if (saved) {
+            log.info("用户注册成功: userId={}, username={}", user.getId(), user.getUsername());
+        } else {
+            log.error("用户注册失败: username={}", request.getUsername());
+        }
+        return saved;
     }
 }

@@ -245,11 +245,14 @@ class DocumentProcessorServiceImplTest {
                 .getDeclaredMethod("extractText", String.class, String.class);
         extractTextMethod.setAccessible(true);
 
-        // 测试不支持的文件类型
-        Exception exception = assertThrows(RuntimeException.class,
+        // 测试不支持的文件类型 - 反射调用会包装异常在InvocationTargetException中
+        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class,
                 () -> extractTextMethod.invoke(documentProcessorService, "/test.xyz", "xyz"));
 
-        assertTrue(exception.getCause().getMessage().contains("不支持的文件类型"));
+        // 验证原始异常是RuntimeException且包含预期消息
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof RuntimeException);
+        assertTrue(cause.getMessage().contains("不支持的文件类型"));
     }
 
     @Test
