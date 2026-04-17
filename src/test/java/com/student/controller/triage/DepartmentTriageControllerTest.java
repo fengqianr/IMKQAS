@@ -46,6 +46,7 @@ import com.student.service.common.impl.UserDetailsServiceImpl;
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(properties = {"spring.security.enabled=false"})
+@org.springframework.test.context.ActiveProfiles("test")
 @DisplayName("科室导诊控制器测试")
 class DepartmentTriageControllerTest {
 

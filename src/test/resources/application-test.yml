@@ -95,7 +95,7 @@ imkqas:
       api-key: test-key
       model: qwen-turbo
       embedding-model: text-embedding-v3
-      timeout: 5
+      timeout: 30
       deployment: local
 
     # 文档处理配置

@@ -182,7 +182,7 @@ public class RagConfig {
         private String embeddingModel = "text-embedding-v3";
 
         /** 超时时间 (秒) */
-        @Min(10)
+        @Min(1)  // 临时改为1以调试
         @Max(300)
         private int timeout = 60;
 

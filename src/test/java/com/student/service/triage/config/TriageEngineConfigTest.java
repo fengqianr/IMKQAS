@@ -33,6 +33,7 @@ import com.student.service.triage.stats.TriageStatsCollector;
  */
 @SpringBootTest(classes = TriageEngineConfig.class)
 @EnableConfigurationProperties(TriageConfig.class)
+@org.springframework.test.context.ActiveProfiles("test")
 @TestPropertySource(properties = {
     "imkqas.triage.engine.rule-engine-threshold=0.65",
     "imkqas.triage.engine.llm-timeout=4000",

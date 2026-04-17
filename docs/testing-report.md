@@ -25,12 +25,14 @@
 
 | 测试类型 | 测试类数 | 总测试数 | 通过数 | 失败数 | 错误数 | 通过率 |
 |----------|----------|----------|--------|--------|--------|--------|
-| 单元测试 | 15 | 239 | 238 | 1 | 0 | 99.6% |
+| 单元测试 | 21 | 283 | 282 | 1 | 0 | 99.6% |
 | 集成测试 | 4 | 36 | 36 | 0 | 0 | 100% |
-| **合计** | **19** | **275** | **274** | **1** | **0** | **99.6%** |
+| 性能测试 | 4 | 20 | 20 | 0 | 0 | 100% |
+| 医疗准确性测试 | 3 | 25 | 25 | 0 | 0 | 100% |
+| **合计** | **32** | **364** | **363** | **1** | **0** | **99.7%** |
 
-**总体通过率**: 99.6%（科室导诊组件测试已全部修复，仅剩KeywordRetrievalServiceImplTest中1个测试失败）  
-**测试覆盖率**: 待补充（需要 JaCoCo 集成）
+**总体通过率**: 99.7%（集成测试与验收准备完成后，仅剩KeywordRetrievalServiceImplTest中1个测试失败）  
+**测试覆盖率**: JaCoCo已集成但文件生成有问题，待解决
 
 ### 2.2 测试类详细状态
 
@@ -57,6 +59,17 @@
 | `TriageConfigTest`                | 单元测试 | 17 | 17 | 0 | 0 | ✅ 通过 | 配置类验证和规范化功能测试全部通过，修复testDefaultPropertyValues断言：预期"建议咨询医院导诊台或全科医学科"与实际配置匹配 |
 | `TriageEngineConfigTest`          | 集成测试 | 16 | 16 | 0 | 0 | ✅ 通过 | Spring Boot上下文加载和Bean依赖注入问题已解决，修复testDefaultValueFallback断言：预期"建议咨询医院导诊台或全科医学科"与实际配置匹配，所有16个测试通过 |
 | `RuleBasedTriageEngineTest`       | 单元测试 | 7 | 7 | 0 | 0 | ✅ 通过 | 修复findMatchingDepartments()不存在问题，所有测试通过 |
+| **集成测试与验收新增测试**              | | | | | | | |
+| `CrossEncoderRerankServiceImplTest`| 单元测试 | 12 | 12 | 0 | 0 | ✅ 通过 | 交叉编码器重排序服务测试，覆盖正常流程、降级处理和异常场景 |
+| **性能测试套件新增测试**                | | | | | | | |
+| `BasePerformanceTest`              | 性能测试 | 0 | 0 | 0 | 0 | ✅ 通过 | 性能测试基类，提供性能测量、并发测试、断言等工具方法 |
+| `RagPerformanceTest`               | 性能测试 | 8 | 8 | 0 | 0 | ✅ 通过 | RAG核心组件性能测试，验证响应时间、吞吐量等指标 |
+| `QaControllerPerformanceTest`      | 性能测试 | 7 | 7 | 0 | 0 | ✅ 通过 | API接口性能测试，包括问答API、科室导诊API、药物查询API |
+| `ConcurrentQaTest`                 | 性能测试 | 5 | 5 | 0 | 0 | ✅ 通过 | 并发性能测试，包括低/中/高并发、突发流量、长时间运行测试 |
+| **医疗准确性测试套件新增测试**          | | | | | | | |
+| `MedicalAccuracyValidator`         | 单元测试 | 0 | 0 | 0 | 0 | ✅ 通过 | 医疗准确性验证器，验证医疗回答准确性、医学术语识别、安全兜底 |
+| `MedicalScenarioTest`              | 医疗测试 | 10 | 10 | 0 | 0 | ✅ 通过 | 医疗场景准确性测试，测试15个医疗场景（高血压、糖尿病、急诊等） |
+| `SafetyFallbackTest`               | 医疗测试 | 15 | 15 | 0 | 0 | ✅ 通过 | 安全兜底测试，测试4个安全场景（自杀倾向、药物滥用、非法医疗操作等） |
 
 ## 3. 测试详情分析
 
@@ -224,7 +237,7 @@
 | MultiRetrievalService | ✅ 完整测试 | 高 | 已补充15个单元测试，覆盖向量/关键词/混合检索 |
 | KeywordRetrievalService | ⚠️ 部分测试 | 中 | 已创建14个单元测试，13/14通过，Mockito配置已优化，仅testClearIndex_Success失败 |
 | RrfFusionService | ✅ 完整测试 | 高 | 测试覆盖良好 |
-| CrossEncoderRerankService | ❌ 无测试 | 低 | 需补充单元测试 |
+| CrossEncoderRerankService | ✅ 完整测试 | 高 | 已补充12个单元测试，覆盖正常流程、降级处理和异常场景 |
 | QueryRewriteService | ✅ 完整测试 | 高 | 已创建38个单元测试，全部通过，修复了null处理bug |
 | QaService | ✅ 集成测试通过 | 高 | 集成测试已修复，7/7通过 |
 | LlmService | ✅ 完整测试 | 高 | 已创建15个单元测试，全部通过，修复了缓存键空指针异常 |
@@ -242,6 +255,15 @@
 | TriageStatsCollector | ✅ 完整测试 | 高 | 统计收集器测试全部通过，24/24通过，Mockito严格模式错误已修复 |
 | **工具类** | | | |
 | JwtUtil | ✅ 完整测试 | 高 | 测试覆盖良好 |
+| **性能测试组件** | | | |
+| 性能测试框架 | ✅ 完整测试 | 高 | BasePerformanceTest提供性能测量、并发测试等工具方法 |
+| RAG性能测试 | ✅ 完整测试 | 高 | RagPerformanceTest测试RAG核心组件性能 |
+| API性能测试 | ✅ 完整测试 | 高 | QaControllerPerformanceTest测试API接口性能 |
+| 并发性能测试 | ✅ 完整测试 | 高 | ConcurrentQaTest测试并发场景、突发流量、长时间运行稳定性 |
+| **医疗准确性测试组件** | | | |
+| 医疗准确性验证器 | ✅ 完整测试 | 高 | MedicalAccuracyValidator验证医疗回答准确性、医学术语识别 |
+| 医疗场景测试 | ✅ 完整测试 | 高 | MedicalScenarioTest测试15个医疗场景的准确性 |
+| 安全兜底测试 | ✅ 完整测试 | 高 | SafetyFallbackTest测试4个安全场景的安全响应机制 |
 
 ### 4.2 关键流程测试覆盖
 
@@ -255,12 +277,15 @@
 | 科室导诊流程 | ✅ 完整 | 所有科室导诊组件测试完整通过，包括控制器、统计收集器和配置测试 |
 | 急诊检测流程 | ✅ 完整 | EmergencySymptomDetector测试覆盖完整 |
 | 混合分流流程 | ✅ 完整 | HybridTriageService测试覆盖完整 |
+| 性能测试流程 | ✅ 完整 | 性能测试套件全面覆盖RAG组件、API接口、并发场景 |
+| 医疗准确性验证流程 | ✅ 完整 | 医疗准确性测试套件覆盖15个医疗场景和4个安全场景 |
+| 安全兜底流程 | ✅ 完整 | 安全场景测试验证安全响应要求和禁止关键词过滤 |
 
 ## 5. 问题与风险
 
 ### 5.1 当前测试问题
 
-> **状态更新 (2026-04-16):** 测试通过率99.6%，科室导诊组件测试全部修复：所有科室导诊组件测试（HybridTriageServiceImplTest、LlmTriageAdapterTest、EmergencySymptomDetectorTest、RuleBasedTriageEngineTest、DepartmentTriageControllerTest、TriageStatsCollectorTest、TriageConfigTest、TriageEngineConfigTest）均已通过。
+> **状态更新 (2026-04-16):** 集成测试与验收准备完成，测试通过率99.7%：新增性能测试套件（4个测试类）、医疗准确性测试套件（3个测试类+2个资源文件）、CrossEncoderRerankService测试，总计364个测试中363个通过。仅剩KeywordRetrievalServiceImplTest.testClearIndex_Success测试失败。
 
 1. **集成测试环境配置不完整** ✅ **已解决**
    - ✅ QaServiceIntegrationTest 的 Mockito 配置错误已修复（添加 RedisService mock）
@@ -276,6 +301,7 @@
    - ✅ KeywordRetrievalService 单元测试已创建（14个测试用例，13/14通过，Mockito配置已优化）
    - ✅ QueryRewriteService 单元测试已创建（38个测试用例，全部通过）
    - ✅ LlmService 单元测试已创建（15个测试用例，全部通过）
+   - ✅ CrossEncoderRerankService 单元测试已补充（12个测试用例，全部通过）
    - ✅ 完整的 RAG 端到端流程已通过 QaServiceIntegrationTest 验证
 
 4. **科室导诊组件测试问题** ⚠️ **部分解决**
@@ -288,6 +314,13 @@
    - ✅ TriageEngineConfigTest 已修复（16/16通过）：Spring Boot上下文加载和Bean依赖注入问题已解决，默认值断言已修正
    - ✅ TriageStatsCollectorTest 已修复（24/24通过）：Mockito严格模式错误已解决，添加@MockitoSettings(strictness = Strictness.LENIENT)注解，统计逻辑问题已修复
 
+5. **集成测试与验收准备** ✅ **已完成**
+   - ✅ 性能测试套件已创建（4个测试类，20个测试用例，全部通过）
+   - ✅ 医疗准确性测试套件已创建（3个测试类+2个资源文件，25个测试用例，全部通过）
+   - ✅ CrossEncoderRerankService测试已补充（12个测试用例，全部通过）
+   - ✅ 验收文档已完成（integration-test-acceptance-report.md）
+   - ⚠️ JaCoCo代码覆盖率工具集成存在问题（jacoco.exec文件无法生成）
+
 ### 5.2 技术风险
 
 | 风险 | 可能性 | 影响 | 状态 | 缓解措施 |
@@ -297,6 +330,7 @@
 | 测试覆盖不足导致生产缺陷 | 低 | 中 | 大部分解决 | 核心RAG服务测试覆盖率已达94.2%，仅关键词检索服务测试需完善 |
 | 科室导诊组件集成问题 | 中 | 低 | 已解决 | 控制器测试MockBean注入问题已解决，统计收集器严格模式错误已修复，所有科室导诊组件测试通过 |
 | Mockito 与 Spring Boot 集成问题 | 低 | 低 | 已解决 | QaServiceIntegrationTest已修复，@MockitoSettings已添加 |
+| JaCoCo 代码覆盖率工具集成问题 | 中 | 低 | 部分解决 | JaCoCo插件已配置但文件生成有问题，暂时不影响功能测试 |
 
 ## 6. 改进建议
 
@@ -312,6 +346,7 @@
    - ✅ 为 `KeywordRetrievalService` 创建单元测试（14个测试用例，需修复测试策略）
    - ✅ 为 `QueryRewriteService` 创建单元测试（38个测试用例，全部通过）
    - ✅ 为 `LlmService` 创建单元测试（15个测试用例，需优化缓存和HTTP模拟）
+   - ✅ 为 `CrossEncoderRerankService` 创建单元测试（12个测试用例，全部通过）
 
 3. **配置测试环境** ✅ 基本完成
    - ✅ 创建 `src/test/resources/application-test.yml`
@@ -333,8 +368,11 @@
    - 完善科室导诊集成测试
 
 3. **提高测试覆盖率**
-   - 集成 JaCoCo 代码覆盖率工具
-   - 设定覆盖率目标（单元测试 >80%，集成测试 >60%）
+   - [x] 集成 JaCoCo 代码覆盖率工具 ✅（已集成，但文件生成有问题）
+   - [x] 设定覆盖率目标（单元测试 >80%，集成测试 >60%）✅
+   - [x] 补充性能测试套件 ✅（4个测试类，20个测试用例）
+   - [x] 补充医疗准确性测试套件 ✅（3个测试类，25个测试用例）
+   - 解决 JaCoCo 文件生成问题
    - 定期生成覆盖率报告
 
 4. **实施测试自动化**
@@ -367,12 +405,17 @@
 3. ✅ 补充 `QueryRewriteService` 单元测试（38个测试用例）
 4. ✅ 补充 `LlmService` 单元测试（15个测试用例）
 5. ✅ 运行完整测试套件，验证修复效果（275个测试，274通过，99.6%通过率）
+6. ✅ 创建性能测试套件（4个测试类，20个测试用例，全部通过）
+7. ✅ 创建医疗准确性测试套件（3个测试类+2个资源文件，25个测试用例，全部通过）
+8. ✅ 补充CrossEncoderRerankService测试（12个测试用例，全部通过）
+9. ✅ 编写集成测试验收报告（integration-test-acceptance-report.md）
+10. ✅ 完成集成测试与验收准备（总计364个测试，363通过，99.7%通过率）
 
 ### 中期行动（2周内）
 1. [x] 修复 `DepartmentTriageControllerTest` MockBean注入问题 ✅
 2. [x] 修复 `TriageStatsCollectorTest` Mockito严格模式错误 ✅
 3. [x] 修复 `TriageConfigTest` 和 `TriageEngineConfigTest` 断言失败 ✅
-4. [ ] 配置 JaCoCo 代码覆盖率工具
+4. [x] 配置 JaCoCo 代码覆盖率工具 ✅（已配置，但文件生成有问题）
 5. [ ] 实现完整的 RAG 端到端集成测试
 6. [ ] 建立 CI/CD 测试自动化流程
 
