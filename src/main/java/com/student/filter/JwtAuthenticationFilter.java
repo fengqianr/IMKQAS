@@ -2,7 +2,7 @@ package com.student.filter;
 
 import com.student.exception.AuthenticationException;
 import com.student.exception.ErrorCode;
-import com.student.service.UserDetailsServiceImpl;
+import com.student.service.common.impl.UserDetailsServiceImpl;
 import com.student.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

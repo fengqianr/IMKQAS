@@ -182,6 +182,125 @@ IMKQAS/
 4. **测试位置**：所有测试放在 `src/test/java` 目录下，保持与主代码相同的包结构
 5. **测试报告维护**：测试完成或修改后，必须及时更新 `docs/testing-report.md` 文件，保持测试状态和统计信息的准确性
 
+## Spring Boot 3测试配置经验
+
+基于IMKQAS项目测试修复经验，总结以下Spring Boot 3.2.5测试配置最佳实践：
+
+### 1. 控制器测试注解选择
+
+**优先使用 `@WebMvcTest(Controller.class)`**：对于纯控制器测试，优先使用`@WebMvcTest`加载最小上下文，而非`@SpringBootTest`。
+
+**当`@WebMvcTest`不可行时**：如果遇到MyBatis Mapper依赖问题（如"Property 'sqlSessionFactory' or 'sqlSessionTemplate' are required"），改用：
+```java
+@SpringBootTest
+@AutoConfigureMockMvc(addFilters = false)
+@TestPropertySource(properties = {"spring.security.enabled=false"})
+```
+
+### 2. Mockito模拟配置
+
+**Mockito严格模式**：使用`@MockitoSettings(strictness = Strictness.STRICT_STUBS)`避免不必要的存根调用。
+
+**基类模式**：创建`BaseMockitoTest`基类统一配置Mockito扩展：
+```java
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+public abstract class BaseMockitoTest {}
+```
+
+### 3. @MockBean使用注意事项
+
+**避免`@Primary`注解**：不要在`@MockBean`上使用`@Primary`注解，会导致编译错误"批注接口不适用于此类型的声明"。
+
+**指定bean名称**：使用`@MockBean(name = "beanName")`显式指定要替换的bean：
+```java
+@MockBean(name = "triageService")
+private TriageService triageService;
+```
+
+**模拟验证**：添加`verify(service).method()`调用确认模拟是否生效。
+
+**实际bean替换问题**：当`@MockBean`无法正确替换实际bean时（如来自`@Configuration`类的bean），使用`@TestConfiguration`内部类：
+```java
+@TestConfiguration
+static class TestConfig {
+    @Primary
+    @Bean
+    public TriageService triageService() {
+        return Mockito.mock(TriageService.class);
+    }
+}
+```
+
+### 4. 安全过滤器处理
+
+**禁用安全过滤器**：控制器测试中安全过滤器可能干扰请求处理：
+- 使用`@AutoConfigureMockMvc(addFilters = false)`禁用所有过滤器
+- 或使用`@TestPropertySource(properties = {"spring.security.enabled=false"})`完全禁用安全
+
+**安全组件模拟**：需要模拟JWT相关组件时添加`@MockBean`：
+```java
+@MockBean
+private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+@MockBean
+private JwtUtil jwtUtil;
+
+@MockBean
+private UserDetailsServiceImpl userDetailsService;
+```
+
+### 5. 断言注意事项
+
+**数据模型验证**：验证断言时检查数据模型的实际值：
+- `EmergencyLevel.CRITICAL`的描述为"危急"，而非"危重"
+- 使用`assertEquals("危急", emergencyLevel.getDescription())`
+
+**批量处理结果**：批量处理方法如`batchAnalyze()`返回结果数量可能与预期不同：
+- 验证实际行为而非假设
+- 例如：部分失败时仍返回结果列表，但包含降级结果
+
+**JSON路径断言**：使用`MockMvcResultHandlers.print()`调试JSON响应，确保JSON路径存在：
+```java
+.andDo(MockMvcResultHandlers.print())
+.andExpect(jsonPath("$.symptoms").value("发烧咳嗽"))
+```
+
+### 6. 异步测试处理
+
+**ExecutorService模拟**：对于异步测试，模拟`ExecutorService`立即执行任务：
+```java
+doAnswer(invocation -> {
+    Runnable task = invocation.getArgument(0);
+    task.run();
+    return null;
+}).when(executorService).execute(any(Runnable.class));
+```
+
+**异步超时测试**：测试异步超时场景时，返回未完成的`CompletableFuture`：
+```java
+when(executorService.submit(any(Callable.class))).thenAnswer(invocation -> {
+    return new CompletableFuture<>(); // 永不完成的future
+});
+```
+
+### 7. 常见错误解决
+
+| 错误 | 原因 | 解决方案 |
+|------|------|----------|
+| `No value at JSON path "$.symptoms"` | JSON响应为空，控制器未正确处理请求 | 检查模拟服务是否注入成功，添加请求日志 |
+| `JwtAuthenticationFilter`依赖未满足 | 安全组件在测试上下文中缺失 | 添加`@MockBean`模拟安全相关组件 |
+| `@MockBean`未替换实际bean | 配置类bean优先级高于`@MockBean` | 使用`@TestConfiguration`内部类提供`@Primary` bean |
+| `@WebMvcTest`导致Mapper依赖错误 | MyBatis Mapper需要完整Spring上下文 | 改用`@SpringBootTest`并禁用安全 |
+
+### 8. 测试执行验证
+
+**编译验证**：每次测试修改后运行`mvn test`验证所有测试通过。
+
+**单测试执行**：使用`mvn test -Dtest=测试类名`执行特定测试类。
+
+**测试覆盖**：确保新测试覆盖正常、异常和边界场景。
+
 ## Git 规范
 
 1. **提交消息**：使用中文提交消息，格式为：`类型: 描述`

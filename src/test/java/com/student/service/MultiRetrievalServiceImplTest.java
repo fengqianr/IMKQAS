@@ -1,6 +1,11 @@
 package com.student.service;
 
 import com.student.config.RagConfig;
+import com.student.service.dataBase.MilvusService;
+import com.student.service.rag.EmbeddingService;
+import com.student.service.rag.KeywordRetrievalService;
+import com.student.service.rag.MultiRetrievalService;
+import com.student.service.rag.impl.MultiRetrievalServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

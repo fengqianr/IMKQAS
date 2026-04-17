@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @version 1.0
  */
 @SpringBootTest
+@org.springframework.test.context.ActiveProfiles("test")
 class ImkqasApplicationTests {
 
     /**

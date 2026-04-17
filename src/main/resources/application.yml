@@ -233,3 +233,82 @@ imkqas:
       port: 19530
       collection: medical_documents
       dimension: 1024
+
+  # 科室导诊服务配置
+  triage:
+    # 知识库配置路径
+    knowledge-base-path: config/department-knowledge.yml
+    synonyms-path: config/symptom-synonyms.yml
+
+    # 缓存配置
+    enable-cache: true
+    cache-ttl: 3600  # 1小时
+
+    # 引擎配置
+    rule-engine-threshold: 0.8  # 规则引擎匹配阈值，80%症状通过规则引擎处理
+    llm-fallback-timeout: 3000  # LLM降级分析超时时间（毫秒）
+
+    # 性能配置
+    max-batch-size: 20  # 批量处理最大数量
+    emergency-check-enabled: true  # 是否启用急诊检查
+
+    # 统计配置
+    enable-stats: true  # 是否启用统计
+    stats-log-interval: 300  # 统计日志输出间隔（秒）
+
+    # 引擎配置
+    engine:
+      # 顺序执行配置
+      rule-engine-threshold: 0.6  # 规则引擎置信度阈值，低于此值触发LLM
+      llm-timeout: 3000           # LLM调用超时时间（毫秒）
+
+      # 结果融合权重配置
+      rule-engine-weight: 0.8
+      llm-weight: 0.2
+
+      # 规则引擎配置
+      enable-fuzzy-match: true
+      fuzzy-match-threshold: 0.7
+      min-match-score: 0.3
+      max-recommendations: 3
+
+      # LLM适配器配置
+      llm-triage-prompt-template: |
+        你是一个医疗分诊专家。请根据以下症状描述，推荐最合适的就诊科室。
+        症状：{symptoms}
+
+        请按以下格式回复：
+        1. 主要推荐科室：[科室名称]
+        2. 置信度：[0.0-1.0之间的浮点数]
+        3. 理由：[简要说明推荐理由]
+        4. 备选科室：[科室1, 科室2...]（可选）
+        5. 紧急程度：[CRITICAL/HIGH/MEDIUM/LOW]（可选）
+      enable-llm-cache: true
+      llm-cache-ttl: 3600
+
+      # 急诊检测配置
+      enable-emergency-detection: true
+      emergency-detection-timeout: 1000
+      emergency-thresholds:
+        CRITICAL: 3
+        HIGH: 2
+        MEDIUM: 1
+        LOW: 0
+
+      # 统计监控配置
+      stats-retention-days: 30
+      stats-sampling-rate: 1.0
+
+      # 性能配置
+      thread-pool-core-size: 2
+      thread-pool-max-size: 4
+      thread-pool-queue-capacity: 100
+      thread-pool-keep-alive-seconds: 60
+      batch-processing-max-size: 20
+      batch-processing-timeout: 10000
+
+      # 降级配置
+      enable-auto-fallback: true
+      llm-unavailable-fallback: "RULE_ENGINE"
+      rule-engine-unavailable-fallback: "FALLBACK"
+      fallback-advice: "建议咨询医院导诊台或全科医学科"

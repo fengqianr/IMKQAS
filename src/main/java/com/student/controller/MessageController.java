@@ -1,7 +1,7 @@
 package com.student.controller;
 
 import com.student.entity.Message;
-import com.student.service.MessageService;
+import com.student.service.common.MessageService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;

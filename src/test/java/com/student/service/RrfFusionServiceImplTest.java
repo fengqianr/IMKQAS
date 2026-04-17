@@ -1,6 +1,9 @@
 package com.student.service;
 
 import com.student.config.RagConfig;
+import com.student.service.rag.MultiRetrievalService;
+import com.student.service.rag.RrfFusionService;
+import com.student.service.rag.impl.RrfFusionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

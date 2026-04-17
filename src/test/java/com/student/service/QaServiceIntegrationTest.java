@@ -1,17 +1,14 @@
 package com.student.service;
 
 import com.student.config.RagConfig;
-import com.student.service.DocumentProcessorService;
-import com.student.entity.DocumentChunk;
+import com.student.service.dataBase.MilvusService;
+import com.student.service.rag.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Bean;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.mockito.quality.Strictness;
 import org.mockito.junit.jupiter.MockitoSettings;
 
@@ -31,6 +28,7 @@ import static org.mockito.Mockito.lenient;
  * @version 1.0
  */
 @SpringBootTest
+@org.springframework.test.context.ActiveProfiles("test")
 @TestPropertySource(properties = {
         "imkqas.rag.embedding.deployment=local",
         "imkqas.rag.llm.deployment=local",
@@ -52,7 +50,7 @@ class QaServiceIntegrationTest {
     private EmbeddingService embeddingService;
 
     @MockBean
-    private com.student.service.MilvusService milvusService;
+    private MilvusService milvusService;
 
     @MockBean
     private KeywordRetrievalService keywordRetrievalService;

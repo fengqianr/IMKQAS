@@ -2,78 +2,66 @@ package com.student.model.triage;
 
 import lombok.Getter;
 
-import java.util.Arrays;
-
 /**
  * 急诊症状分级枚举
- * 用于标识症状的紧急程度和就医建议
+ * 定义急诊症状的严重级别和相应的就医建议
  *
  * @author 系统生成
  * @version 1.0
- * @since 2026-04-14
  */
 @Getter
 public enum EmergencyLevel {
-
-    /**
-     * 危急 - 需要立即就医
-     */
     CRITICAL(0, "危急", "立即就医"),
-
-    /**
-     * 高危 - 2小时内就医
-     */
     HIGH(1, "高危", "2小时内就医"),
-
-    /**
-     * 中危 - 24小时内就医
-     */
     MEDIUM(2, "中危", "24小时内就医"),
-
-    /**
-     * 低危 - 常规门诊
-     */
     LOW(3, "低危", "常规门诊");
 
     private final int priority;
     private final String levelName;
-    private final String advice;
+    private final String action;
 
-    EmergencyLevel(int priority, String levelName, String advice) {
+    private EmergencyLevel(int priority, String levelName, String action) {
         this.priority = priority;
         this.levelName = levelName;
-        this.advice = advice;
+        this.action = action;
     }
 
     /**
-     * 根据优先级获取对应的急诊级别枚举
-     *
-     * @param priority 优先级（0-3）
-     * @return 对应的EmergencyLevel枚举
-     * @throws IllegalArgumentException 如果优先级不在有效范围内
+     * 获取描述信息（用于显示）
+     */
+    public String getDescription() {
+        return levelName + " - " + action;
+    }
+
+    /**
+     * 根据优先级获取枚举
      */
     public static EmergencyLevel fromPriority(int priority) {
-        return Arrays.stream(values())
-                .filter(level -> level.getPriority() == priority)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("无效的优先级: " + priority));
+        for (EmergencyLevel level : values()) {
+            if (level.getPriority() == priority) {
+                return level;
+            }
+        }
+        return LOW;
     }
 
     /**
-     * 获取急诊级别的显示名称
-     *
-     * @return 急诊级别名称
+     * 根据字符串名称获取枚举（不区分大小写）
      */
-    public String getDisplayName() {
-        return levelName + " (" + advice + ")";
-    }
-
-    /**
-     * 判断是否为紧急情况（CRITICAL或HIGH）
-     *
-     * @return 如果是紧急情况返回true，否则返回false
-     */
-    public boolean isEmergency() {
-        return this == CRITICAL || this == HIGH;
+    public static EmergencyLevel fromString(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return LOW;
+        }
+        try {
+            return EmergencyLevel.valueOf(name.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // 尝试匹配 levelName
+            for (EmergencyLevel level : values()) {
+                if (level.getLevelName().equals(name) || level.name().equalsIgnoreCase(name)) {
+                    return level;
+                }
+            }
+            return LOW;
+        }
     }
 }

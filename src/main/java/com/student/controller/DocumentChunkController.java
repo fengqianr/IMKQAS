@@ -1,7 +1,7 @@
 package com.student.controller;
 
 import com.student.entity.DocumentChunk;
-import com.student.service.DocumentChunkService;
+import com.student.service.document.DocumentChunkService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
