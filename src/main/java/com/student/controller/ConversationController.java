@@ -1,12 +1,20 @@
 package com.student.controller;
 
 import com.student.entity.Conversation;
+import com.student.entity.Message;
 import com.student.service.common.ConversationService;
+import com.student.service.common.MessageService;
+import com.student.service.export.ConversationExportService;
+import com.student.service.export.impl.PdfExportServiceImpl;
+import com.student.service.export.impl.MarkdownExportServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * 对话会话控制器
@@ -18,9 +26,13 @@ import org.springframework.http.HttpStatus;
 @RestController
 @RequestMapping("/api/conversations")
 @RequiredArgsConstructor
+@Slf4j
 public class ConversationController {
 
     private final ConversationService service;
+    private final MessageService messageService;
+    private final PdfExportServiceImpl pdfExportService;
+    private final MarkdownExportServiceImpl markdownExportService;
 
     /**
      * 创建对话会话
@@ -119,5 +131,80 @@ public class ConversationController {
         }
         wrapper.orderByDesc("created_at");
         return service.page(new Page<>(current, size), wrapper);
+    }
+
+    /**
+     * 导出会话
+     * @param conversationId 会话ID
+     * @param format 导出格式 (pdf, markdown, txt)
+     * @param response HTTP响应
+     */
+    @GetMapping("/{conversationId}/export")
+    public void exportConversation(
+            @PathVariable Long conversationId,
+            @RequestParam(defaultValue = "pdf") String format,
+            HttpServletResponse response) {
+
+        Conversation conversation = service.getById(conversationId);
+        if (conversation == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        // 获取会话消息
+        QueryWrapper<Message> wrapper = new QueryWrapper<>();
+        wrapper.eq("conversation_id", conversationId);
+        wrapper.orderByAsc("created_at");
+        List<Message> messages = messageService.list(wrapper);
+
+        // 确定导出格式
+        ConversationExportService.ExportFormat exportFormat;
+        try {
+            exportFormat = ConversationExportService.ExportFormat.valueOf(format.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            exportFormat = ConversationExportService.ExportFormat.PDF;
+        }
+
+        // 设置响应头
+        String contentType;
+        String fileName = String.format("conversation-%d-%s.%s",
+            conversationId,
+            conversation.getTitle().replaceAll("[^a-zA-Z0-9]", "-"),
+            format.toLowerCase());
+
+        switch (exportFormat) {
+            case PDF:
+                contentType = "application/pdf";
+                break;
+            case MARKDOWN:
+                contentType = "text/markdown";
+                break;
+            case TXT:
+                contentType = "text/plain";
+                break;
+            default:
+                contentType = "application/octet-stream";
+        }
+
+        response.setContentType(contentType);
+        response.setHeader("Content-Disposition",
+            "attachment; filename=\"" + fileName + "\"");
+
+        try {
+            // 选择合适的导出服务
+            ConversationExportService exportService;
+            if (exportFormat == ConversationExportService.ExportFormat.PDF) {
+                exportService = pdfExportService;
+            } else {
+                exportService = markdownExportService;
+            }
+
+            exportService.exportConversation(conversation, messages, exportFormat,
+                response.getOutputStream());
+
+        } catch (Exception e) {
+            log.error("会话导出失败: conversationId={}, format={}", conversationId, format, e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -4,9 +4,15 @@ import com.student.entity.User;
 import com.student.service.common.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.student.dto.user.HealthProfileRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import java.util.Map;
 
 /**
  * 用户控制器
@@ -97,5 +103,95 @@ public class UserController {
                    .or().like("phone", keyword);
         }
         return service.page(new Page<>(current, size), wrapper);
+    }
+
+    /**
+     * 更新用户健康档案
+     * @param userId 用户ID
+     * @param request 健康档案请求
+     * @return 更新结果
+     */
+    @PutMapping("/{userId}/health-profile")
+    public ResponseEntity<?> updateHealthProfile(
+            @PathVariable Long userId,
+            @Valid @RequestBody HealthProfileRequest request) {
+        User user = service.getById(userId);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 将健康档案转换为JSON字符串
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String healthProfileJson = mapper.writeValueAsString(request);
+            user.updateHealthProfile(healthProfileJson);
+            service.updateById(user);
+
+            return ResponseEntity.ok().body(Map.of(
+                "success", true,
+                "message", "健康档案更新成功"
+            ));
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "健康档案格式错误"
+            ));
+        }
+    }
+
+    /**
+     * 获取用户健康档案
+     * @param userId 用户ID
+     * @return 健康档案
+     */
+    @GetMapping("/{userId}/health-profile")
+    public ResponseEntity<?> getHealthProfile(@PathVariable Long userId) {
+        User user = service.getById(userId);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (user.getHealthProfile() == null || user.getHealthProfile().isEmpty()) {
+            return ResponseEntity.ok().body(Map.of(
+                "hasHealthProfile", false,
+                "message", "用户未设置健康档案"
+            ));
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Object healthProfile = mapper.readValue(user.getHealthProfile(), Object.class);
+
+            return ResponseEntity.ok().body(Map.of(
+                "hasHealthProfile", true,
+                "healthProfile", healthProfile
+            ));
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.ok().body(Map.of(
+                "hasHealthProfile", false,
+                "message", "健康档案解析失败"
+            ));
+        }
+    }
+
+    /**
+     * 删除用户健康档案
+     * @param userId 用户ID
+     * @return 删除结果
+     */
+    @DeleteMapping("/{userId}/health-profile")
+    public ResponseEntity<?> deleteHealthProfile(@PathVariable Long userId) {
+        User user = service.getById(userId);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        user.updateHealthProfile(null);
+        service.updateById(user);
+
+        return ResponseEntity.ok().body(Map.of(
+            "success", true,
+            "message", "健康档案删除成功"
+        ));
     }
 }
