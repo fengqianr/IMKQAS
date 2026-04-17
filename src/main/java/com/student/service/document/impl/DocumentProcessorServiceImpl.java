@@ -1,5 +1,26 @@
 package com.student.service.document.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.student.config.RagConfig;
 import com.student.entity.Document;
 import com.student.entity.DocumentChunk;
@@ -8,16 +29,9 @@ import com.student.service.document.DocumentChunkService;
 import com.student.service.document.DocumentService;
 import com.student.service.rag.DocumentProcessorService;
 import com.student.service.rag.EmbeddingService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 文档处理服务实现类
@@ -223,12 +237,12 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     private String extractTextFromPdf(String filePath) {
         try {
             // PDFBox 3.x使用Loader.loadPDF()方法
-            org.apache.pdfbox.pdmodel.PDDocument document = org.apache.pdfbox.Loader.loadPDF(new java.io.File(filePath));
-            org.apache.pdfbox.text.PDFTextStripper stripper = new org.apache.pdfbox.text.PDFTextStripper();
+            PDDocument document = Loader.loadPDF(new File(filePath));
+            PDFTextStripper stripper = new PDFTextStripper();
             String text = stripper.getText(document);
             document.close();
             return text;
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("PDF文本提取失败", e);
         }
     }
@@ -237,14 +251,14 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
      * 从DOCX/DOC文件提取文本
      */
     private String extractTextFromDocx(String filePath) {
-        try (java.io.FileInputStream fis = new java.io.FileInputStream(filePath);
-             org.apache.poi.xwpf.usermodel.XWPFDocument document = new org.apache.poi.xwpf.usermodel.XWPFDocument(fis)) {
+        try (FileInputStream fis = new FileInputStream(filePath);
+             XWPFDocument document = new XWPFDocument(fis)) {
             StringBuilder text = new StringBuilder();
-            for (org.apache.poi.xwpf.usermodel.XWPFParagraph paragraph : document.getParagraphs()) {
+            for (XWPFParagraph paragraph : document.getParagraphs()) {
                 text.append(paragraph.getText()).append("\n");
             }
             return text.toString();
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("DOCX文本提取失败", e);
         }
     }
@@ -254,8 +268,8 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
      */
     private String extractTextFromTxt(String filePath) {
         try {
-            return java.nio.file.Files.readString(java.nio.file.Paths.get(filePath), java.nio.charset.StandardCharsets.UTF_8);
-        } catch (java.io.IOException e) {
+            return Files.readString(Paths.get(filePath), StandardCharsets.UTF_8);
+        } catch (IOException e) {
             throw new RuntimeException("TXT文本读取失败", e);
         }
     }
@@ -378,8 +392,7 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
         log.info("清理旧分块数据: documentId={}", documentId);
 
         // 删除数据库中的旧分块记录
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.student.entity.DocumentChunk> wrapper =
-            new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<DocumentChunk> wrapper = new QueryWrapper<>();
         wrapper.eq("document_id", documentId);
         documentChunkService.remove(wrapper);
 
