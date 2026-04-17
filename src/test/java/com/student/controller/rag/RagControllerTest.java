@@ -1,17 +1,23 @@
 package com.student.controller.rag;
 
+import com.student.dto.document.DocumentProcessResponse;
+import com.student.entity.Document;
+import com.student.service.document.DocumentService;
+import com.student.service.dataBase.MinioService;
+import com.student.service.rag.DocumentProcessorService;
 import com.student.service.rag.QaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.mock.web.MockMultipartFile;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,32 +39,74 @@ class RagControllerTest {
     @MockBean
     private QaService qaService;
 
+    @MockBean
+    private MinioService minioService;
+
+    @MockBean
+    private DocumentService documentService;
+
+    @MockBean
+    private DocumentProcessorService documentProcessorService;
+
+    @MockBean
+    private com.student.filter.JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private com.student.utils.JwtUtil jwtUtil;
+
+    @MockBean
+    private com.student.service.common.impl.UserDetailsServiceImpl userDetailsService;
+
     @Test
     void testProcessDocument_Success() throws Exception {
-        // 创建模拟文件
+        // 模拟文件上传
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "test.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "test content".getBytes()
-        );
+                "PDF content".getBytes());
+
+        // 模拟MinIO上传
+        when(minioService.uploadFile(any(), any())).thenReturn("/uploads/test.pdf");
+
+        // 模拟文档保存
+        Document document = Document.builder()
+                .id(1L)
+                .title("test.pdf")
+                .status(Document.Status.UPLOADED)
+                .build();
+        when(documentService.save(any())).thenReturn(true);
+
+        // 执行请求
+        mockMvc.perform(multipart("/api/rag/process-document")
+                .file(file)
+                .param("title", "测试文档")
+                .param("category", "医学指南"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.documentId").value(1L));
+
+        // 验证异步处理被调用
+        verify(documentProcessorService, timeout(5000)).processDocument(1L);
+    }
+
+    @Test
+    void testProcessDocument_MissingFile() throws Exception {
+        // 创建空文件
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test.pdf",
+                MediaType.APPLICATION_PDF_VALUE,
+                new byte[0]);
 
         mockMvc.perform(multipart("/api/rag/process-document")
                         .file(file)
                         .param("title", "测试文档")
                         .param("category", "医疗指南")
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andExpect(content().string("文档处理请求已接收，功能待实现"));
-    }
-
-    @Test
-    void testProcessDocument_MissingFile() throws Exception {
-        mockMvc.perform(multipart("/api/rag/process-document")
-                        .param("title", "测试文档")
-                        .param("category", "医疗指南")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isInternalServerError()); // 全局异常处理器返回500
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("文件不能为空"));
     }
 
     @Test

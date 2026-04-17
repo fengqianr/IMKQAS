@@ -1,6 +1,12 @@
 package com.student.controller.rag;
 
+import com.student.dto.document.DocumentProcessResponse;
+import com.student.entity.Document;
 import com.student.service.rag.QaService;
+import com.student.service.dataBase.MinioService;
+import com.student.service.document.DocumentService;
+import com.student.service.rag.DocumentProcessorService;
+import java.util.concurrent.CompletableFuture;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,10 +31,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class RagController {
 
     private final QaService qaService;
+    private final MinioService minioService;
+    private final DocumentService documentService;
+    private final DocumentProcessorService documentProcessorService;
 
     @PostMapping("/process-document")
     @Operation(summary = "文档处理", description = "上传并处理文档，提取文本、分块、生成嵌入向量")
-    public ResponseEntity<?> processDocument(
+    public ResponseEntity<DocumentProcessResponse> processDocument(
             @Parameter(description = "文档文件", required = true)
             @RequestParam("file") MultipartFile file,
             @Parameter(description = "文档标题", required = false)
@@ -38,14 +47,51 @@ public class RagController {
         log.info("文档处理请求: fileName={}, size={}, title={}, category={}",
                 file.getOriginalFilename(), file.getSize(), title, category);
 
-        // TODO: 实现文档处理逻辑
-        // 1. 保存文件到临时位置
-        // 2. 提取文本内容
-        // 3. 分块处理
-        // 4. 生成嵌入向量
-        // 5. 存储到向量数据库
+        try {
+            // 1. 验证文件
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(DocumentProcessResponse.error("文件不能为空"));
+            }
 
-        return ResponseEntity.ok("文档处理请求已接收，功能待实现");
+            // 2. 保存文件到MinIO
+            // 生成对象名称: documents/timestamp/originalFilename
+            String originalFilename = file.getOriginalFilename();
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String objectName = String.format("documents/%s/%s", timestamp, originalFilename);
+            String filePath = minioService.uploadFile(file, objectName);
+
+            // 3. 创建文档记录
+            Document document = Document.builder()
+                    .title(title != null ? title : originalFilename)
+                    .filePath(filePath)
+                    .category(category)
+                    .status(Document.Status.UPLOADED)
+                    .build();
+            documentService.save(document);
+
+            log.info("文档记录创建成功: documentId={}, filePath={}", document.getId(), filePath);
+
+            // 4. 异步启动文档处理
+            CompletableFuture.runAsync(() -> {
+                try {
+                    documentProcessorService.processDocument(document.getId());
+                    log.info("文档处理完成: documentId={}", document.getId());
+                } catch (Exception e) {
+                    log.error("文档处理失败: documentId={}", document.getId(), e);
+                    document.updateStatus(Document.Status.FAILED);
+                    documentService.updateById(document);
+                }
+            });
+
+            // 5. 返回响应
+            return ResponseEntity.ok(DocumentProcessResponse.success(document.getId(), document));
+
+        } catch (Exception e) {
+            log.error("文档处理请求失败", e);
+            return ResponseEntity.internalServerError()
+                    .body(DocumentProcessResponse.error("文档处理失败: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/stats")
