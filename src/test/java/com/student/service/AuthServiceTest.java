@@ -56,7 +56,7 @@ class AuthServiceTest {
                 .id(1L)
                 .username("testuser")
                 .phone("13800000000")
-                .role(User.Role.USER)
+                .role(User.Role.PATIENT)
                 .healthProfile("{\"age\": 30, \"gender\": \"male\"}")
                 .deleted(0)
                 .build();

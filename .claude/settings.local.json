@@ -16,7 +16,9 @@
       "Bash(mvn test-compile:*)",
       "Bash(mvn clean *)",
       "Bash(mkdir -p src/test/java/com/student/medical)",
-      "Bash(mkdir -p src/test/resources/medical)"
+      "Bash(mkdir -p src/test/resources/medical)",
+      "Bash(git commit *)",
+      "Bash(git add *)"
     ]
   }
 }

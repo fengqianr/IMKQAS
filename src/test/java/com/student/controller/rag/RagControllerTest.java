@@ -1,18 +1,27 @@
 package com.student.controller.rag;
 
+import com.student.controller.rag.RagController;
+import com.student.dto.document.DocumentProcessResponse;
+import com.student.entity.Document;
+import com.student.service.document.DocumentService;
+import com.student.service.dataBase.MinioService;
+import com.student.service.rag.DocumentProcessorService;
 import com.student.service.rag.QaService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -21,44 +30,85 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author 系统
  * @version 1.0
  */
-@SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
-@TestPropertySource(properties = {"spring.security.enabled=false"})
-@org.springframework.test.context.ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 class RagControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @InjectMocks
+    private RagController ragController;
+
+    @Mock
     private QaService qaService;
+
+    @Mock
+    private MinioService minioService;
+
+    @Mock
+    private DocumentService documentService;
+
+    @Mock
+    private DocumentProcessorService documentProcessorService;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(ragController).build();
+    }
 
     @Test
     void testProcessDocument_Success() throws Exception {
-        // 创建模拟文件
+        // 模拟文件上传
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "test.pdf",
                 MediaType.APPLICATION_PDF_VALUE,
-                "test content".getBytes()
-        );
+                "PDF content".getBytes());
+
+        // 模拟MinIO上传
+        when(minioService.uploadFile(any(), any())).thenReturn("/uploads/test.pdf");
+
+        // 模拟文档保存
+        when(documentService.save(any(Document.class))).thenAnswer(invocation -> {
+            Document savedDocument = invocation.getArgument(0);
+            savedDocument.setId(1L);
+            savedDocument.setTitle("test.pdf");
+            savedDocument.setStatus(Document.Status.UPLOADED);
+            return true;
+        });
+
+        // 执行请求
+        mockMvc.perform(multipart("/api/rag/process-document")
+                .file(file)
+                .param("title", "测试文档")
+                .param("category", "医学指南")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.documentId").value(1L));
+
+        // 验证异步处理被调用
+        verify(documentProcessorService, timeout(1000)).processDocument(1L);
+    }
+
+    @Test
+    void testProcessDocument_MissingFile() throws Exception {
+        // 创建空文件
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test.pdf",
+                MediaType.APPLICATION_PDF_VALUE,
+                new byte[0]);
 
         mockMvc.perform(multipart("/api/rag/process-document")
                         .file(file)
                         .param("title", "测试文档")
                         .param("category", "医疗指南")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andExpect(content().string("文档处理请求已接收，功能待实现"));
-    }
-
-    @Test
-    void testProcessDocument_MissingFile() throws Exception {
-        mockMvc.perform(multipart("/api/rag/process-document")
-                        .param("title", "测试文档")
-                        .param("category", "医疗指南")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isInternalServerError()); // 全局异常处理器返回500
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("文件不能为空"));
     }
 
     @Test
@@ -75,7 +125,8 @@ class RagControllerTest {
         );
         when(qaService.getStats()).thenReturn(mockStats);
 
-        mockMvc.perform(get("/api/rag/stats"))
+        mockMvc.perform(get("/api/rag/stats")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
