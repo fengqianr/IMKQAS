@@ -37,12 +37,12 @@ public class User implements UserDetails {
     private String phone;
 
     @TableField("role")
-    private Role role = Role.USER;
+    private Role role = Role.PATIENT;
 
     @TableField("password")
     private String password;
 
-    @TableField("health_profile")
+    @TableField(value = "health_profile", updateStrategy = FieldStrategy.IGNORED)
     private String healthProfile; // 健康档案JSON: {age, gender, allergies, chronic_diseases}
 
     @TableField(value = "created_at", fill = FieldFill.INSERT)
@@ -59,8 +59,12 @@ public class User implements UserDetails {
      * 用户角色枚举
      */
     public enum Role {
-        USER,       // 普通用户
-        ADMIN       // 管理员
+        PATIENT,        // 普通患者
+        STUDENT,        // 医学生
+        NURSE,          // 护士
+        DOCTOR,         // 医生
+        HEALTH_MANAGER, // 健康管理师
+        ADMIN           // 系统管理员
     }
 
     /**

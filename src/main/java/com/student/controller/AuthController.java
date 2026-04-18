@@ -3,6 +3,7 @@ package com.student.controller;
 import com.student.dto.ApiResponse;
 import com.student.dto.LoginRequest;
 import com.student.dto.LoginResponse;
+import com.student.dto.RegisterRequest;
 import com.student.service.common.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -177,5 +178,24 @@ public class AuthController {
             public final Long id = userId;
             public final String userRole = role;
         }));
+    }
+
+    /**
+     * 用户注册
+     * @param request 注册请求
+     * @return 注册结果
+     */
+    @PostMapping("/register")
+    @Operation(summary = "用户注册", description = "用户注册接口，创建新用户账户")
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {
+        log.info("用户注册请求: username={}, phone={}", request.getUsername(), request.getPhone());
+
+        boolean success = authService.register(request);
+        if (success) {
+            return ResponseEntity.ok(ApiResponse.success("注册成功"));
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("注册失败，用户名或手机号已存在，或密码不匹配"));
+        }
     }
 }

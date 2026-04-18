@@ -1,5 +1,26 @@
 package com.student.service.document.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.student.config.RagConfig;
 import com.student.entity.Document;
 import com.student.entity.DocumentChunk;
@@ -8,16 +29,9 @@ import com.student.service.document.DocumentChunkService;
 import com.student.service.document.DocumentService;
 import com.student.service.rag.DocumentProcessorService;
 import com.student.service.rag.EmbeddingService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 文档处理服务实现类
@@ -192,16 +206,72 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     }
 
     /**
-     * 文本提取（待实现）
+     * 文本提取
+     * 根据文件类型调用不同的提取器：PDF -> PDFBox, DOCX -> Apache POI, TXT -> 直接读取
      */
     private String extractText(String filePath, String fileExtension) {
-        // TODO: 根据文件类型调用不同的提取器
-        // PDF -> PDFBox, DOCX -> Apache POI, TXT -> 直接读取
-        log.warn("文本提取功能待实现: filePath={}, extension={}", filePath, fileExtension);
-        // 模拟返回
-        return "这是模拟的文档内容。医学文档通常包含疾病诊断、治疗方案、药物用量等信息。\n" +
-                "例如：高血压患者应定期监测血压，遵医嘱服用降压药物。\n" +
-                "常见降压药包括ACEI、ARB、CCB、利尿剂等。";
+        log.info("提取文本: filePath={}, extension={}", filePath, fileExtension);
+
+        try {
+            switch (fileExtension.toLowerCase()) {
+                case "pdf":
+                    return extractTextFromPdf(filePath);
+                case "docx":
+                case "doc":
+                    return extractTextFromDocx(filePath);
+                case "txt":
+                    return extractTextFromTxt(filePath);
+                default:
+                    log.warn("不支持的文件类型: {}", fileExtension);
+                    throw new UnsupportedOperationException("不支持的文件类型: " + fileExtension);
+            }
+        } catch (Exception e) {
+            log.error("文本提取失败: filePath={}", filePath, e);
+            throw new RuntimeException("文本提取失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 从PDF文件提取文本
+     */
+    private String extractTextFromPdf(String filePath) {
+        try {
+            // PDFBox 3.x使用Loader.loadPDF()方法
+            PDDocument document = Loader.loadPDF(new File(filePath));
+            PDFTextStripper stripper = new PDFTextStripper();
+            String text = stripper.getText(document);
+            document.close();
+            return text;
+        } catch (IOException e) {
+            throw new RuntimeException("PDF文本提取失败", e);
+        }
+    }
+
+    /**
+     * 从DOCX/DOC文件提取文本
+     */
+    private String extractTextFromDocx(String filePath) {
+        try (FileInputStream fis = new FileInputStream(filePath);
+             XWPFDocument document = new XWPFDocument(fis)) {
+            StringBuilder text = new StringBuilder();
+            for (XWPFParagraph paragraph : document.getParagraphs()) {
+                text.append(paragraph.getText()).append("\n");
+            }
+            return text.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("DOCX文本提取失败", e);
+        }
+    }
+
+    /**
+     * 从TXT文件提取文本
+     */
+    private String extractTextFromTxt(String filePath) {
+        try {
+            return Files.readString(Paths.get(filePath), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("TXT文本读取失败", e);
+        }
     }
 
     /**
@@ -319,10 +389,16 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
      * 清理旧的分块数据
      */
     private void cleanupOldChunks(Long documentId) {
-        // 删除已有的分块记录
-        // 实现方式：根据document_id删除document_chunks表中的记录
-        // 注意：这里需要实现DocumentChunkService中的删除方法
         log.info("清理旧分块数据: documentId={}", documentId);
-        // TODO: 实现具体清理逻辑
+
+        // 删除数据库中的旧分块记录
+        QueryWrapper<DocumentChunk> wrapper = new QueryWrapper<>();
+        wrapper.eq("document_id", documentId);
+        documentChunkService.remove(wrapper);
+
+        // 从Milvus中删除相关向量
+        milvusService.deleteByDocumentId(documentId);  // 注意：实际方法名是deleteByDocumentId，不是deleteVectorsByDocumentId
+
+        log.info("旧分块数据清理完成: documentId={}", documentId);
     }
 }
