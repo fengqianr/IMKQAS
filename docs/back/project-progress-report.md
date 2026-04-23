@@ -271,7 +271,7 @@
 - [项目设计文档](2026-04-04-IMKQAS-design.md)
 - [阶段2执行计划](implementation/phase2-implementation-plan.md)
 - [测试报告](testing-report.md) - 项目测试状态与覆盖率
-- [CLAUDE.md](../CLAUDE.md) - 项目开发规范
+- [CLAUDE.md](../../CLAUDE.md) - 项目开发规范
 
 ---
 

@@ -1,0 +1,145 @@
+/* 品牌颜色系统 - 替换Tailwind颜色配置 */
+/* 主品牌色 #005eb8 */
+.text-brand { color: #005eb8; }
+.bg-brand { background-color: #005eb8; }
+.border-brand { border-color: #005eb8; }
+.ring-brand { --tw-ring-color: #005eb8; }
+
+/* 品牌色变体 */
+.text-brand-dark { color: #00478d; }
+.bg-brand-dark { background-color: #00478d; }
+.border-brand-dark { border-color: #00478d; }
+
+.text-brand-light { color: #a9c7ff; }
+.bg-brand-light { background-color: #a9c7ff; }
+.border-brand-light { border-color: #a9c7ff; }
+
+.text-brand-container { color: #004a9e; }
+.bg-brand-container { background-color: #004a9e; }
+.border-brand-container { border-color: #004a9e; }
+
+/* 辅助色 */
+.text-secondary { color: #4a5f83; }
+.bg-secondary { background-color: #4a5f83; }
+.border-secondary { border-color: #4a5f83; }
+
+.text-secondary-light { color: #c0d5ff; }
+.bg-secondary-light { background-color: #c0d5ff; }
+.border-secondary-light { border-color: #c0d5ff; }
+
+.bg-secondary-left{color: #e5e7eb; }
+.bg-secondary-fixed { background-color: #d6e3ff; }
+.text-secondary-fixed { color: #d6e3ff; }
+.border-secondary-fixed { border-color: #d6e3ff; }
+.ring-secondary { --tw-ring-color: #4a5f83; }
+.ring-outline-variant { --tw-ring-color: #c2c6d4; }
+
+/* 强调色 */
+.text-accent { color: #793100; }
+.bg-accent { background-color: #793100; }
+.border-accent { border-color: #793100; }
+
+.text-accent-light { color: #ffdbcb; }
+.bg-accent-light { background-color: #ffdbcb; }
+.border-accent-light { border-color: #ffdbcb; }
+
+/* 表面色 */
+.bg-surface { background-color: #f8f9fa; }
+.text-on-surface { color: #191c1d; }
+
+.bg-surface-container { background-color: #edeeef; }
+.bg-surface-container-low { background-color: #f3f4f5; }
+.bg-surface-container-high { background-color: #e7e8e9; }
+.bg-surface-container-lowest { background-color: #ffffff; }
+.bg-surface-dim { background-color: #2e3132; }
+
+/* 轮廓色 */
+.border-outline { border-color: #727783; }
+.border-outline-variant { border-color: #c2c6d4; }
+
+/* 文字颜色 */
+.text-on-surface-variant { color: #424752; }
+.text-on-primary { color: #ffffff; }
+.text-on-secondary { color: #ffffff; }
+.text-on-tertiary { color: #ffffff; }
+
+/* 状态色 */
+.text-error { color: #ba1a1a; }
+.bg-error { background-color: #ba1a1a; }
+.border-error { border-color: #ba1a1a; }
+
+.text-success { color: #2e7d32; }
+.bg-success { background-color: #2e7d32; }
+.border-success { border-color: #2e7d32; }
+
+/* 中性色 - 替换Tailwind默认颜色 */
+.text-gray-800 { color: #1f2937; } /* 近似text-gray-800 */
+.bg-gray-100 { background-color: #f3f4f6; } /* 近似bg-gray-100 */
+.border-gray-300 { border-color: #d1d5db; } /* 近似border-gray-300 */
+
+.text-slate-500 { color: #64748b; } /* 近似text-slate-500 */
+.text-slate-400 { color: #94a3b8; } /* 近似text-slate-400 */
+.text-slate-600 { color: #475569; } /* 近似text-slate-600 */
+
+.bg-slate-100 { background-color: #f1f5f9; } /* 近似bg-slate-100 */
+.bg-slate-50 { background-color: #f8fafc; } /* 近似bg-slate-50 */
+
+/* 蓝色调色板 - 替换Tailwind蓝色 */
+.text-blue-800 { color: #1e40af; } /* Tailwind默认blue-800 */
+.text-blue-700 { color: #1d4ed8; } /* Tailwind默认blue-700 */
+.text-blue-600 { color: #2563eb; } /* Tailwind默认blue-600 */
+.text-blue-500 { color: #3b82f6; } /* Tailwind默认blue-500 */
+.text-blue-400 { color: #60a5fa; } /* Tailwind默认blue-400 */
+.text-blue-300 { color: #93c5fd; } /* Tailwind默认blue-300 */
+.text-blue-200 { color: #bfdbfe; } /* Tailwind默认blue-200 */
+
+.bg-blue-100 { background-color: #dbeafe; } /* Tailwind默认blue-100 */
+.bg-blue-50 { background-color: #eff6ff; } /* Tailwind默认blue-50 */
+
+.border-blue-700 { border-color: #1d4ed8; } /* Tailwind默认blue-700 */
+.border-blue-400 { border-color: #60a5fa; } /* Tailwind默认blue-400 */
+
+/* 透明/叠加效果 */
+.bg-white-80 { background-color: rgba(255, 255, 255, 0.8); }
+.bg-black-80 { background-color: rgba(0, 0, 0, 0.8); }
+
+/* 原型图兼容类 - 添加以匹配原型图样式 */
+/* primary 颜色系统 (#00478d) */
+.text-primary { color: #00478d; }
+.bg-primary { background-color: #00478d; }
+.border-primary { border-color: #00478d; }
+.ring-primary { --tw-ring-color: #00478d; }
+
+.text-primary-container { color: #005eb8; }
+.bg-primary-container { background-color: #005eb8; }
+.border-primary-container { border-color: #005eb8; }
+
+/* tertiary 颜色系统 (#793100) */
+.text-tertiary { color: #793100; }
+.bg-tertiary { background-color: #793100; }
+.border-tertiary { border-color: #793100; }
+
+.text-tertiary-fixed { color: #ffdbcb; }
+.bg-tertiary-fixed { background-color: #ffdbcb; }
+.border-tertiary-fixed { border-color: #ffdbcb; }
+
+/* slate 颜色扩展 */
+.bg-slate-950 { background-color: #020617; }
+.dark\:bg-slate-950 { background-color: #020617; }
+
+/* 悬停效果 */
+.hover\:bg-primary:hover { background-color: #00478d; }
+.hover\:bg-primary-container:hover { background-color: #005eb8; }
+.hover\:bg-tertiary-fixed:hover { background-color: #ffdbcb; }
+
+/* 悬停效果 */
+.hover\:bg-brand:hover { background-color: #004a9e; }
+.hover\:text-brand:hover { color: #004a9e; }
+.hover\:border-brand:hover { border-color: #004a9e; }
+
+.hover\:bg-surface-container-high:hover { background-color: #e7e8e9; }
+.hover\:bg-surface-container:hover { background-color: #edeeef; }
+
+/* 焦点状态 */
+.focus\:ring-brand:focus { --tw-ring-color: #005eb8; }
+.focus\:ring-2:focus { outline: 2px solid transparent; outline-offset: 2px; ring-width: 2px; }

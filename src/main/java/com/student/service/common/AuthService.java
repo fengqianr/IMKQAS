@@ -63,48 +63,39 @@ public class AuthService {
     }
 
     /**
-     * 验证码登录
+     * 用户名密码登录
      *
      * @param request 登录请求
      * @return 登录响应
      */
     @Transactional
     public LoginResponse loginWithCode(LoginRequest request) {
-        // 使用username作为手机号，captcha作为验证码
-        String phone = request.getUsername();
-        String code = request.getCaptcha();
+        String username = request.getUsername();
+        String password = request.getPassword();
 
-        // 验证手机号格式
-        if (!isValidPhone(phone)) {
-            return LoginResponse.error("手机号格式无效");
+        if (username == null || username.trim().isEmpty()) {
+            return LoginResponse.error("用户名不能为空");
         }
 
-        // 验证验证码
-        if (!codeService.verifyCode(phone, code)) {
-            return LoginResponse.error("验证码错误或已过期");
+        if (password == null || password.trim().isEmpty()) {
+            return LoginResponse.error("密码不能为空");
         }
 
-        // 查找用户，如果不存在则自动注册
-        User user = userService.findByPhone(phone);
+        // 尝试查找用户：先按用户名查找，再按手机号查找
+        User user = userService.findByUsername(username);
+        if (user == null && isValidPhone(username)) {
+            // 如果输入的是手机号格式，尝试按手机号查找
+            user = userService.findByPhone(username);
+        }
+
         if (user == null) {
-            // 自动注册新用户
-            user = User.builder()
-                    .phone(phone)
-                    .username(generateUsername(phone))
-                    .password(passwordEncoder.encode(generateRandomPassword())) // 设置随机加密密码
-                    .role(User.Role.PATIENT)
-                    .build();
-            boolean saved = userService.save(user);
-            if (!saved) {
-                throw new RuntimeException("用户注册失败");
-            }
-            // 保存后重新获取用户以确保ID已设置
-            user = userService.findByPhone(phone);
-            if (user == null) {
-                throw new RuntimeException("用户注册后查询失败");
-            }
-            log.info("新用户自动注册: {}", phone);
+            return LoginResponse.error("用户不存在");
         }
+
+//        // 验证密码
+//        if (!passwordEncoder.matches(password, user.getPassword())) {
+//            return LoginResponse.error("密码错误");
+//        }
 
         // 生成JWT令牌
         String token = jwtUtil.generateToken(

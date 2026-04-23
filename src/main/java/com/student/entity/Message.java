@@ -1,6 +1,9 @@
 package com.student.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -23,9 +26,11 @@ import java.time.LocalDateTime;
 public class Message {
 
     @TableId(type = IdType.ASSIGN_ID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     @TableField("conversation_id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long conversationId; // 对话ID
 
     @TableField("role")
@@ -50,9 +55,40 @@ public class Message {
     /**
      * 消息角色枚举
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     public enum Role {
-        USER,      // 用户提问
-        ASSISTANT  // 系统回答
+        USER("user"),      // 用户提问
+        ASSISTANT("assistant");  // 系统回答
+
+        private final String value;
+
+        Role(String value) {
+            this.value = value;
+        }
+
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
+
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        public static Role fromString(String value) {
+            if (value == null) {
+                return null;
+            }
+            // 忽略大小写匹配
+            for (Role role : Role.values()) {
+                if (role.value.equalsIgnoreCase(value)) {
+                    return role;
+                }
+            }
+            // 如果直接匹配枚举名（大写）
+            try {
+                return Role.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("无效的角色类型: " + value);
+            }
+        }
     }
 
     /**

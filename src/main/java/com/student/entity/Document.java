@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 public class Document {
 
     @TableId(type = IdType.ASSIGN_ID)
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)
     private Long id;
 
     @TableField("title")

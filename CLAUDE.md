@@ -376,3 +376,97 @@ when(executorService.submit(any(Callable.class))).thenAnswer(invocation -> {
 5. 所有生成的代码都应包含中文注释和文档
 6. 与用户交互时使用专业、简洁的中文
 7. 数据访问使用 MyBatis Plus，不再使用 JPA/jakarta 相关注解
+
+## 前端架构
+
+项目采用前后端分离架构，前端位于 `frontend/` 目录。
+
+### 技术栈
+
+- **框架**：Vue 3 + TypeScript + Vite
+- **UI组件**：Element Plus
+- **状态管理**：Pinia
+- **路由**：Vue Router
+- **HTTP客户端**：Axios
+- **样式**：Tailwind CSS + PostCSS
+- **图表**：ECharts
+
+### 前端命令
+
+```bash
+cd frontend
+npm install          # 安装依赖
+npm run dev          # 启动开发服务器
+npm run build        # 构建生产版本
+npm run preview      # 预览构建结果
+npm run type-check   # 类型检查
+npm run lint         # 代码检查
+```
+
+### 前端项目结构
+
+```
+frontend/src/
+├── api/              # API 层
+│   ├── config.ts     # Axios 配置
+│   ├── interceptors/ # 拦截器
+│   ├── services/     # 业务 API
+│   └── types/        # TypeScript 类型
+├── components/       # 公共组件
+│   └── layout/       # 布局组件（MainLayout）
+├── router/           # 路由配置
+├── stores/           # Pinia 状态管理
+└── views/            # 页面视图
+```
+
+### 设计系统
+
+前端使用 Tailwind CSS，颜色系统遵循 Material Design 3 扩展规范（定义在 `tailwind.config.js`）：
+- 主色 (Primary)：#00478d
+- 表面色 (Surface)：#f8f9fa
+- 轮廓色 (Outline)：#727783
+
+组件圆角使用正方形风格（`rounded-none`），与设计规范保持一致。
+
+### 路由配置
+
+页面路由定义在 `src/router/routes.ts`，主要页面：
+- `/dashboard` - 仪表板
+- `/qa` - 智能问答
+- `/knowledge` - 知识库管理
+- `/stats` - 数据统计
+- `/user` - 个人中心
+
+认证路由守卫在 `src/router/guards.ts` 中实现。
+
+## Claude Code 配置：superpowers + gstack
+
+主干由两个插件组成：
+- superpowers —— 思考与流程层（plan/brainstorm/debug/TDD/review/verify）
+- gstack —— 执行与外部世界层（browser/QA/ship/deploy/canary/护栏）
+
+类比：superpowers 是大脑，gstack 是手脚。
+
+### 核心原则
+
+1. 流程归 superpowers：所有 plan、brainstorm、debug、TDD、verify、code review 默认走 superpowers。
+2. 执行归 gstack：所有浏览器操作、QA 测试、ship、deploy、canary、retro 走 gstack。
+3. 独立 reviewer 通道：作者和审查者绝不在同一上下文里互评。
+4. 证据优先：声明完成前必须收集可验证的证据。
+5. 遇到歧义先 brainstorm。
+
+### 浏览器规则
+
+`/browse` 是唯一的浏览器入口。禁止使用 `mcp__claude-in-chrome__*` 和 `mcp__computer-use__*` 来操作浏览器。
+
+### 不要重复造轮子
+
+下列能力只走 superpowers：
+- plan / brainstorm / writing-plans / executing-plans
+- TDD / debugging / verification
+- code review（请求和接收）
+- subagent / parallel dispatch
+- worktrees
+
+下列能力只走 gstack：
+- 浏览器、QA、ship、deploy、canary、retro、护栏

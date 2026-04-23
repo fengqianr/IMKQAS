@@ -4,9 +4,11 @@ import com.student.entity.Document;
 import com.student.service.document.DocumentService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.student.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import java.util.List;
 
 /**
  * 文档控制器
@@ -74,10 +76,11 @@ public class DocumentController {
      * @return 分页结果
      */
     @GetMapping
-    public Page<Document> list(@RequestParam(defaultValue = "1") int current,
-                               @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<ApiResponse.Pagination<List<Document>>> list(@RequestParam(defaultValue = "1") int current,
+                                                                    @RequestParam(defaultValue = "10") int size) {
         Page<Document> page = new Page<>(current, size);
-        return service.page(page);
+        Page<Document> result = service.page(page);
+        return ApiResponse.pagination(result.getRecords(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());
     }
 
     /**
@@ -90,11 +93,11 @@ public class DocumentController {
      * @return 分页结果
      */
     @GetMapping("/search")
-    public Page<Document> search(@RequestParam(required = false) String keyword,
-                                 @RequestParam(required = false) String category,
-                                 @RequestParam(required = false) String status,
-                                 @RequestParam(defaultValue = "1") int current,
-                                 @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<ApiResponse.Pagination<List<Document>>> search(@RequestParam(required = false) String keyword,
+                                                                      @RequestParam(required = false) String category,
+                                                                      @RequestParam(required = false) String status,
+                                                                      @RequestParam(defaultValue = "1") int current,
+                                                                      @RequestParam(defaultValue = "10") int size) {
         QueryWrapper<Document> wrapper = new QueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.like("title", keyword);
@@ -105,6 +108,7 @@ public class DocumentController {
         if (status != null && !status.isEmpty()) {
             wrapper.eq("status", status);
         }
-        return service.page(new Page<>(current, size), wrapper);
+        Page<Document> result = service.page(new Page<>(current, size), wrapper);
+        return ApiResponse.pagination(result.getRecords(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());
     }
 }

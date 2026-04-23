@@ -1,0 +1,133 @@
+:root {
+  /* 颜色系统 - 临床精准框架 (Clinical Precision) */
+  /* 品牌核心色 */
+  --color-brand: #005eb8;
+  --color-on-brand: #ffffff;
+  --color-brand-hover: #004a9e;
+
+  /* 语义化状态色 */
+  --color-danger: #d32f2f;
+  --color-on-danger: #ffffff;
+  --color-success: #2e7d32;
+  --color-on-success: #ffffff;
+  --color-processing: #ed6c02;
+  --color-on-processing: #ffffff;
+
+  /* 中性色与空间感 */
+  --color-background: #f8f9fa;
+  --color-on-background: #191c1d;
+  --color-surface: #f8f9fa;
+  --color-on-surface: #191c1d;
+  --color-subtle: #f1f5f9;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+
+  /* 轮廓与边框 */
+  --color-outline: #e2e8f0;
+  --color-outline-muted: #cbd5e1;
+
+  /* 视觉交互设计 */
+  --color-hover-overlay: rgba(0, 94, 184, 0.06);
+  --color-focus-ring: rgba(0, 94, 184, 0.2);
+
+  /* 补充颜色变量 - 与原型图完全同步 */
+  --color-on-tertiary-container: #ffcfb9;
+  --color-error-container: #ffdad6;
+  --color-on-primary-container: #c8daff;
+  --color-primary-container: #004a9e;
+  --color-on-secondary-container: #475c80;
+  --color-inverse-surface: #2e3132;
+  --color-tertiary-fixed: #ffdbcb;
+  --color-on-primary-fixed: #001b3d;
+  --color-on-secondary-fixed-variant: #32476a;
+  --color-tertiary-fixed-dim: #ffb691;
+  --color-on-secondary-fixed: #021b3c;
+  --color-surface-tint: #005db6;
+  --color-primary-fixed-dim: #a9c7ff;
+  --color-on-error-container: #93000a;
+  --color-secondary-fixed: #d6e3ff;
+  --color-surface-bright: #f8f9fa;
+  --color-on-tertiary-fixed-variant: #793100;
+  --color-inverse-primary: #a9c7ff;
+  --color-secondary-fixed-dim: #b2c7f0;
+  --color-on-primary-fixed-variant: #00468c;
+  --color-on-background: #191c1d;
+  --color-on-tertiary-fixed: #341100;
+  --color-primary-fixed: #d6e3ff;
+  --color-inverse-on-surface: #f0f1f2;
+  --color-surface-container-high: #e7e8e9;
+
+  /* 渐变 */
+  --gradient-primary: linear-gradient(135deg, var(--brand) 0%, var(--color-secondary) 100%);
+  --gradient-surface: linear-gradient(135deg, var(--surface) 0%, var(--subtle) 100%);
+  --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #F8FAFF 100%);
+  --gradient-accent: linear-gradient(135deg, var(--brand) 0%, #9D4EDD 100%);
+
+  /* 字体系统 - 遵循设计规范 */
+  --font-family-headline: 'Manrope', sans-serif;
+  --font-family-body: 'Inter', sans-serif;
+  --font-family-label: 'Inter', sans-serif;
+
+  /* 兼容性变量 */
+  --font-family-display: var(--font-family-headline);
+  --font-family-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+  --font-family-special: 'Clash Display', 'Poppins', sans-serif;
+
+  /* 间距系统 - 基于 4px 网格 */
+  --spacing-xxs: 2px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-xxxl: 64px;
+
+  /* 圆角系统 - 遵循设计规范 */
+  --radius-default: 0.125rem; /* 2px */
+  --radius-lg: 0.25rem; /* 4px */
+  --radius-xl: 0.5rem; /* 8px */
+  --radius-full: 0.75rem; /* 12px */
+
+  /* 兼容性变量 */
+  --radius-xs: var(--radius-default);
+  --radius-sm: 6px; /* 保留原有值 */
+  --radius-md: var(--radius-full);
+  --radius-lg-compat: 20px; /* 原 --radius-lg */
+  --radius-xl-compat: 28px; /* 原 --radius-xl */
+  --radius-xxl: 40px;
+  --radius-full-compat: 9999px;
+
+  /* 阴影系统 - 遵循设计规范 */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-ambient: 0 12px 40px rgba(0, 71, 141, 0.06);
+  --shadow-floating: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-soft: 0 4px 12px rgba(0, 102, 204, 0.08);
+  --shadow-medium: 0 8px 24px rgba(0, 102, 204, 0.12);
+  --shadow-hard: 0 12px 40px rgba(0, 102, 204, 0.16);
+  --shadow-glow: 0 0 0 1px rgba(0, 102, 204, 0.1), 0 8px 32px rgba(0, 102, 204, 0.2);
+
+  /* 兼容性变量 */
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  /* 过渡动画 */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-medium: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* 层级 */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* 其他效果 */
+  --blur-backdrop: blur(20px);
+  --blur-heavy: blur(40px);
+  --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+}

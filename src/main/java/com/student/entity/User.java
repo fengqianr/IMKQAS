@@ -28,6 +28,7 @@ import java.util.Collections;
 public class User implements UserDetails {
 
     @TableId(type = IdType.ASSIGN_ID)
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)
     private Long id;
 
     @TableField("username")

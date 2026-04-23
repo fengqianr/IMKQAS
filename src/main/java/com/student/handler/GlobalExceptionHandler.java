@@ -14,6 +14,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.stream.Collectors;
 
@@ -175,11 +176,16 @@ public class GlobalExceptionHandler {
      * 处理所有未捕获的异常
      *
      * @param e 异常
+     * @param request HTTP请求（可选）
      * @return API响应
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-        log.error("系统内部异常", e);
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e, HttpServletRequest request) {
+        if (request != null) {
+            log.error("系统内部异常: method={}, uri={}, query={}", request.getMethod(), request.getRequestURI(), request.getQueryString(), e);
+        } else {
+            log.error("系统内部异常", e);
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error(ErrorCode.SYSTEM_ERROR));
     }

@@ -273,9 +273,10 @@ public class EmbeddingServiceImpl implements EmbeddingService {
      * 构建嵌入API请求体
      */
     private String buildEmbeddingRequest(List<String> texts) throws JsonProcessingException {
-        // ModelScope API格式: {"input": ["text1", "text2"]}
-        // 注意：不同API端点可能有不同格式，这里需要根据实际API调整
+        // OpenAI兼容API格式: {"model": "model-name", "input": ["text1", "text2"]}
+        // 阿里云DashScope兼容模式使用OpenAI API格式
         java.util.Map<String, Object> requestMap = new java.util.HashMap<>();
+        requestMap.put("model", ragConfig.getEmbedding().getModel());
         requestMap.put("input", texts);
         return objectMapper.writeValueAsString(requestMap);
     }

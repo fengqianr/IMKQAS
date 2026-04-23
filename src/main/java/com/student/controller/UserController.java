@@ -7,12 +7,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.student.dto.user.HealthProfileRequest;
+import com.student.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
 import java.util.Map;
+import java.util.List;
 
 /**
  * 用户控制器
@@ -80,10 +82,11 @@ public class UserController {
      * @return 分页结果
      */
     @GetMapping
-    public Page<User> list(@RequestParam(defaultValue = "1") int current,
-                           @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<ApiResponse.Pagination<List<User>>> list(@RequestParam(defaultValue = "1") int current,
+                                                                @RequestParam(defaultValue = "10") int size) {
         Page<User> page = new Page<>(current, size);
-        return service.page(page);
+        Page<User> result = service.page(page);
+        return ApiResponse.pagination(result.getRecords(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());
     }
 
     /**
@@ -94,15 +97,16 @@ public class UserController {
      * @return 分页结果
      */
     @GetMapping("/search")
-    public Page<User> search(@RequestParam(required = false) String keyword,
-                             @RequestParam(defaultValue = "1") int current,
-                             @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<ApiResponse.Pagination<List<User>>> search(@RequestParam(required = false) String keyword,
+                                                                  @RequestParam(defaultValue = "1") int current,
+                                                                  @RequestParam(defaultValue = "10") int size) {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.like("username", keyword)
                    .or().like("phone", keyword);
         }
-        return service.page(new Page<>(current, size), wrapper);
+        Page<User> result = service.page(new Page<>(current, size), wrapper);
+        return ApiResponse.pagination(result.getRecords(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());
     }
 
     /**

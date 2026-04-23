@@ -61,7 +61,7 @@ spring:
 server:
   port: 8080
   servlet:
-    context-path: /api
+    context-path: /
     encoding:
       charset: UTF-8
       enabled: true
@@ -85,18 +85,18 @@ logging:
     console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 # 应用自定义配置
+# Modified for login fix
 imkqas:
   # RAG配置
   rag:
     # 重排序模型配置
     reranker:
-      model: gte-rerank
+      model: gte-rerank-v2
       # 部署方式: local(本地ONNX), api(远程API)
       deployment: api
       # 远程API配置（阿里云DashScope）
       api-endpoint: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
-      api-url: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
-      api-key: ${BAILIAN_API_KEY}
+      api-key: sk-ca1040e1914248cbb02dcb7ca8c7120a
       # 重排序top-k
       top-k: 5
       # 缓存配置
@@ -114,7 +114,7 @@ imkqas:
       # API端点 (阿里云百炼)
       api-endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings
       # API密钥 (从环境变量读取)
-      api-key: sk-706cf44145e64d96b9f53fcb4db86f9f
+      api-key: sk-ca1040e1914248cbb02dcb7ca8c7120a
       # 是否启用缓存
       cache-enabled: true
       # 超时时间 (毫秒)
@@ -148,8 +148,8 @@ imkqas:
 
     # 大语言模型配置 (阿里云百炼 DashScope，兼容 OpenAI 接口格式)
     llm:
-      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
-      api-key: sk-706cf44145e64d96b9f53fcb4db86f9f
+      base-url: https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+      api-key: sk-ca1040e1914248cbb02dcb7ca8c7120a
       model: qwen-plus                      # 可选: qwen-turbo / qwen-plus / qwen-max
       embedding-model: text-embedding-v3   # 输出维度 1024，与 Milvus 一致
       timeout: 60                           # 超时时间 (秒)

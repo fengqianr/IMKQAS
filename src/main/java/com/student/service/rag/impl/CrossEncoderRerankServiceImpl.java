@@ -1,5 +1,6 @@
 package com.student.service.rag.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.student.config.RagConfig;
 import com.student.service.rag.CrossEncoderRerankService;
 import com.student.service.rag.MultiRetrievalService;
@@ -29,6 +30,7 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
 
     private final RagConfig ragConfig;
     private OkHttpClient httpClient;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 构造函数
@@ -56,8 +58,16 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
     @PostConstruct
     public void init() {
         this.rerankerConfig = ragConfig.getReranker();
-        log.info("交叉编码器重排序服务初始化完成，模型: {}, API端点: {}, topK: {}",
-                rerankerConfig.getModel(), rerankerConfig.getApiEndpoint(), rerankerConfig.getTopK());
+        log.info("交叉编码器重排序服务初始化完成，模型: {}, API端点: {}, topK: {}, 完整URL长度: {}",
+                rerankerConfig.getModel(),
+                rerankerConfig.getApiEndpoint(),
+                rerankerConfig.getTopK(),
+                rerankerConfig.getApiEndpoint() != null ? rerankerConfig.getApiEndpoint().length() : 0);
+
+        // 调试：打印完整URL的前100个字符
+        if (rerankerConfig.getApiEndpoint() != null && rerankerConfig.getApiEndpoint().length() > 0) {
+            log.debug("API端点完整URL: {}", rerankerConfig.getApiEndpoint());
+        }
     }
 
     /**
@@ -92,7 +102,7 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
 
             if (retrievalResults == null || retrievalResults.isEmpty()) {
                 log.debug("重排序: 检索结果为空，直接返回");
-                return retrievalResults;
+                return retrievalResults == null ? new ArrayList<>() : retrievalResults;
             }
 
             // 限制处理数量，避免API过载
@@ -191,11 +201,33 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
         // 构建请求体
         String requestBody = buildRerankRequestBody(query, results);
 
+        // 调试：记录请求体（前500字符，避免敏感信息）
+        String requestBodyPreview = requestBody.length() > 500 ? requestBody.substring(0, 500) + "..." : requestBody;
+        log.debug("重排序API请求体: {}", requestBodyPreview);
+
         // 获取API密钥，优先从配置读取，如果为空则从.env文件或系统环境变量读取
         String apiKey = rerankerConfig.getApiKey();
+        String keySource = "配置";
+
         if (apiKey == null || apiKey.trim().isEmpty()) {
-            apiKey = EnvUtil.getEnv("BAILIAN_API_KEY");
-            log.debug("重排序API密钥从配置读取为空，尝试从.env/环境变量读取");
+            // 优先尝试DASHSCOPE_API_KEY（阿里云官方环境变量名）
+            apiKey = EnvUtil.getEnv("DASHSCOPE_API_KEY");
+            keySource = "环境变量(DASHSCOPE_API_KEY)";
+
+            if (apiKey == null || apiKey.trim().isEmpty()) {
+                // 回退到BAILIAN_API_KEY（向后兼容）
+                apiKey = EnvUtil.getEnv("BAILIAN_API_KEY");
+                keySource = "环境变量(BAILIAN_API_KEY)";
+                log.debug("重排序API密钥从DASHSCOPE_API_KEY读取为空，尝试BAILIAN_API_KEY");
+            } else {
+                log.debug("重排序API密钥从DASHSCOPE_API_KEY环境变量读取");
+            }
+        }
+
+        // 调试：记录API密钥来源和部分内容（安全处理）
+        if (apiKey != null && !apiKey.trim().isEmpty()) {
+            String maskedKey = maskApiKey(apiKey);
+            log.debug("重排序API密钥来源: {}, 密钥: {}", keySource, maskedKey);
         }
 
         if (apiKey == null || apiKey.trim().isEmpty()) {
@@ -210,11 +242,16 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
                 .build();
 
         try (Response response = getHttpClient().newCall(request).execute()) {
+            log.debug("重排序API响应状态: {} {}", response.code(), response.message());
+
             if (!response.isSuccessful()) {
+                String errorBody = response.body() != null ? response.body().string() : "";
+                log.error("重排序API请求失败: {} {}, 响应体: {}", response.code(), response.message(), errorBody);
                 throw new IOException("阿里云重排序API请求失败: " + response.code() + " " + response.message());
             }
 
             String responseBody = response.body() != null ? response.body().string() : "";
+            log.debug("重排序API响应体: {}", responseBody.length() > 500 ? responseBody.substring(0, 500) + "..." : responseBody);
             return parseRerankResponse(responseBody, results.size());
         }
     }
@@ -232,12 +269,36 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
             documents.add(result.getContent());
         }
 
+        // 获取模型名称
+        String modelName = rerankerConfig.getModel();
+
         // 构建阿里云重排序API请求格式
+        // 根据阿里云文档，gte-rerank-v2需要使用嵌套格式
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("query", query);
-        requestMap.put("documents", documents);
-        requestMap.put("model", rerankerConfig.getModel());
-        requestMap.put("top_k", rerankerConfig.getTopK());
+        requestMap.put("model", modelName);
+
+        if ("gte-rerank-v2".equals(modelName)) {
+            // 嵌套格式：gte-rerank-v2模型需要input对象
+            Map<String, Object> inputMap = new HashMap<>();
+            inputMap.put("query", query);
+            inputMap.put("documents", documents);
+            requestMap.put("input", inputMap);
+
+            Map<String, Object> parametersMap = new HashMap<>();
+            parametersMap.put("return_documents", true);
+            parametersMap.put("top_n", rerankerConfig.getTopK());
+            requestMap.put("parameters", parametersMap);
+        } else {
+            // 默认扁平格式（兼容qwen3-rerank等模型）
+            requestMap.put("query", query);
+            requestMap.put("documents", documents);
+            requestMap.put("top_n", rerankerConfig.getTopK());
+
+            // 为qwen3-rerank模型添加instruct参数
+            if (modelName.contains("qwen3")) {
+                requestMap.put("instruct", "Given a web search query, retrieve relevant passages that answer the query.");
+            }
+        }
 
         // 转换为JSON字符串（简化实现，实际应使用JSON库）
         return buildSimpleJson(requestMap);
@@ -252,9 +313,13 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
         List<Double> scores = new ArrayList<>();
 
         try {
-            // 示例响应格式：{"scores": [0.95, 0.87, 0.72, ...]}
-            // 这里简化解析，实际需要根据阿里云API文档实现
-            if (responseBody.contains("\"scores\"")) {
+            // 尝试解析嵌套格式（gte-rerank-v2）
+            if (responseBody.contains("\"results\"") && responseBody.contains("\"relevance_score\"")) {
+                // 解析嵌套格式：{"output": {"results": [{"index": 0, "relevance_score": 0.933, ...}]}}
+                parseNestedResponse(responseBody, scores, expectedSize);
+            }
+            // 尝试解析扁平格式（旧格式或兼容格式）
+            else if (responseBody.contains("\"scores\"")) {
                 // 提取分数数组
                 String scoresPart = responseBody.substring(
                         responseBody.indexOf("[") + 1,
@@ -280,6 +345,92 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
         }
 
         return scores.subList(0, Math.min(scores.size(), expectedSize));
+    }
+
+    /**
+     * 解析嵌套格式的重排序响应（gte-rerank-v2格式）
+     */
+    private void parseNestedResponse(String responseBody, List<Double> scores, int expectedSize) {
+        try {
+            // 查找"results"数组
+            int resultsStart = responseBody.indexOf("\"results\":");
+            if (resultsStart == -1) return;
+
+            int bracketStart = responseBody.indexOf("[", resultsStart);
+            if (bracketStart == -1) return;
+
+            int bracketEnd = findMatchingBracket(responseBody, bracketStart);
+            if (bracketEnd == -1) return;
+
+            String resultsArray = responseBody.substring(bracketStart, bracketEnd + 1);
+
+            // 按顺序解析每个结果对象
+            int currentPos = 0;
+            while (true) {
+                // 查找下一个"index"字段
+                int indexStart = resultsArray.indexOf("\"index\":", currentPos);
+                if (indexStart == -1) break;
+
+                // 查找下一个"relevance_score"字段
+                int scoreStart = resultsArray.indexOf("\"relevance_score\":", currentPos);
+                if (scoreStart == -1) break;
+
+                // 提取索引值
+                int indexValueStart = resultsArray.indexOf(":", indexStart) + 1;
+                int indexValueEnd = resultsArray.indexOf(",", indexValueStart);
+                if (indexValueEnd == -1) indexValueEnd = resultsArray.indexOf("}", indexValueStart);
+                if (indexValueEnd == -1) break;
+
+                String indexStr = resultsArray.substring(indexValueStart, indexValueEnd).trim();
+                int index = Integer.parseInt(indexStr);
+
+                // 提取分数值
+                int scoreValueStart = resultsArray.indexOf(":", scoreStart) + 1;
+                int scoreValueEnd = resultsArray.indexOf(",", scoreValueStart);
+                if (scoreValueEnd == -1) scoreValueEnd = resultsArray.indexOf("}", scoreValueStart);
+                if (scoreValueEnd == -1) break;
+
+                String scoreStr = resultsArray.substring(scoreValueStart, scoreValueEnd).trim();
+                // 去除末尾的 }（当逗号位于对象之间时，substring 会包含前一个对象的 }）
+                while (scoreStr.endsWith("}")) {
+                    scoreStr = scoreStr.substring(0, scoreStr.length() - 1).trim();
+                }
+                double score = Double.parseDouble(scoreStr);
+
+                // 确保scores列表有足够大小
+                while (scores.size() <= index) {
+                    scores.add(0.5); // 默认分数
+                }
+
+                // 根据索引位置设置分数
+                scores.set(index, score);
+
+                // 移动到下一个对象
+                currentPos = Math.max(indexValueEnd, scoreValueEnd) + 1;
+                if (currentPos >= resultsArray.length()) break;
+            }
+
+            log.debug("成功解析嵌套格式重排序响应，处理了{}个分数", scores.size());
+
+        } catch (Exception e) {
+            log.warn("解析嵌套格式响应异常: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * 查找匹配的方括号位置
+     */
+    private int findMatchingBracket(String str, int startIndex) {
+        int count = 1;
+        for (int i = startIndex + 1; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c == '[') count++;
+            else if (c == ']') count--;
+
+            if (count == 0) return i;
+        }
+        return -1; // 未找到匹配的方括号
     }
 
     /**
@@ -373,42 +524,59 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
     }
 
     /**
-     * 构建简单JSON（简化实现）
+     * 构建JSON（使用Jackson ObjectMapper）
      */
     private String buildSimpleJson(Map<String, Object> map) {
-        StringBuilder json = new StringBuilder("{");
-        boolean first = true;
+        try {
+            return objectMapper.writeValueAsString(map);
+        } catch (Exception e) {
+            log.error("构建JSON异常，使用简化实现", e);
+            // 降级：使用原始简化实现
+            StringBuilder json = new StringBuilder("{");
+            boolean first = true;
 
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            if (!first) {
-                json.append(",");
-            }
-            json.append("\"").append(entry.getKey()).append("\":");
-
-            Object value = entry.getValue();
-            if (value instanceof String) {
-                json.append("\"").append(value).append("\"");
-            } else if (value instanceof List) {
-                json.append("[");
-                List<?> list = (List<?>) value;
-                boolean firstItem = true;
-                for (Object item : list) {
-                    if (!firstItem) {
-                        json.append(",");
-                    }
-                    json.append("\"").append(item).append("\"");
-                    firstItem = false;
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (!first) {
+                    json.append(",");
                 }
-                json.append("]");
-            } else {
-                json.append(value);
+                json.append("\"").append(entry.getKey()).append("\":");
+
+                Object value = entry.getValue();
+                if (value instanceof String) {
+                    json.append("\"").append(value).append("\"");
+                } else if (value instanceof List) {
+                    json.append("[");
+                    List<?> list = (List<?>) value;
+                    boolean firstItem = true;
+                    for (Object item : list) {
+                        if (!firstItem) {
+                            json.append(",");
+                        }
+                        json.append("\"").append(item).append("\"");
+                        firstItem = false;
+                    }
+                    json.append("]");
+                } else {
+                    json.append(value);
+                }
+
+                first = false;
             }
 
-            first = false;
+            json.append("}");
+            return json.toString();
         }
+    }
 
-        json.append("}");
-        return json.toString();
+    /**
+     * 安全屏蔽API密钥显示
+     */
+    private String maskApiKey(String apiKey) {
+        if (apiKey == null || apiKey.length() <= 8) {
+            return "****";
+        }
+        // 显示前4位和后4位，中间用****代替
+        return apiKey.substring(0, 4) + "****" + apiKey.substring(apiKey.length() - 4);
     }
 
     /**

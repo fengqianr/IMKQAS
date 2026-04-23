@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c2c6d4",
+                        "inverse-primary": "#a9c7ff",
+                        "on-secondary-container": "#475c80",
+                        "on-primary-container": "#c8daff",
+                        "surface-container": "#edeeef",
+                        "on-secondary": "#ffffff",
+                        "background": "#f8f9fa",
+                        "surface": "#f8f9fa",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "on-primary-fixed-variant": "#00468c",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-container-low": "#f3f4f5",
+                        "secondary-container": "#c0d5ff",
+                        "primary-fixed-dim": "#a9c7ff",
+                        "primary-container": "#005eb8",
+                        "on-secondary-fixed": "#021b3c",
+                        "on-primary-fixed": "#001b3d",
+                        "on-tertiary-fixed-variant": "#793100",
+                        "surface-bright": "#f8f9fa",
+                        "surface-variant": "#e1e3e4",
+                        "on-surface-variant": "#424752",
+                        "inverse-on-surface": "#f0f1f2",
+                        "primary": "#00478d",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d9dadb",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#b2c7f0",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffdbcb",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-background": "#191c1d",
+                        "inverse-surface": "#2e3132",
+                        "tertiary-container": "#9f4300",
+                        "primary-fixed": "#d6e3ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#d6e3ff",
+                        "secondary": "#4a5f83",
+                        "on-tertiary-container": "#ffcfb9",
+                        "tertiary": "#793100",
+                        "on-surface": "#191c1d",
+                        "on-tertiary-fixed": "#341100",
+                        "outline": "#727783",
+                        "on-secondary-fixed-variant": "#32476a",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#005db6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; color: #191c1d; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,71,141,0.06)]">
+<div class="flex justify-between items-center h-16 px-8 w-full max-w-[1920px] mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-blue-800 dark:text-blue-100 font-headline tracking-tight">Clinical Precision RAG</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-slate-500 hover:text-blue-600 transition-colors font-semibold" href="#">智能问答</a>
+<a class="text-blue-700 border-b-2 border-blue-700 pb-2 font-semibold" href="#">知识库</a>
+<a class="text-slate-500 hover:text-blue-600 transition-colors font-semibold" href="#">数据分析</a>
+<a class="text-slate-500 hover:text-blue-600 transition-colors font-semibold" href="#">个人中心</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-5 py-2 rounded-full font-semibold active:scale-95 transition-all text-sm">New Analysis</button>
+<div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-lg text-xs font-medium text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    System Status
+                </div>
+<div class="flex items-center gap-3 ml-2">
+<button class="p-2 hover:bg-slate-50 rounded-lg transition-all text-slate-500">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-slate-50 rounded-lg transition-all text-slate-500">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/20">
+<img alt="Profile" data-alt="professional portrait of a medical practitioner in a clinical setting with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-pTqMFYmQCiA1FvgkWorlb2A1yRQBLFZ1GaErGkvXtOMGFBSJv9GTZalSvUWVfpWY6sxQWyxKXb53r84DXbvE25lDnhjc8fxqyCrFp6QjZYFvWObIo-6b8Kt3k4qc0r47dNVeSnhki38qBVD-BGKHDcUWDr-1xreCuq3tx9NCBYi0wVsz6hIXZvA_Z6eDtWZ2lM4TlUAF_s1dEwJZFfBIebV5WFEnBojNAOXazFwnQiKG_eN4OhdD62j0LIZn9Ofk3V6rL6T0RVM"/>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-slate-100 dark:bg-slate-800 h-[1px] w-full absolute bottom-0"></div>
+</nav>
+<main class="pt-24 pb-12 px-8 max-w-[1920px] mx-auto">
+<!-- Dashboard Header -->
+<header class="mb-10">
+<h1 class="text-3xl font-bold font-headline tracking-tight text-on-surface mb-2">知识库管理</h1>
+<p class="text-on-surface-variant max-w-2xl">集中化管理医疗文献、病历记录与诊疗指南。利用 RAG 技术实现精准的临床辅助决策。</p>
+</header>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Navigation & Upload -->
+<div class="col-span-3 space-y-6">
+<!-- Category Management -->
+<section class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_12px_40px_rgba(0,71,141,0.03)]">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline font-bold text-on-surface">分类管理</h3>
+<button class="text-primary hover:bg-primary-fixed p-1 rounded-md transition-colors">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+</button>
+</div>
+<nav class="space-y-1">
+<button class="w-full flex items-center justify-between px-4 py-3 bg-primary-fixed text-on-primary-fixed rounded-full transition-all group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl">folder_open</span>
+<span class="font-medium text-sm">内科学 (Internal Medicine)</span>
+</div>
+<span class="text-xs bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full">124</span>
+</button>
+<button class="w-full flex items-center justify-between px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl">folder</span>
+<span class="font-medium text-sm">外科学 (Surgery)</span>
+</div>
+<span class="text-xs text-on-surface-variant/60">86</span>
+</button>
+<button class="w-full flex items-center justify-between px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl">folder</span>
+<span class="font-medium text-sm">儿科学 (Pediatrics)</span>
+</div>
+<span class="text-xs text-on-surface-variant/60">42</span>
+</button>
+<button class="w-full flex items-center justify-between px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-xl">folder</span>
+<span class="font-medium text-sm">影像诊断 (Imaging)</span>
+</div>
+<span class="text-xs text-on-surface-variant/60">59</span>
+</button>
+</nav>
+</section>
+<!-- Upload Area -->
+<section class="bg-surface-container-lowest border-2 border-dashed border-outline-variant/30 rounded-xl p-8 text-center group hover:border-primary/50 transition-all">
+<div class="bg-primary-fixed w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+</div>
+<h4 class="font-headline font-bold text-on-surface mb-2">上传医学文档</h4>
+<p class="text-xs text-on-surface-variant mb-6 leading-relaxed">支持 PDF, Word, TXT 格式<br/>单个文件最大支持 50MB</p>
+<button class="w-full py-3 px-4 border border-outline-variant rounded-full text-sm font-semibold hover:bg-surface-container-low transition-colors">选择文件</button>
+</section>
+</div>
+<!-- Right Column: Document List & Detail View -->
+<div class="col-span-9 space-y-8">
+<!-- Document List Card -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0_12px_40px_rgba(0,71,141,0.03)] overflow-hidden">
+<div class="p-6 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-xl">search</span>
+<input class="pl-10 pr-4 py-2.5 bg-surface-container-low border-none rounded-full text-sm w-80 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="搜索文档标题或内容..." type="text"/>
+</div>
+<button class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+                                筛选器
+                            </button>
+</div>
+<div class="flex items-center gap-2 text-xs font-medium text-on-surface-variant">
+                            显示 1-10 / 共 1,240 个文件
+                        </div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+<th class="px-6 py-4">文档名称</th>
+<th class="px-6 py-4">大小</th>
+<th class="px-6 py-4">分类</th>
+<th class="px-6 py-4">上传时间</th>
+<th class="px-6 py-4">处理状态</th>
+<th class="px-6 py-4">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-low/30 transition-colors group cursor-pointer">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-red-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-red-600 text-lg">description</span>
+</div>
+<span class="text-sm font-semibold text-on-surface">2023_中国2型糖尿病防治指南.pdf</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">4.2 MB</td>
+<td class="px-6 py-4">
+<span class="text-xs bg-secondary-container text-on-secondary-container px-2 py-1 rounded">内科学</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2023-10-24</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-xs font-medium text-emerald-600">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                            已完成向量化
+                                        </div>
+</td>
+<td class="px-6 py-4">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors group cursor-pointer">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600 text-lg">article</span>
+</div>
+<span class="text-sm font-semibold text-on-surface">心血管手术临床护理路径研究.docx</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">856 KB</td>
+<td class="px-6 py-4">
+<span class="text-xs bg-secondary-container text-on-secondary-container px-2 py-1 rounded">外科学</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">2023-11-02</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-xs font-medium text-blue-600">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                                            正在处理 (65%)
+                                        </div>
+</td>
+<td class="px-6 py-4">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Split View: Preview & Chunk Browsing -->
+<section class="grid grid-cols-2 gap-6 h-[600px]">
+<!-- Document Preview -->
+<div class="bg-surface-container-lowest rounded-xl flex flex-col overflow-hidden shadow-[0_12px_40px_rgba(0,71,141,0.03)] border border-outline-variant/10">
+<div class="p-4 border-b border-outline-variant/10 flex items-center justify-between">
+<h3 class="font-headline font-bold text-sm text-on-surface">文档预览</h3>
+<div class="flex items-center gap-2">
+<button class="p-1.5 hover:bg-surface-container-low rounded"><span class="material-symbols-outlined text-lg">zoom_in</span></button>
+<button class="p-1.5 hover:bg-surface-container-low rounded"><span class="material-symbols-outlined text-lg">zoom_out</span></button>
+<button class="p-1.5 hover:bg-surface-container-low rounded"><span class="material-symbols-outlined text-lg">fullscreen</span></button>
+</div>
+</div>
+<div class="flex-1 bg-surface-container-low p-8 overflow-y-auto">
+<!-- Mock Document Page -->
+<div class="bg-white shadow-lg mx-auto w-full max-w-[500px] aspect-[1/1.414] p-10 space-y-6">
+<h2 class="text-xl font-bold text-center border-b pb-4">中国2型糖尿病防治指南 (2023版)</h2>
+<div class="space-y-4">
+<div class="h-4 bg-slate-100 rounded w-3/4"></div>
+<div class="h-4 bg-slate-100 rounded w-full"></div>
+<div class="h-4 bg-slate-100 rounded w-5/6"></div>
+<div class="h-4 bg-slate-100 rounded w-full"></div>
+<div class="h-32 bg-slate-50 rounded-lg border-2 border-primary/20 flex items-center justify-center">
+<span class="text-xs text-primary font-medium">CHUNK #1224: 胰岛素治疗路径</span>
+</div>
+<div class="h-4 bg-slate-100 rounded w-2/3"></div>
+<div class="h-4 bg-slate-100 rounded w-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Chunk Browsing -->
+<div class="bg-surface-container-lowest rounded-xl flex flex-col overflow-hidden shadow-[0_12px_40px_rgba(0,71,141,0.03)]">
+<div class="p-4 border-b border-outline-variant/10 flex items-center justify-between">
+<h3 class="font-headline font-bold text-sm text-on-surface">向量分块浏览 (Chunks)</h3>
+<span class="text-xs font-medium text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">共 142 个分块</span>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<!-- Active Chunk -->
+<div class="p-4 rounded-xl border-2 border-primary bg-primary-fixed/20 space-y-3 relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-primary tracking-widest uppercase">ID: 0x442A</span>
+<span class="text-[10px] text-primary/70 font-medium">Similarity: 0.982</span>
+</div>
+<p class="text-sm text-on-surface leading-relaxed">对于糖化血红蛋白(HbA1c)≥9.0%或血糖≥16.7 mmol/L且伴有明显高血糖症状的新诊断2型糖尿病患者，可考虑实施短期胰岛素强化治疗。</p>
+<div class="flex flex-wrap gap-2">
+<span class="text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded">HbA1c</span>
+<span class="text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded">胰岛素</span>
+<span class="text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded">临床路径</span>
+</div>
+</div>
+<!-- Other Chunks -->
+<div class="p-4 rounded-xl border border-outline-variant/30 hover:bg-surface-container-low transition-colors space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">ID: 0x442B</span>
+<span class="text-[10px] text-on-surface-variant/70 font-medium">Similarity: 0.845</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">治疗方案调整建议：每3个月评估一次血糖控制情况。如不达标，应及时增加降糖药物剂量或联用其他机制降糖药。</p>
+</div>
+<div class="p-4 rounded-xl border border-outline-variant/30 hover:bg-surface-container-low transition-colors space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">ID: 0x442C</span>
+<span class="text-[10px] text-on-surface-variant/70 font-medium">Similarity: 0.721</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">并发症筛查：确诊后应立即进行视网膜病变、糖尿病肾病及神经病变的筛查，之后每年至少进行一次复查。</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (Limited visibility as per rules) -->
+<!-- FAB is suppressed as this is a Management/Dashboard screen -->
+</body></html>

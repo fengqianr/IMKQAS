@@ -1,0 +1,114 @@
+/* 自定义布局类 - 替代Tailwind布局类 */
+
+/* 显示类型 */
+.custom-block { display: block; }
+.custom-inline { display: inline; }
+.custom-inline-block { display: inline-block; }
+.custom-flex { display: flex; }
+.custom-inline-flex { display: inline-flex; }
+.custom-grid { display: grid; }
+.custom-inline-grid { display: inline-grid; }
+.custom-hidden { display: none; }
+
+/* 定位 */
+.custom-static { position: static; }
+.custom-fixed { position: fixed; }
+.custom-absolute { position: absolute; }
+.custom-relative { position: relative; }
+.custom-sticky { position: sticky; }
+
+/* Flex布局 */
+.custom-flex-row { flex-direction: row; }
+.custom-flex-row-reverse { flex-direction: row-reverse; }
+.custom-flex-col { flex-direction: column; }
+.custom-flex-col-reverse { flex-direction: column-reverse; }
+
+.custom-flex-wrap { flex-wrap: wrap; }
+.custom-flex-wrap-reverse { flex-wrap: wrap-reverse; }
+.custom-flex-nowrap { flex-wrap: nowrap; }
+
+.custom-justify-start { justify-content: flex-start; }
+.custom-justify-end { justify-content: flex-end; }
+.custom-justify-center { justify-content: center; }
+.custom-justify-between { justify-content: space-between; }
+.custom-justify-around { justify-content: space-around; }
+.custom-justify-evenly { justify-content: space-evenly; }
+
+.custom-items-start { align-items: flex-start; }
+.custom-items-end { align-items: flex-end; }
+.custom-items-center { align-items: center; }
+.custom-items-baseline { align-items: baseline; }
+.custom-items-stretch { align-items: stretch; }
+
+.custom-flex-1 { flex: 1 1 0%; }
+.custom-flex-auto { flex: 1 1 auto; }
+.custom-flex-initial { flex: 0 1 auto; }
+.custom-flex-none { flex: none; }
+
+/* Grid布局 */
+.custom-grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.custom-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.custom-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.custom-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.custom-grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.custom-grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.custom-grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+
+.custom-grid-rows-1 { grid-template-rows: repeat(1, minmax(0, 1fr)); }
+.custom-grid-rows-2 { grid-template-rows: repeat(2, minmax(0, 1fr)); }
+.custom-grid-rows-3 { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+.custom-grid-rows-4 { grid-template-rows: repeat(4, minmax(0, 1fr)); }
+
+/* 溢出 */
+.custom-overflow-auto { overflow: auto; }
+.custom-overflow-hidden { overflow: hidden; }
+.custom-overflow-visible { overflow: visible; }
+.custom-overflow-scroll { overflow: scroll; }
+.custom-overflow-x-auto { overflow-x: auto; }
+.custom-overflow-y-auto { overflow-y: auto; }
+.custom-overflow-x-hidden { overflow-x: hidden; }
+.custom-overflow-y-hidden { overflow-y: hidden; }
+
+/* Z-index */
+.custom-z-0 { z-index: var(--z-index-0); }
+.custom-z-10 { z-index: var(--z-index-10); }
+.custom-z-20 { z-index: var(--z-index-20); }
+.custom-z-30 { z-index: var(--z-index-30); }
+.custom-z-40 { z-index: var(--z-index-40); }
+.custom-z-50 { z-index: var(--z-index-50); }
+.custom-z-auto { z-index: var(--z-index-auto); }
+
+/* 浮动 */
+.custom-float-right { float: right; }
+.custom-float-left { float: left; }
+.custom-float-none { float: none; }
+
+/* 清除浮动 */
+.custom-clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* 定位偏移 */
+.custom-top-0 { top: 0; }
+.custom-right-0 { right: 0; }
+.custom-bottom-0 { bottom: 0; }
+.custom-left-0 { left: 0; }
+.custom-top-auto { top: auto; }
+.custom-right-auto { right: auto; }
+.custom-bottom-auto { bottom: auto; }
+.custom-left-auto { left: auto; }
+
+/* 响应式显示类 - 需要媒体查询支持 */
+@media (min-width: 768px) {
+  .custom-md-flex { display: flex; }
+  .custom-md-hidden { display: none; }
+  .custom-md-block { display: block; }
+}
+
+@media (min-width: 1280px) {
+  .custom-xl-flex { display: flex; }
+  .custom-xl-hidden { display: none; }
+  .custom-xl-block { display: block; }
+}

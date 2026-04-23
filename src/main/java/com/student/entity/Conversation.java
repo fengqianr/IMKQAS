@@ -23,9 +23,11 @@ import java.time.LocalDateTime;
 public class Conversation {
 
     @TableId(type = IdType.ASSIGN_ID)
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)
     private Long id;
 
     @TableField("user_id")
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)
     private Long userId; // 用户ID
 
     @TableField("title")

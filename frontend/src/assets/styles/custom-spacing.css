@@ -1,0 +1,202 @@
+/* 自定义间距类 - 替代Tailwind间距类 */
+
+/* 内边距 */
+.custom-p-0 { padding: var(--size-0); }
+.custom-p-1 { padding: var(--size-1); }
+.custom-p-2 { padding: var(--size-2); }
+.custom-p-3 { padding: var(--size-3); }
+.custom-p-4 { padding: var(--size-4); }
+.custom-p-5 { padding: var(--size-5); }
+.custom-p-6 { padding: var(--size-6); }
+.custom-p-8 { padding: var(--size-8); }
+.custom-p-10 { padding: var(--size-10); }
+.custom-p-12 { padding: var(--size-12); }
+.custom-p-16 { padding: var(--size-16); }
+.custom-p-20 { padding: var(--size-20); }
+.custom-p-24 { padding: var(--size-24); }
+
+/* 水平内边距 */
+.custom-px-0 { padding-left: var(--size-0); padding-right: var(--size-0); }
+.custom-px-1 { padding-left: var(--size-1); padding-right: var(--size-1); }
+.custom-px-2 { padding-left: var(--size-2); padding-right: var(--size-2); }
+.custom-px-3 { padding-left: var(--size-3); padding-right: var(--size-3); }
+.custom-px-4 { padding-left: var(--size-4); padding-right: var(--size-4); }
+.custom-px-5 { padding-left: var(--size-5); padding-right: var(--size-5); }
+.custom-px-6 { padding-left: var(--size-6); padding-right: var(--size-6); }
+.custom-px-8 { padding-left: var(--size-8); padding-right: var(--size-8); }
+
+/* 垂直内边距 */
+.custom-py-0 { padding-top: var(--size-0); padding-bottom: var(--size-0); }
+.custom-py-1 { padding-top: var(--size-1); padding-bottom: var(--size-1); }
+.custom-py-2 { padding-top: var(--size-2); padding-bottom: var(--size-2); }
+.custom-py-3 { padding-top: var(--size-3); padding-bottom: var(--size-3); }
+.custom-py-4 { padding-top: var(--size-4); padding-bottom: var(--size-4); }
+.custom-py-5 { padding-top: var(--size-5); padding-bottom: var(--size-5); }
+.custom-py-6 { padding-top: var(--size-6); padding-bottom: var(--size-6); }
+.custom-py-8 { padding-top: var(--size-8); padding-bottom: var(--size-8); }
+
+/* 顶部内边距 */
+.custom-pt-0 { padding-top: var(--size-0); }
+.custom-pt-1 { padding-top: var(--size-1); }
+.custom-pt-2 { padding-top: var(--size-2); }
+.custom-pt-3 { padding-top: var(--size-3); }
+.custom-pt-4 { padding-top: var(--size-4); }
+.custom-pt-5 { padding-top: var(--size-5); }
+.custom-pt-6 { padding-top: var(--size-6); }
+.custom-pt-8 { padding-top: var(--size-8); }
+
+/* 底部内边距 */
+.custom-pb-0 { padding-bottom: var(--size-0); }
+.custom-pb-1 { padding-bottom: var(--size-1); }
+.custom-pb-2 { padding-bottom: var(--size-2); }
+.custom-pb-3 { padding-bottom: var(--size-3); }
+.custom-pb-4 { padding-bottom: var(--size-4); }
+.custom-pb-5 { padding-bottom: var(--size-5); }
+.custom-pb-6 { padding-bottom: var(--size-6); }
+.custom-pb-8 { padding-bottom: var(--size-8); }
+
+/* 左边内边距 */
+.custom-pl-0 { padding-left: var(--size-0); }
+.custom-pl-1 { padding-left: var(--size-1); }
+.custom-pl-2 { padding-left: var(--size-2); }
+.custom-pl-3 { padding-left: var(--size-3); }
+.custom-pl-4 { padding-left: var(--size-4); }
+.custom-pl-5 { padding-left: var(--size-5); }
+.custom-pl-6 { padding-left: var(--size-6); }
+.custom-pl-8 { padding-left: var(--size-8); }
+
+/* 右边内边距 */
+.custom-pr-0 { padding-right: var(--size-0); }
+.custom-pr-1 { padding-right: var(--size-1); }
+.custom-pr-2 { padding-right: var(--size-2); }
+.custom-pr-3 { padding-right: var(--size-3); }
+.custom-pr-4 { padding-right: var(--size-4); }
+.custom-pr-5 { padding-right: var(--size-5); }
+.custom-pr-6 { padding-right: var(--size-6); }
+.custom-pr-8 { padding-right: var(--size-8); }
+
+/* 外边距 */
+.custom-m-0 { margin: var(--size-0); }
+.custom-m-1 { margin: var(--size-1); }
+.custom-m-2 { margin: var(--size-2); }
+.custom-m-3 { margin: var(--size-3); }
+.custom-m-4 { margin: var(--size-4); }
+.custom-m-5 { margin: var(--size-5); }
+.custom-m-6 { margin: var(--size-6); }
+.custom-m-8 { margin: var(--size-8); }
+.custom-m-auto { margin: auto; }
+
+/* 水平外边距 */
+.custom-mx-0 { margin-left: var(--size-0); margin-right: var(--size-0); }
+.custom-mx-1 { margin-left: var(--size-1); margin-right: var(--size-1); }
+.custom-mx-2 { margin-left: var(--size-2); margin-right: var(--size-2); }
+.custom-mx-3 { margin-left: var(--size-3); margin-right: var(--size-3); }
+.custom-mx-4 { margin-left: var(--size-4); margin-right: var(--size-4); }
+.custom-mx-5 { margin-left: var(--size-5); margin-right: var(--size-5); }
+.custom-mx-6 { margin-left: var(--size-6); margin-right: var(--size-6); }
+.custom-mx-8 { margin-left: var(--size-8); margin-right: var(--size-8); }
+.custom-mx-auto { margin-left: auto; margin-right: auto; }
+
+/* 垂直外边距 */
+.custom-my-0 { margin-top: var(--size-0); margin-bottom: var(--size-0); }
+.custom-my-1 { margin-top: var(--size-1); margin-bottom: var(--size-1); }
+.custom-my-2 { margin-top: var(--size-2); margin-bottom: var(--size-2); }
+.custom-my-3 { margin-top: var(--size-3); margin-bottom: var(--size-3); }
+.custom-my-4 { margin-top: var(--size-4); margin-bottom: var(--size-4); }
+.custom-my-5 { margin-top: var(--size-5); margin-bottom: var(--size-5); }
+.custom-my-6 { margin-top: var(--size-6); margin-bottom: var(--size-6); }
+.custom-my-8 { margin-top: var(--size-8); margin-bottom: var(--size-8); }
+.custom-my-auto { margin-top: auto; margin-bottom: auto; }
+
+/* 顶部外边距 */
+.custom-mt-0 { margin-top: var(--size-0); }
+.custom-mt-1 { margin-top: var(--size-1); }
+.custom-mt-2 { margin-top: var(--size-2); }
+.custom-mt-3 { margin-top: var(--size-3); }
+.custom-mt-4 { margin-top: var(--size-4); }
+.custom-mt-5 { margin-top: var(--size-5); }
+.custom-mt-6 { margin-top: var(--size-6); }
+.custom-mt-8 { margin-top: var(--size-8); }
+.custom-mt-auto { margin-top: auto; }
+
+/* 底部外边距 */
+.custom-mb-0 { margin-bottom: var(--size-0); }
+.custom-mb-1 { margin-bottom: var(--size-1); }
+.custom-mb-2 { margin-bottom: var(--size-2); }
+.custom-mb-3 { margin-bottom: var(--size-3); }
+.custom-mb-4 { margin-bottom: var(--size-4); }
+.custom-mb-5 { margin-bottom: var(--size-5); }
+.custom-mb-6 { margin-bottom: var(--size-6); }
+.custom-mb-8 { margin-bottom: var(--size-8); }
+.custom-mb-auto { margin-bottom: auto; }
+
+/* 左边外边距 */
+.custom-ml-0 { margin-left: var(--size-0); }
+.custom-ml-1 { margin-left: var(--size-1); }
+.custom-ml-2 { margin-left: var(--size-2); }
+.custom-ml-3 { margin-left: var(--size-3); }
+.custom-ml-4 { margin-left: var(--size-4); }
+.custom-ml-5 { margin-left: var(--size-5); }
+.custom-ml-6 { margin-left: var(--size-6); }
+.custom-ml-8 { margin-left: var(--size-8); }
+.custom-ml-auto { margin-left: auto; }
+
+/* 右边外边距 */
+.custom-mr-0 { margin-right: var(--size-0); }
+.custom-mr-1 { margin-right: var(--size-1); }
+.custom-mr-2 { margin-right: var(--size-2); }
+.custom-mr-3 { margin-right: var(--size-3); }
+.custom-mr-4 { margin-right: var(--size-4); }
+.custom-mr-5 { margin-right: var(--size-5); }
+.custom-mr-6 { margin-right: var(--size-6); }
+.custom-mr-8 { margin-right: var(--size-8); }
+.custom-mr-auto { margin-right: auto; }
+
+/* 间距（gap） */
+.custom-gap-0 { gap: var(--size-0); }
+.custom-gap-1 { gap: var(--size-1); }
+.custom-gap-2 { gap: var(--size-2); }
+.custom-gap-3 { gap: var(--size-3); }
+.custom-gap-4 { gap: var(--size-4); }
+.custom-gap-5 { gap: var(--size-5); }
+.custom-gap-6 { gap: var(--size-6); }
+.custom-gap-8 { gap: var(--size-8); }
+
+/* 行间距 */
+.custom-gap-y-0 { row-gap: var(--size-0); }
+.custom-gap-y-1 { row-gap: var(--size-1); }
+.custom-gap-y-2 { row-gap: var(--size-2); }
+.custom-gap-y-3 { row-gap: var(--size-3); }
+.custom-gap-y-4 { row-gap: var(--size-4); }
+.custom-gap-y-5 { row-gap: var(--size-5); }
+.custom-gap-y-6 { row-gap: var(--size-6); }
+.custom-gap-y-8 { row-gap: var(--size-8); }
+
+/* 列间距 */
+.custom-gap-x-0 { column-gap: var(--size-0); }
+.custom-gap-x-1 { column-gap: var(--size-1); }
+.custom-gap-x-2 { column-gap: var(--size-2); }
+.custom-gap-x-3 { column-gap: var(--size-3); }
+.custom-gap-x-4 { column-gap: var(--size-4); }
+.custom-gap-x-5 { column-gap: var(--size-5); }
+.custom-gap-x-6 { column-gap: var(--size-6); }
+.custom-gap-x-8 { column-gap: var(--size-8); }
+
+/* 自定义间距值（基于项目配置） */
+.custom-p-xxs { padding: var(--spacing-xxs); }
+.custom-p-xs { padding: var(--spacing-xs); }
+.custom-p-sm { padding: var(--spacing-sm); }
+.custom-p-md { padding: var(--spacing-md); }
+.custom-p-lg { padding: var(--spacing-lg); }
+.custom-p-xl { padding: var(--spacing-xl); }
+.custom-p-xxl { padding: var(--spacing-xxl); }
+.custom-p-xxxl { padding: var(--spacing-xxxl); }
+
+.custom-m-xxs { margin: var(--spacing-xxs); }
+.custom-m-xs { margin: var(--spacing-xs); }
+.custom-m-sm { margin: var(--spacing-sm); }
+.custom-m-md { margin: var(--spacing-md); }
+.custom-m-lg { margin: var(--spacing-lg); }
+.custom-m-xl { margin: var(--spacing-xl); }
+.custom-m-xxl { margin: var(--spacing-xxl); }
+.custom-m-xxxl { margin: var(--spacing-xxxl); }
