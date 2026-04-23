@@ -42,6 +42,10 @@ public class ConversationController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Conversation create(@RequestBody Conversation entity) {
+        // 如果userId为空，设置默认值（开发测试用）
+        if (entity.getUserId() == null) {
+            entity.setUserId(1L); // 使用admin用户的ID
+        }
         service.save(entity);
         return entity;
     }

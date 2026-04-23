@@ -33,7 +33,7 @@ public class RagConfig {
     public static class RerankerConfig {
         /** 模型名称 */
         @NotBlank
-        private String model = "gte-rerank";
+        private String model = "gte-rerank-v2";
 
         /** 部署方式: local(本地ONNX), api(远程API) */
         @NotBlank
@@ -46,7 +46,7 @@ public class RagConfig {
         private String apiEndpoint = "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank";
 
         /** API密钥 (环境变量) */
-        private String apiKey = "sk-706cf44145e64d96b9f53fcb4db86f9f";
+        private String apiKey = "sk-ca1040e1914248cbb02dcb7ca8c7120a";
 
         /** 重排序top-k */
         @Min(1)
@@ -85,7 +85,7 @@ public class RagConfig {
         private String apiEndpoint = "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings";
 
         /** API密钥 (从环境变量读取) */
-        private String apiKey = "sk-706cf44145e64d96b9f53fcb4db86f9f";
+        private String apiKey = "sk-ca1040e1914248cbb02dcb7ca8c7120a";
 
         /** 是否启用缓存 */
         private boolean cacheEnabled = true;
@@ -169,10 +169,10 @@ public class RagConfig {
     public static class LlmConfig {
         /** API基础URL */
         @NotBlank
-        private String baseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1";
+        private String baseUrl = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
 
         /** API密钥 (从环境变量读取) */
-        private String apiKey = "sk-706cf44145e64d96b9f53fcb4db86f9f";
+        private String apiKey = "sk-ca1040e1914248cbb02dcb7ca8c7120a";
 
         /** 模型名称: qwen-turbo / qwen-plus / qwen-max */
         @NotBlank

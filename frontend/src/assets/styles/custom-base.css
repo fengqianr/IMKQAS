@@ -1,0 +1,53 @@
+/* 自定义CSS基础变量 - 替代Tailwind布局/尺寸/间距/动画类 */
+:root {
+  /* 间距系统 - 基于Tailwind配置但自定义实现 */
+  --spacing-xxs: 2px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-xxxl: 64px;
+
+  /* 尺寸系统 */
+  --size-0: 0;
+  --size-1: 0.25rem;   /* 4px */
+  --size-2: 0.5rem;    /* 8px */
+  --size-3: 0.75rem;   /* 12px */
+  --size-4: 1rem;      /* 16px */
+  --size-5: 1.25rem;   /* 20px */
+  --size-6: 1.5rem;    /* 24px */
+  --size-8: 2rem;      /* 32px */
+  --size-10: 2.5rem;   /* 40px */
+  --size-12: 3rem;     /* 48px */
+  --size-16: 4rem;     /* 64px */
+  --size-20: 5rem;     /* 80px */
+  --size-24: 6rem;     /* 96px */
+  --size-32: 8rem;     /* 128px */
+  --size-40: 10rem;    /* 160px */
+  --size-48: 12rem;    /* 192px */
+  --size-56: 14rem;    /* 224px */
+  --size-64: 16rem;    /* 256px */
+
+  /* 动画过渡时间 */
+  --duration-fast: 150ms;
+  --duration-medium: 250ms;
+  --duration-slow: 350ms;
+  --duration-bounce: 500ms;
+
+  /* 动画曲线 */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 布局相关 */
+  --z-index-0: 0;
+  --z-index-10: 10;
+  --z-index-20: 20;
+  --z-index-30: 30;
+  --z-index-40: 40;
+  --z-index-50: 50;
+  --z-index-auto: auto;
+}

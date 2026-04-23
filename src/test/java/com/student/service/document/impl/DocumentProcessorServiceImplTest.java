@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.student.config.RagConfig;
 import com.student.entity.Document;
 import com.student.service.dataBase.MilvusService;
+import com.student.service.dataBase.MinioService;
 import com.student.service.document.DocumentChunkService;
 import com.student.service.document.DocumentService;
 import com.student.service.rag.EmbeddingService;
@@ -35,6 +36,9 @@ class DocumentProcessorServiceImplTest {
     private MilvusService milvusService;
     @Mock
     private RagConfig ragConfig;
+
+    @Mock
+    private MinioService minioService;
 
     @InjectMocks
     private DocumentProcessorServiceImpl documentProcessorService;

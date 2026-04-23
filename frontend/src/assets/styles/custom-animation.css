@@ -1,0 +1,183 @@
+/* 自定义动画和过渡类 - 替代Tailwind动画/过渡类 */
+
+/* 过渡属性 */
+.custom-transition-none { transition-property: none; }
+.custom-transition-all { transition-property: all; }
+.custom-transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; }
+.custom-transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; }
+.custom-transition-opacity { transition-property: opacity; }
+.custom-transition-shadow { transition-property: box-shadow; }
+.custom-transition-transform { transition-property: transform; }
+
+/* 过渡持续时间 */
+.custom-duration-75 { transition-duration: 75ms; }
+.custom-duration-100 { transition-duration: 100ms; }
+.custom-duration-150 { transition-duration: var(--duration-fast); }
+.custom-duration-200 { transition-duration: 200ms; }
+.custom-duration-250 { transition-duration: var(--duration-medium); }
+.custom-duration-300 { transition-duration: 300ms; }
+.custom-duration-350 { transition-duration: var(--duration-slow); }
+.custom-duration-500 { transition-duration: var(--duration-bounce); }
+.custom-duration-700 { transition-duration: 700ms; }
+.custom-duration-1000 { transition-duration: 1000ms; }
+
+/* 过渡计时函数 */
+.custom-ease-linear { transition-timing-function: var(--ease-linear); }
+.custom-ease-in { transition-timing-function: var(--ease-in); }
+.custom-ease-out { transition-timing-function: var(--ease-out); }
+.custom-ease-in-out { transition-timing-function: var(--ease-in-out); }
+
+/* 过渡延迟 */
+.custom-delay-75 { transition-delay: 75ms; }
+.custom-delay-100 { transition-delay: 100ms; }
+.custom-delay-150 { transition-delay: 150ms; }
+.custom-delay-200 { transition-delay: 200ms; }
+.custom-delay-300 { transition-delay: 300ms; }
+.custom-delay-500 { transition-delay: 500ms; }
+.custom-delay-700 { transition-delay: 700ms; }
+.custom-delay-1000 { transition-delay: 1000ms; }
+
+/* 动画 */
+.custom-animate-none { animation: none; }
+.custom-animate-spin { animation: spin 1s linear infinite; }
+.custom-animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.custom-animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.custom-animate-bounce { animation: bounce 1s infinite; }
+
+/* 关键帧定义 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+}
+
+/* 变换 */
+.custom-transform { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+.custom-transform-gpu { transform: translate3d(var(--tw-translate-x), var(--tw-translate-y), 0) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+.custom-transform-none { transform: none; }
+
+/* 变换原点 */
+.custom-origin-center { transform-origin: center; }
+.custom-origin-top { transform-origin: top; }
+.custom-origin-top-right { transform-origin: top right; }
+.custom-origin-right { transform-origin: right; }
+.custom-origin-bottom-right { transform-origin: bottom right; }
+.custom-origin-bottom { transform-origin: bottom; }
+.custom-origin-bottom-left { transform-origin: bottom left; }
+.custom-origin-left { transform-origin: left; }
+.custom-origin-top-left { transform-origin: top left; }
+
+/* 缩放 */
+.custom-scale-0 { transform: scale(0); }
+.custom-scale-50 { transform: scale(.5); }
+.custom-scale-75 { transform: scale(.75); }
+.custom-scale-90 { transform: scale(.9); }
+.custom-scale-95 { transform: scale(.95); }
+.custom-scale-100 { transform: scale(1); }
+.custom-scale-105 { transform: scale(1.05); }
+.custom-scale-110 { transform: scale(1.1); }
+.custom-scale-125 { transform: scale(1.25); }
+.custom-scale-150 { transform: scale(1.5); }
+
+/* 旋转 */
+.custom-rotate-0 { transform: rotate(0deg); }
+.custom-rotate-1 { transform: rotate(1deg); }
+.custom-rotate-2 { transform: rotate(2deg); }
+.custom-rotate-3 { transform: rotate(3deg); }
+.custom-rotate-6 { transform: rotate(6deg); }
+.custom-rotate-12 { transform: rotate(12deg); }
+.custom-rotate-45 { transform: rotate(45deg); }
+.custom-rotate-90 { transform: rotate(90deg); }
+.custom-rotate-180 { transform: rotate(180deg); }
+
+/* 平移 */
+.custom-translate-x-0 { transform: translateX(0); }
+.custom-translate-x-1 { transform: translateX(var(--size-1)); }
+.custom-translate-x-2 { transform: translateX(var(--size-2)); }
+.custom-translate-x-3 { transform: translateX(var(--size-3)); }
+.custom-translate-x-4 { transform: translateX(var(--size-4)); }
+.custom-translate-x-5 { transform: translateX(var(--size-5)); }
+.custom-translate-x-6 { transform: translateX(var(--size-6)); }
+.custom-translate-x-8 { transform: translateX(var(--size-8)); }
+.custom-translate-x-1\/2 { transform: translateX(50%); }
+.custom-translate-x-full { transform: translateX(100%); }
+
+.custom-translate-y-0 { transform: translateY(0); }
+.custom-translate-y-1 { transform: translateY(var(--size-1)); }
+.custom-translate-y-2 { transform: translateY(var(--size-2)); }
+.custom-translate-y-3 { transform: translateY(var(--size-3)); }
+.custom-translate-y-4 { transform: translateY(var(--size-4)); }
+.custom-translate-y-5 { transform: translateY(var(--size-5)); }
+.custom-translate-y-6 { transform: translateY(var(--size-6)); }
+.custom-translate-y-8 { transform: translateY(var(--size-8)); }
+.custom-translate-y-1\/2 { transform: translateY(50%); }
+.custom-translate-y-full { transform: translateY(100%); }
+
+/* 组合过渡类（常用组合） */
+.custom-transition-default {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: var(--duration-medium);
+}
+
+.custom-transition-fast {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: var(--duration-fast);
+}
+
+.custom-transition-slow {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: var(--duration-slow);
+}
+
+.custom-transition-colors-fast {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: var(--duration-fast);
+}
+
+.custom-transition-colors-medium {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: var(--duration-medium);
+}
+
+.custom-transition-transform-fast {
+  transition-property: transform;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: var(--duration-fast);
+}
+
+.custom-transition-transform-medium {
+  transition-property: transform;
+  transition-timing-function: var(--ease-in-out);
+  transition-duration: var(--duration-medium);
+}
+
+/* 悬停状态 */
+.custom-hover-scale-95:hover {
+  transform: scale(0.95);
+}
+
+.custom-hover-scale-105:hover {
+  transform: scale(1.05);
+}
+
+.custom-active-scale-95:active {
+  transform: scale(0.95);
+}

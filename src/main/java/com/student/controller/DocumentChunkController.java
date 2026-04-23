@@ -4,9 +4,11 @@ import com.student.entity.DocumentChunk;
 import com.student.service.document.DocumentChunkService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.student.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import java.util.List;
 
 /**
  * 文档分块控制器
@@ -29,9 +31,9 @@ public class DocumentChunkController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public DocumentChunk create(@RequestBody DocumentChunk entity) {
+    public ApiResponse<DocumentChunk> create(@RequestBody DocumentChunk entity) {
         service.save(entity);
-        return entity;
+        return ApiResponse.success(entity);
     }
 
     /**
@@ -41,10 +43,10 @@ public class DocumentChunkController {
      * @return 更新后的文档分块
      */
     @PutMapping("/{id}")
-    public DocumentChunk update(@PathVariable Long id, @RequestBody DocumentChunk entity) {
+    public ApiResponse<DocumentChunk> update(@PathVariable Long id, @RequestBody DocumentChunk entity) {
         entity.setId(id);
         service.updateById(entity);
-        return entity;
+        return ApiResponse.success(entity);
     }
 
     /**
@@ -53,8 +55,9 @@ public class DocumentChunkController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public ApiResponse<Void> delete(@PathVariable Long id) {
         service.removeById(id);
+        return ApiResponse.success();
     }
 
     /**
@@ -63,8 +66,12 @@ public class DocumentChunkController {
      * @return 文档分块实体
      */
     @GetMapping("/{id}")
-    public DocumentChunk getById(@PathVariable Long id) {
-        return service.getById(id);
+    public ApiResponse<DocumentChunk> getById(@PathVariable Long id) {
+        DocumentChunk chunk = service.getById(id);
+        if (chunk != null) {
+            return ApiResponse.success(chunk);
+        }
+        return ApiResponse.error("文档分块不存在", (DocumentChunk) null);
     }
 
     /**
@@ -74,10 +81,11 @@ public class DocumentChunkController {
      * @return 分页结果
      */
     @GetMapping
-    public Page<DocumentChunk> list(@RequestParam(defaultValue = "1") int current,
-                                    @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<ApiResponse.Pagination<List<DocumentChunk>>> list(@RequestParam(defaultValue = "1") int current,
+                                                                         @RequestParam(defaultValue = "10") int size) {
         Page<DocumentChunk> page = new Page<>(current, size);
-        return service.page(page);
+        Page<DocumentChunk> result = service.page(page);
+        return ApiResponse.pagination(result.getRecords(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());
     }
 
     /**
@@ -88,13 +96,27 @@ public class DocumentChunkController {
      * @return 分页结果
      */
     @GetMapping("/by-document/{documentId}")
-    public Page<DocumentChunk> listByDocument(@PathVariable Long documentId,
-                                              @RequestParam(defaultValue = "1") int current,
-                                              @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<ApiResponse.Pagination<List<DocumentChunk>>> listByDocument(@PathVariable Long documentId,
+                                                                                   @RequestParam(defaultValue = "1") int current,
+                                                                                   @RequestParam(defaultValue = "10") int size) {
         QueryWrapper<DocumentChunk> wrapper = new QueryWrapper<>();
         wrapper.eq("document_id", documentId);
         wrapper.orderByAsc("chunk_index");
-        return service.page(new Page<>(current, size), wrapper);
+        Page<DocumentChunk> result = service.page(new Page<>(current, size), wrapper);
+        return ApiResponse.pagination(result.getRecords(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());
+    }
+
+    /**
+     * 清除所有文档分块数据
+     * 同时删除 MySQL 中的分块记录、Milvus 中的向量数据，并重置文档的分块计数
+     *
+     * @return 删除的分块数量
+     */
+    @DeleteMapping("/clear-all")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Integer> clearAll() {
+        int deletedCount = service.clearAllChunks();
+        return ApiResponse.success("已清除所有文档分块数据，共 " + deletedCount + " 条", deletedCount);
     }
 
     /**
@@ -106,10 +128,10 @@ public class DocumentChunkController {
      * @return 分页结果
      */
     @GetMapping("/search")
-    public Page<DocumentChunk> search(@RequestParam(required = false) String keyword,
-                                      @RequestParam(required = false) Long documentId,
-                                      @RequestParam(defaultValue = "1") int current,
-                                      @RequestParam(defaultValue = "10") int size) {
+    public ApiResponse<ApiResponse.Pagination<List<DocumentChunk>>> search(@RequestParam(required = false) String keyword,
+                                                                           @RequestParam(required = false) Long documentId,
+                                                                           @RequestParam(defaultValue = "1") int current,
+                                                                           @RequestParam(defaultValue = "10") int size) {
         QueryWrapper<DocumentChunk> wrapper = new QueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.like("content", keyword);
@@ -117,6 +139,7 @@ public class DocumentChunkController {
         if (documentId != null) {
             wrapper.eq("document_id", documentId);
         }
-        return service.page(new Page<>(current, size), wrapper);
+        Page<DocumentChunk> result = service.page(new Page<>(current, size), wrapper);
+        return ApiResponse.pagination(result.getRecords(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());
     }
 }

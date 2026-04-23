@@ -11,5 +11,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @version 1.0
  */
 public interface DocumentChunkService extends IService<DocumentChunk> {
-    // 可以添加额外的业务方法声明
+
+    /**
+     * 清除所有文档分块数据
+     * 同时删除 MySQL 中的分块记录、Milvus 中的向量数据，并重置文档的分块计数
+     *
+     * @return 删除的分块数量
+     */
+    int clearAllChunks();
 }

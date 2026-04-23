@@ -1,5 +1,7 @@
 package com.student.service.rag;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -71,7 +73,7 @@ public interface QaService {
     /**
      * 问答响应
      */
-    class QaResponse {
+    static class QaResponse {
         private final String query;
         private final String answer;
         private final List<String> retrievedContext; // 检索到的上下文（摘要）
@@ -79,8 +81,13 @@ public interface QaService {
         private final long processingTime; // 处理时间（毫秒）
         private final String modelUsed; // 使用的LLM模型
 
-        public QaResponse(String query, String answer, List<String> retrievedContext,
-                         double confidence, long processingTime, String modelUsed) {
+        @JsonCreator
+        public QaResponse(@JsonProperty("query") String query,
+                         @JsonProperty("answer") String answer,
+                         @JsonProperty("retrievedContext") List<String> retrievedContext,
+                         @JsonProperty("confidence") double confidence,
+                         @JsonProperty("processingTime") long processingTime,
+                         @JsonProperty("modelUsed") String modelUsed) {
             this.query = query;
             this.answer = answer;
             this.retrievedContext = retrievedContext;
@@ -117,12 +124,17 @@ public interface QaService {
     /**
      * 带来源的问答响应
      */
-    class QaResponseWithSources extends QaResponse {
+    static class QaResponseWithSources extends QaResponse {
         private final List<SourceCitation> citations;
 
-        public QaResponseWithSources(String query, String answer, List<String> retrievedContext,
-                                    double confidence, long processingTime, String modelUsed,
-                                    List<SourceCitation> citations) {
+        @JsonCreator
+        public QaResponseWithSources(@JsonProperty("query") String query,
+                                    @JsonProperty("answer") String answer,
+                                    @JsonProperty("retrievedContext") List<String> retrievedContext,
+                                    @JsonProperty("confidence") double confidence,
+                                    @JsonProperty("processingTime") long processingTime,
+                                    @JsonProperty("modelUsed") String modelUsed,
+                                    @JsonProperty("citations") List<SourceCitation> citations) {
             super(query, answer, retrievedContext, confidence, processingTime, modelUsed);
             this.citations = citations;
         }
@@ -135,7 +147,7 @@ public interface QaService {
     /**
      * 来源引用
      */
-    class SourceCitation {
+    static class SourceCitation {
         private final String documentId;
         private final String chunkId;
         private final String title;
@@ -143,8 +155,13 @@ public interface QaService {
         private final double relevanceScore; // 相关性分数
         private final int positionInAnswer; // 在回答中的位置
 
-        public SourceCitation(String documentId, String chunkId, String title,
-                             String snippet, double relevanceScore, int positionInAnswer) {
+        @JsonCreator
+        public SourceCitation(@JsonProperty("documentId") String documentId,
+                             @JsonProperty("chunkId") String chunkId,
+                             @JsonProperty("title") String title,
+                             @JsonProperty("snippet") String snippet,
+                             @JsonProperty("relevanceScore") double relevanceScore,
+                             @JsonProperty("positionInAnswer") int positionInAnswer) {
             this.documentId = documentId;
             this.chunkId = chunkId;
             this.title = title;
@@ -181,7 +198,7 @@ public interface QaService {
     /**
      * 问答统计信息
      */
-    class QaStats {
+    static class QaStats {
         private final int totalQueries;
         private final int successfulQueries;
         private final int failedQueries;
@@ -190,9 +207,14 @@ public interface QaService {
         private final int totalRetrievedDocuments;
         private final int totalGeneratedTokens;
 
-        public QaStats(int totalQueries, int successfulQueries, int failedQueries,
-                      double averageProcessingTime, double successRate,
-                      int totalRetrievedDocuments, int totalGeneratedTokens) {
+        @JsonCreator
+        public QaStats(@JsonProperty("totalQueries") int totalQueries,
+                      @JsonProperty("successfulQueries") int successfulQueries,
+                      @JsonProperty("failedQueries") int failedQueries,
+                      @JsonProperty("averageProcessingTime") double averageProcessingTime,
+                      @JsonProperty("successRate") double successRate,
+                      @JsonProperty("totalRetrievedDocuments") int totalRetrievedDocuments,
+                      @JsonProperty("totalGeneratedTokens") int totalGeneratedTokens) {
             this.totalQueries = totalQueries;
             this.successfulQueries = successfulQueries;
             this.failedQueries = failedQueries;

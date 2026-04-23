@@ -1,0 +1,73 @@
+@import './variables.css';
+
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-body);
+  color: var(--color-on-surface);
+  background-color: var(--color-surface);
+  line-height: 1.6;
+}
+
+/* 无边框卡片 */
+.card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 玻璃态效果 */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg);
+}
+
+/* 主按钮渐变 */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
+  border-radius: var(--radius-full);
+  color: white;
+  border: none;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* 副按钮 */
+.btn-secondary {
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  border-radius: var(--radius-full);
+  border: none;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* 标题样式 */
+h1, h2, h3, h4 {
+  font-family: var(--font-family-display);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.display-lg {
+  font-size: 3.5rem;
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  color: var(--color-on-surface);
+}

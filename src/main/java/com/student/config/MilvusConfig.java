@@ -91,7 +91,7 @@ public class MilvusConfig {
                 log.info("Milvus版本: {}", response.getData().getVersion());
                 return true;
             } else {
-                log.warn("Milvus连接测试失败: {}", response.getMessage());
+                log.warn("Milvus连接测试失败: {}", safeGetMessage(response));
                 return false;
             }
         } catch (Exception e) {
@@ -175,8 +175,8 @@ public class MilvusConfig {
             // 创建集合
             R<RpcStatus> createResponse = client.createCollection(createCollectionParam);
             if (createResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("创建Milvus集合失败: {}", createResponse.getMessage());
-                throw new RuntimeException("创建Milvus集合失败: " + String.valueOf(createResponse.getMessage()));
+                log.error("创建Milvus集合失败: {}", safeGetMessage(createResponse));
+                throw new RuntimeException("创建Milvus集合失败: " + safeGetMessage(createResponse));
             }
 
             log.info("Milvus集合创建成功: {}", collectionName);
@@ -209,14 +209,31 @@ public class MilvusConfig {
 
             R<RpcStatus> indexResponse = client.createIndex(createIndexParam);
             if (indexResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("创建Milvus索引失败: {}", indexResponse.getMessage());
-                throw new RuntimeException("创建Milvus索引失败: " + String.valueOf(indexResponse.getMessage()));
+                log.error("创建Milvus索引失败: {}", safeGetMessage(indexResponse));
+                throw new RuntimeException("创建Milvus索引失败: " + safeGetMessage(indexResponse));
             }
 
             log.info("Milvus向量索引创建成功");
         } catch (Exception e) {
             log.error("创建Milvus索引失败", e);
             throw new RuntimeException("创建Milvus索引失败", e);
+        }
+    }
+
+    /**
+     * 安全获取R对象的错误消息，避免Milvus SDK 2.3.6的NPE问题
+     * @param response Milvus响应对象
+     * @return 错误消息或空字符串
+     */
+    private String safeGetMessage(R<?> response) {
+        if (response == null) {
+            return "null";
+        }
+        try {
+            String message = response.getMessage();
+            return message != null ? message : "";
+        } catch (NullPointerException e) {
+            return "<无消息>";
         }
     }
 

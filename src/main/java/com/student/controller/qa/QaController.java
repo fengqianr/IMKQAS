@@ -1,5 +1,6 @@
 package com.student.controller.qa;
 
+import com.student.dto.ApiResponse;
 import com.student.service.rag.QaService;
 import com.student.service.triage.TriageService;
 import com.student.service.drug.DrugQueryService;
@@ -55,8 +56,8 @@ public class QaController {
 
         CompletableFuture.runAsync(() -> {
             try {
-                // 暂时使用非流式问答，后续实现真正的流式输出
-                QaService.QaResponse response = qaService.answer(query, userId, conversationId);
+                // 使用带来源的问答，获取引用信息
+                QaService.QaResponseWithSources response = qaService.answerWithSources(query, userId, conversationId);
 
                 // 模拟流式输出：将回答拆分为多个事件
                 String answer = response.getAnswer();
@@ -71,6 +72,25 @@ public class QaController {
                                 .comment("Chunk " + (i + 1) + "/" + chunks.length));
                         Thread.sleep(100); // 模拟流式延迟
                     }
+                }
+
+                // 发送参考文献引用信息
+                if (response.getCitations() != null && !response.getCitations().isEmpty()) {
+                    Map<String, Object> sourcesEvent = new java.util.HashMap<>();
+                    sourcesEvent.put("type", "sources");
+                    sourcesEvent.put("sources", response.getCitations().stream()
+                            .map(c -> {
+                                Map<String, Object> src = new java.util.HashMap<>();
+                                src.put("id", c.getDocumentId());
+                                src.put("title", c.getTitle());
+                                src.put("content", c.getSnippet());
+                                src.put("similarity", c.getRelevanceScore());
+                                return src;
+                            })
+                            .collect(java.util.stream.Collectors.toList()));
+                    emitter.send(SseEmitter.event()
+                            .id("sources")
+                            .data(sourcesEvent));
                 }
 
                 emitter.send(SseEmitter.event()
@@ -88,23 +108,23 @@ public class QaController {
     }
 
     @PostMapping("/ask")
-    @Operation(summary = "同步问答", description = "同步问答接口，返回完整的问答结果")
-    public ResponseEntity<QaService.QaResponse> ask(
+    @Operation(summary = "同步问答", description = "同步问答接口，返回包含参考文献引用的完整问答结果")
+    public ResponseEntity<ApiResponse<QaService.QaResponseWithSources>> ask(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "问答请求", required = true)
             @RequestBody Map<String, Object> requestBody) {
         String query = (String) requestBody.get("question");
-        Long userId = requestBody.get("userId") != null ? ((Number) requestBody.get("userId")).longValue() : null;
-        Long conversationId = requestBody.get("conversationId") != null ? ((Number) requestBody.get("conversationId")).longValue() : null;
+        Long userId = requestBody.get("userId") != null ? parseLong(requestBody.get("userId")) : null;
+        Long conversationId = requestBody.get("conversationId") != null ? parseLong(requestBody.get("conversationId")) : null;
 
         log.info("同步问答请求: query={}, userId={}, conversationId={}", query, userId, conversationId);
 
-        QaService.QaResponse response = qaService.answer(query, userId, conversationId);
-        return ResponseEntity.ok(response);
+        QaService.QaResponseWithSources response = qaService.answerWithSources(query, userId, conversationId);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping("/triage")
     @Operation(summary = "科室导诊", description = "根据症状描述推荐合适的就诊科室")
-    public ResponseEntity<DepartmentTriageResult> triage(
+    public ResponseEntity<ApiResponse<DepartmentTriageResult>> triage(
             @Parameter(description = "症状描述", required = true)
             @NotBlank(message = "症状描述不能为空")
             @RequestParam String symptoms) {
@@ -119,24 +139,53 @@ public class QaController {
 
         // 调用科室导诊服务
         DepartmentTriageResult result = triageService.triage(request);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/drug")
     @Operation(summary = "药物查询", description = "根据药品名称查询药品信息")
-    public ResponseEntity<?> searchDrug(
+    public ResponseEntity<ApiResponse<?>> searchDrug(
             @Parameter(description = "药品名称（通用名、商品名、别名等）", required = true)
             @NotBlank(message = "药品名称不能为空")
             @RequestParam String name) {
         log.info("药物查询请求: name={}", name);
 
         // 调用药物查询服务
-        return ResponseEntity.ok(drugQueryService.searchDrugsByName(name));
+        Object result = drugQueryService.searchDrugsByName(name);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/health")
     @Operation(summary = "健康检查", description = "问答服务健康检查")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("QaController is healthy");
+    }
+
+    /**
+     * 安全地从Object解析Long值
+     * 支持Number类型和String类型的数字
+     */
+    private Long parseLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            if (value instanceof Number) {
+                return ((Number) value).longValue();
+            } else if (value instanceof String) {
+                String str = ((String) value).trim();
+                if (str.isEmpty()) {
+                    return null;
+                }
+                return Long.parseLong(str);
+            } else {
+                log.warn("无法解析Long值，不支持的类型: {}, class={}", value, value.getClass().getName());
+                return null;
+            }
+        } catch (NumberFormatException e) {
+            log.warn("Long值解析失败: {}, error={}", value, e.getMessage());
+            return null;
+        }
     }
 }

@@ -1,0 +1,48 @@
+/* 覆盖Element Plus默认样式以符合设计系统 */
+
+.el-button--primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container)) !important;
+  border: none !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.el-button--secondary {
+  background-color: var(--color-surface-container-low) !important;
+  color: var(--color-on-surface) !important;
+  border: none !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.el-card {
+  border: none !important;
+  border-radius: var(--radius-xl) !important;
+  background-color: var(--color-surface-container-lowest) !important;
+}
+
+.el-menu {
+  border: none !important;
+  background-color: transparent !important;
+}
+
+.el-menu-item {
+  border-radius: var(--radius-full) !important;
+}
+
+.el-menu-item.is-active {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+}
+
+.el-input__wrapper {
+  border-radius: var(--radius-full) !important;
+  box-shadow: 0 0 0 1px var(--color-outline-variant) inset !important;
+}
+
+.el-table {
+  --el-table-border-color: transparent !important;
+}
+
+.el-table th {
+  background-color: var(--color-surface-container-low) !important;
+  font-weight: 600 !important;
+}

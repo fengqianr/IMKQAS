@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e1e3e4",
+                    "on-tertiary-container": "#ffcfb9",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#c8daff",
+                    "secondary-container": "#c0d5ff",
+                    "surface": "#f8f9fa",
+                    "on-secondary-container": "#475c80",
+                    "inverse-surface": "#2e3132",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-primary-fixed": "#001b3d",
+                    "on-secondary-fixed-variant": "#32476a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "on-secondary-fixed": "#021b3c",
+                    "surface-tint": "#005db6",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#9f4300",
+                    "primary-fixed-dim": "#a9c7ff",
+                    "background": "#f8f9fa",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#edeeef",
+                    "primary": "#00478d",
+                    "surface-container-highest": "#e1e3e4",
+                    "secondary-fixed": "#d6e3ff",
+                    "surface-bright": "#f8f9fa",
+                    "surface-container-low": "#f3f4f5",
+                    "secondary": "#4a5f83",
+                    "tertiary": "#793100",
+                    "on-tertiary-fixed-variant": "#793100",
+                    "outline-variant": "#c2c6d4",
+                    "outline": "#727783",
+                    "on-surface-variant": "#424752",
+                    "surface-dim": "#d9dadb",
+                    "primary-container": "#005eb8",
+                    "inverse-primary": "#a9c7ff",
+                    "secondary-fixed-dim": "#b2c7f0",
+                    "on-primary-fixed-variant": "#00468c",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#191c1d",
+                    "on-tertiary-fixed": "#341100",
+                    "primary-fixed": "#d6e3ff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container-high": "#e7e8e9",
+                    "on-surface": "#191c1d",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .brand-font { font-family: 'Manrope', sans-serif; }
+        .glass-effect { backdrop-filter: blur(20px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm h-16 flex justify-between items-center px-6">
+<div class="flex items-center gap-8">
+<div class="text-xl font-bold text-blue-800 dark:text-blue-200 tracking-tight font-manrope">
+                Clinical Precision RAG
+            </div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-manrope tracking-tight font-semibold text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400 pb-1 transition-colors" href="{{DATA:SCREEN:SCREEN_12}}">智能问答</a>
+<a class="font-manrope tracking-tight font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" href="{{DATA:SCREEN:SCREEN_9}}">知识库</a>
+<a class="font-manrope tracking-tight font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" href="{{DATA:SCREEN:SCREEN_15}}">数据分析</a>
+<a class="font-manrope tracking-tight font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" href="{{DATA:SCREEN:SCREEN_20}}">个人中心</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors material-symbols-outlined">notifications</button>
+<button class="p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors material-symbols-outlined">settings</button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant/15" data-alt="close-up professional portrait of a medical doctor in a white coat with a clean clinical background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg"/>
+</div>
+</header>
+<div class="flex flex-1 pt-16 h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 bg-slate-100 dark:bg-slate-950 flex flex-col pb-4 border-r-0">
+<div class="p-6 pt-4">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+</div>
+<div>
+<div class="text-blue-800 dark:text-blue-300 font-manrope font-bold text-sm">会话管理</div>
+<div class="text-[10px] text-on-surface-variant uppercase tracking-wider">最近咨询列表</div>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary-container text-white py-3 rounded-full font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-sm">add</span>
+                    新建咨询
+                </button>
+</div>
+<nav class="flex-1 overflow-y-auto no-scrollbar space-y-1">
+<div class="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded-lg px-4 py-2 mx-2 flex items-center gap-3 cursor-pointer">
+<span class="material-symbols-outlined text-lg">clinical_notes</span>
+<span class="font-inter text-sm truncate">今日查房建议</span>
+</div>
+<div class="text-slate-600 dark:text-slate-400 px-4 py-2 mx-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg flex items-center gap-3 cursor-pointer transition-all">
+<span class="material-symbols-outlined text-lg">medical_services</span>
+<span class="font-inter text-sm truncate">术前风险评估</span>
+</div>
+<div class="text-slate-600 dark:text-slate-400 px-4 py-2 mx-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg flex items-center gap-3 cursor-pointer transition-all">
+<span class="material-symbols-outlined text-lg">pill</span>
+<span class="font-inter text-sm truncate">药物相互作用</span>
+</div>
+<div class="text-slate-600 dark:text-slate-400 px-4 py-2 mx-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg flex items-center gap-3 cursor-pointer transition-all">
+<span class="material-symbols-outlined text-lg">history_edu</span>
+<span class="font-inter text-sm truncate">病历自动补全</span>
+</div>
+</nav>
+<div class="mt-auto px-2 space-y-1">
+<div class="text-slate-600 dark:text-slate-400 px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg flex items-center gap-3 cursor-pointer text-sm">
+<span class="material-symbols-outlined text-lg">delete</span>
+                    回收站
+                </div>
+<div class="text-slate-600 dark:text-slate-400 px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg flex items-center gap-3 cursor-pointer text-sm">
+<span class="material-symbols-outlined text-lg">help</span>
+                    帮助中心
+                </div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex overflow-hidden bg-surface">
+<!-- Chat Interface -->
+<section class="flex-1 flex flex-col h-full">
+<!-- Medical Safety Tip -->
+<div class="mx-6 mt-4">
+<div class="bg-tertiary-fixed/30 border-l-4 border-tertiary p-3 rounded-r-lg flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary text-lg">warning</span>
+<p class="text-xs text-on-tertiary-fixed-variant leading-relaxed">
+<span class="font-bold">医疗安全提示：</span>本系统提供的信息仅供临床参考，不作为最终诊断及用药依据。请结合患者实际体征及相关检查结果，由执业医师进行最终决策。
+                        </p>
+</div>
+</div>
+<!-- Chat Canvas -->
+<div class="flex-1 overflow-y-auto px-6 py-6 space-y-8 no-scrollbar">
+<!-- User Message -->
+<div class="flex justify-end">
+<div class="max-w-[80%] bg-white rounded-xl rounded-br-sm p-4 shadow-sm border border-outline-variant/10">
+<p class="text-on-surface text-sm leading-relaxed">请分析患者王某（65岁，男）在服用华法林期间出现轻微牙龈出血的临床风险，并给出调整建议。</p>
+</div>
+</div>
+<!-- AI Response -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<span class="text-xs font-bold text-primary font-manrope">PRECISION AI 临床决策支持</span>
+</div>
+<div class="bg-white rounded-xl rounded-bl-sm p-6 shadow-sm border border-outline-variant/10 max-w-[90%]">
+<div class="prose prose-sm text-on-surface leading-relaxed">
+<p class="mb-4">根据最新的《华法林临床应用中国专家共识》，针对该患者的情况，分析如下：</p>
+<ul class="space-y-3 mb-6">
+<li class="flex gap-2">
+<span class="text-primary font-bold">1.</span>
+<span><strong class="text-primary">当前风险等级：</strong>轻微出血（牙龈出血），属于临床常见不良反应。需首先核查患者最新的 INR（国际标准化比值）。</span>
+</li>
+<li class="flex gap-2">
+<span class="text-primary font-bold">2.</span>
+<span><strong class="text-primary">INR 阈值参考：</strong>若 INR &lt; 3.0，建议维持原剂量，并监测牙龈状况；若 INR 在 3.0-4.5 之间，建议减少剂量或停药一次。</span>
+</li>
+<li class="flex gap-2">
+<span class="text-primary font-bold">3.</span>
+<span><strong class="text-primary">相互作用核查：</strong>系统检测到患者近期曾开具阿司匹林，两者合用显著增加出血风险，建议评估双联抗栓的必要性。</span>
+</li>
+</ul>
+<!-- Citations -->
+<div class="mt-6 pt-4 border-t border-slate-100">
+<div class="text-[10px] text-slate-400 font-bold uppercase mb-3 tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-xs">auto_stories</span>
+                                        数据源与参考文献
+                                    </div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container text-[11px] text-on-surface-variant rounded flex items-center gap-1 cursor-pointer hover:bg-secondary-fixed transition-colors">
+                                            [1] 华法林抗凝治疗中国专家共识 (2023)
+                                        </span>
+<span class="px-2 py-1 bg-surface-container text-[11px] text-on-surface-variant rounded flex items-center gap-1 cursor-pointer hover:bg-secondary-fixed transition-colors">
+                                            [2] 临床药物相互作用数据库 v4.2
+                                        </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-6 bg-white/50 backdrop-blur-md">
+<div class="max-w-4xl mx-auto relative">
+<textarea class="w-full bg-white border-0 ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary rounded-full py-4 pl-6 pr-16 text-sm resize-none shadow-lg shadow-primary/5 font-inter" placeholder="输入临床问题或上传病例附件..." rows="1"></textarea>
+<div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors material-symbols-outlined">attach_file</button>
+<button class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-container transition-all shadow-md shadow-primary/20">
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</div>
+<div class="text-center mt-3">
+<span class="text-[10px] text-slate-400">支持 PDF 病历解析 · 实时检索临床指南</span>
+</div>
+</div>
+</section>
+<!-- Retrieval Path Panel (Right) -->
+<aside class="w-80 bg-surface-container-low border-l-0 hidden xl:flex flex-col p-6 overflow-y-auto no-scrollbar">
+<div class="mb-8">
+<h3 class="text-sm font-bold text-on-surface font-manrope mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">schema</span>
+                        知识检索路径
+                    </h3>
+<div class="space-y-4">
+<!-- Step 1 -->
+<div class="relative pl-6 pb-4 border-l border-primary/20 last:border-l-0">
+<div class="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<div class="text-[11px] font-bold text-primary mb-1">关键实体识别</div>
+<div class="bg-white p-3 rounded-lg shadow-sm text-xs text-on-surface-variant">
+                                识别对象：<span class="text-on-surface font-medium">王某, 65岁, 华法林, 牙龈出血</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative pl-6 pb-4 border-l border-primary/20 last:border-l-0">
+<div class="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-secondary ring-4 ring-secondary/10"></div>
+<div class="text-[11px] font-bold text-secondary mb-1">向量语义库检索</div>
+<div class="bg-white p-3 rounded-lg shadow-sm text-xs text-on-surface-variant">
+                                命中章节：<span class="text-on-surface font-medium">《抗凝药物出血管理规范》第4章</span>
+<div class="mt-2 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[85%]"></div>
+</div>
+<div class="mt-1 text-right text-[10px]">置信度: 0.89</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative pl-6 pb-0">
+<div class="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<div class="text-[11px] font-bold text-primary mb-1">逻辑推理生成</div>
+<div class="bg-white p-3 rounded-lg shadow-sm text-xs text-on-surface-variant">
+                                生成策略：<span class="text-on-surface font-medium">多源整合 + 风险量化提示</span>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface font-manrope mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">monitoring</span>
+                        患者体征快照
+                    </h3>
+<div class="bg-white rounded-xl p-4 shadow-sm space-y-4 border border-outline-variant/10">
+<div class="flex justify-between items-end">
+<span class="text-xs text-on-surface-variant">最新 INR</span>
+<span class="text-xl font-bold text-primary">2.85</span>
+</div>
+<div class="flex justify-between items-end">
+<span class="text-xs text-on-surface-variant">血压 (mmHg)</span>
+<span class="text-base font-bold text-on-surface">132/84</span>
+</div>
+<div class="flex justify-between items-end">
+<span class="text-xs text-on-surface-variant">近7日出血风险</span>
+<span class="text-base font-bold text-tertiary">中度</span>
+</div>
+</div>
+</div>
+</aside>
+</main>
+</div>
+</body></html>

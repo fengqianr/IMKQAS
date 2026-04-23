@@ -18,6 +18,7 @@ public class DocumentProcessResponse {
     private String message;
 
     @Schema(description = "文档ID")
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)
     private Long documentId;
 
     @Schema(description = "文档信息")

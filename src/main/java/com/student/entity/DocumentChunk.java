@@ -23,9 +23,11 @@ import java.time.LocalDateTime;
 public class DocumentChunk {
 
     @TableId(type = IdType.ASSIGN_ID)
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)
     private Long id;
 
     @TableField("document_id")
+    @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING)
     private Long documentId; // 文档ID
 
     @TableField("chunk_index")

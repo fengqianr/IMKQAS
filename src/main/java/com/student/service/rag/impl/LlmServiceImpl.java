@@ -268,46 +268,60 @@ public class LlmServiceImpl implements LlmService {
         String requestBody = buildOpenAIRequest(prompt, config);
 
         Request request = new Request.Builder()
-                .url(config.getBaseUrl() + "/chat/completions")
+                .url(config.getBaseUrl())
                 .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
                 .post(RequestBody.create(requestBody, MediaType.parse("application/json")))
                 .build();
 
+        // 记录请求信息（脱敏）
+        log.debug("LLM API请求: model={}, prompt长度={}, url={}",
+                config.getModel(), prompt.length(), config.getBaseUrl());
+
         OkHttpClient client = getHttpClient();
         try (Response response = client.newCall(request).execute()) {
+            int statusCode = response.code();
+            String responseBody = response.body() != null ? response.body().string() : "";
+
+            log.debug("LLM API响应: status={}, body长度={}, 内容预览={}", statusCode, responseBody.length(),
+                    responseBody.length() > 200 ? responseBody.substring(0, 200) + "..." : responseBody);
+
             if (!response.isSuccessful()) {
-                throw new IOException("LLM API请求失败: " + response.code() + " " + response.message());
+                log.error("LLM API请求失败: status={}, body={}", statusCode,
+                        responseBody.length() > 200 ? responseBody.substring(0, 200) + "..." : responseBody);
+                throw new IOException("LLM API请求失败: " + statusCode + " " + response.message());
             }
 
-            String responseBody = response.body() != null ? response.body().string() : "";
             return parseOpenAIResponse(responseBody);
         }
     }
 
     /**
-     * 构建OpenAI兼容请求体
+     * 构建阿里云百炼专有API请求体
      */
     private String buildOpenAIRequest(String prompt, RagConfig.LlmConfig config) throws JsonProcessingException {
         Map<String, Object> requestMap = new HashMap<>();
         requestMap.put("model", config.getModel());
 
-        List<Map<String, String>> messages = new ArrayList<>();
-        Map<String, String> userMessage = new HashMap<>();
-        userMessage.put("role", "user");
-        userMessage.put("content", prompt);
-        messages.add(userMessage);
+        // 阿里云百炼文本生成API使用"input"字段包含"prompt"
+        Map<String, Object> inputMap = new HashMap<>();
+        inputMap.put("prompt", prompt);
+        requestMap.put("input", inputMap);
 
-        requestMap.put("messages", messages);
-        requestMap.put("temperature", config.getTemperature());
-        requestMap.put("max_tokens", config.getMaxTokens());
-        requestMap.put("stream", false);
+        // 构建parameters对象
+        Map<String, Object> parametersMap = new HashMap<>();
+        parametersMap.put("temperature", config.getTemperature());
+        parametersMap.put("max_tokens", config.getMaxTokens());
+        // 阿里云百炼可能使用"max_new_tokens"而不是"max_tokens"
+        parametersMap.put("max_new_tokens", config.getMaxTokens());
+        parametersMap.put("stream", false);
+        requestMap.put("parameters", parametersMap);
 
         return objectMapper.writeValueAsString(requestMap);
     }
 
     /**
-     * 解析OpenAI兼容响应
+     * 解析阿里云百炼专有API响应（兼容OpenAI格式）
      */
     private LlmApiResponse parseOpenAIResponse(String responseBody) throws IOException {
         JsonNode root = objectMapper.readTree(responseBody);
@@ -316,13 +330,30 @@ public class LlmServiceImpl implements LlmService {
         int tokensGenerated = 0;
         int tokensConsumed = 0;
 
-        if (root.has("choices") && root.get("choices").isArray() && root.get("choices").size() > 0) {
+        // 首先尝试阿里云专有格式：output字段
+        if (root.has("output")) {
+            JsonNode output = root.get("output");
+            if (output.has("text")) {
+                answer = output.get("text").asText();
+            } else if (output.has("choices") && output.get("choices").isArray() && output.get("choices").size() > 0) {
+                // output.choices格式
+                JsonNode firstChoice = output.get("choices").get(0);
+                if (firstChoice.has("message") && firstChoice.get("message").has("content")) {
+                    answer = firstChoice.get("message").get("content").asText();
+                } else if (firstChoice.has("text")) {
+                    answer = firstChoice.get("text").asText();
+                }
+            }
+        }
+        // 回退到OpenAI兼容格式
+        else if (root.has("choices") && root.get("choices").isArray() && !root.get("choices").isEmpty()) {
             JsonNode firstChoice = root.get("choices").get(0);
             if (firstChoice.has("message") && firstChoice.get("message").has("content")) {
                 answer = firstChoice.get("message").get("content").asText();
             }
         }
 
+        // 解析token使用情况
         if (root.has("usage")) {
             JsonNode usage = root.get("usage");
             if (usage.has("completion_tokens")) {

@@ -77,8 +77,8 @@ public class MilvusService {
 
             R<MutationResult> insertResponse = milvusClient.insert(insertParam);
             if (insertResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("插入向量数据失败: {}", insertResponse.getMessage());
-                throw new RuntimeException("插入向量数据失败: " + String.valueOf(insertResponse.getMessage()));
+                log.error("插入向量数据失败: {}", safeGetMessage(insertResponse));
+                throw new RuntimeException("插入向量数据失败: " + safeGetMessage(insertResponse));
             }
 
             // 获取插入的ID
@@ -140,8 +140,8 @@ public class MilvusService {
 
             R<MutationResult> insertResponse = milvusClient.insert(insertParam);
             if (insertResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("批量插入向量数据失败: {}", insertResponse.getMessage());
-                throw new RuntimeException("批量插入向量数据失败: " + String.valueOf(insertResponse.getMessage()));
+                log.error("批量插入向量数据失败: {}", safeGetMessage(insertResponse));
+                throw new RuntimeException("批量插入向量数据失败: " + safeGetMessage(insertResponse));
             }
 
             // 获取插入的ID列表
@@ -177,45 +177,135 @@ public class MilvusService {
      */
     public List<SearchResult> searchSimilarVectors(List<Float> queryEmbedding, int topK, String filter) {
         try {
-            log.info("向量相似度搜索: topK={}, filter={}", topK, filter);
+            log.info("向量相似度搜索: topK={}, filter={}, embeddingSize={}",
+                    topK, filter, queryEmbedding != null ? queryEmbedding.size() : 0);
 
             // 确保集合已加载
             loadCollection();
+
+            // 调试：检查集合状态
+            try {
+                long collectionCount = getCollectionCount();
+                log.debug("集合实体数量: {}", collectionCount);
+                if (collectionCount == 0) {
+                    log.warn("集合为空，搜索将返回空结果");
+                    return new ArrayList<>();
+                }
+            } catch (Exception e) {
+                log.warn("获取集合计数失败: {}", e.getMessage());
+            }
 
             // 构建搜索参数
             List<String> outputFields = List.of("chunk_id", "document_id", "content", "metadata");
             List<List<Float>> searchVectors = List.of(queryEmbedding);
 
-            SearchParam searchParam = SearchParam.newBuilder()
+            SearchParam.Builder searchParamBuilder = SearchParam.newBuilder()
                     .withCollectionName(collectionName)
                     .withVectorFieldName("embedding")
                     .withVectors(searchVectors)
                     .withTopK(topK)
                     .withMetricType(MetricType.IP) // 内积相似度
                     .withOutFields(outputFields)
-                    .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
-                    .withExpr(filter)
-                    .build();
+                    .withConsistencyLevel(ConsistencyLevelEnum.STRONG);
+
+            // 仅在filter不为null且非空时设置表达式
+            if (filter != null && !filter.trim().isEmpty()) {
+                searchParamBuilder.withExpr(filter);
+            }
+
+            SearchParam searchParam = searchParamBuilder.build();
 
             R<SearchResults> searchResponse = milvusClient.search(searchParam);
             if (searchResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("向量搜索失败: {}", searchResponse.getMessage());
-                throw new RuntimeException("向量搜索失败: " + String.valueOf(searchResponse.getMessage()));
+                log.error("向量搜索失败: {}", safeGetMessage(searchResponse));
+                throw new RuntimeException("向量搜索失败: " + safeGetMessage(searchResponse));
             }
 
             // 解析搜索结果
             SearchResultsWrapper wrapper = new SearchResultsWrapper(searchResponse.getData().getResults());
             List<SearchResult> results = new ArrayList<>();
 
+            // 调试：记录搜索结果基本信息
+            log.debug("搜索响应状态: {}, 消息: {}", searchResponse.getStatus(), safeGetMessage(searchResponse));
+
+            // 尝试获取实际返回的结果数量（通过ID分数对数量）
+            int actualResultCount = 0;
+            try {
+                List<SearchResultsWrapper.IDScore> idScores = wrapper.getIDScore(0);
+                if (idScores != null) {
+                    actualResultCount = idScores.size();
+                }
+            } catch (Exception e) {
+                log.warn("无法获取ID分数列表: {}", e.getMessage());
+            }
+            log.debug("搜索结果数量: actualResultCount={}, topK={}", actualResultCount, topK);
+
             for (int i = 0; i < topK; i++) {
                 try {
-                    Long chunkId = wrapper.getFieldData("chunk_id", 0).get(i).toString() != null ?
-                            Long.parseLong(wrapper.getFieldData("chunk_id", 0).get(i).toString()) : null;
-                    Long documentId = wrapper.getFieldData("document_id", 0).get(i).toString() != null ?
-                            Long.parseLong(wrapper.getFieldData("document_id", 0).get(i).toString()) : null;
-                    String content = wrapper.getFieldData("content", 0).get(i).toString();
-                    String metadata = wrapper.getFieldData("metadata", 0).get(i).toString();
-                    Float score = wrapper.getIDScore(0).get(i).getScore();
+                    // 首先检查是否有足够的结果
+                    if (i >= actualResultCount) {
+                        log.trace("跳过索引 {}，超过实际结果数量", i);
+                        break;
+                    }
+
+                    // 调试：尝试获取字段数据
+                    Long chunkId = null;
+                    String[] chunkIdFieldNames = {"chunk_id", "chunkId", "chunk-id", "chunk"};
+                    for (String fieldName : chunkIdFieldNames) {
+                        try {
+                            Object chunkIdObj = wrapper.getFieldData(fieldName, 0).get(i);
+                            if (chunkIdObj != null) {
+                                chunkId = Long.parseLong(chunkIdObj.toString());
+                                log.debug("使用字段名 {} 成功获取chunk_id: {}", fieldName, chunkId);
+                                break;
+                            }
+                        } catch (Exception e) {
+                            log.trace("字段名 {} 获取chunk_id失败[{}]: {}", fieldName, i, e.getMessage());
+                        }
+                    }
+                    if (chunkId == null) {
+                        log.warn("所有chunk_id字段名尝试均失败");
+                    }
+
+                    Long documentId = null;
+                    try {
+                        Object documentIdObj = wrapper.getFieldData("document_id", 0).get(i);
+                        if (documentIdObj != null) {
+                            documentId = Long.parseLong(documentIdObj.toString());
+                        }
+                    } catch (Exception e) {
+                        log.warn("解析document_id失败[{}]: {}", i, e.getMessage());
+                    }
+
+                    String content = "";
+                    try {
+                        Object contentObj = wrapper.getFieldData("content", 0).get(i);
+                        if (contentObj != null) {
+                            content = contentObj.toString();
+                        }
+                    } catch (Exception e) {
+                        log.warn("解析content失败[{}]: {}", i, e.getMessage());
+                    }
+
+                    String metadata = "";
+                    try {
+                        Object metadataObj = wrapper.getFieldData("metadata", 0).get(i);
+                        if (metadataObj != null) {
+                            metadata = metadataObj.toString();
+                        }
+                    } catch (Exception e) {
+                        log.warn("解析metadata失败[{}]: {}", i, e.getMessage());
+                    }
+
+                    Float score = null;
+                    try {
+                        List<SearchResultsWrapper.IDScore> idScoreList = wrapper.getIDScore(0);
+                        if (idScoreList != null && i < idScoreList.size()) {
+                            score = idScoreList.get(i).getScore();
+                        }
+                    } catch (Exception e) {
+                        log.warn("获取score失败[{}]: {}", i, e.getMessage());
+                    }
 
                     SearchResult result = new SearchResult();
                     result.setChunkId(chunkId);
@@ -225,6 +315,8 @@ public class MilvusService {
                     result.setScore(score);
 
                     results.add(result);
+                    log.trace("解析搜索结果[{}]: chunkId={}, documentId={}, contentLength={}, score={}",
+                            i, chunkId, documentId, content.length(), score);
                 } catch (Exception e) {
                     log.warn("解析搜索结果失败: index={}", i, e);
                 }
@@ -249,8 +341,8 @@ public class MilvusService {
 
             R<RpcStatus> loadResponse = milvusClient.loadCollection(loadParam);
             if (loadResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("加载集合失败: {}", loadResponse.getMessage());
-                throw new RuntimeException("加载集合失败: " + String.valueOf(loadResponse.getMessage()));
+                log.error("加载集合失败: {}", safeGetMessage(loadResponse));
+                throw new RuntimeException("加载集合失败: " + safeGetMessage(loadResponse));
             }
 
             log.debug("集合加载成功: {}", collectionName);
@@ -271,8 +363,8 @@ public class MilvusService {
 
             R<RpcStatus> releaseResponse = milvusClient.releaseCollection(releaseParam);
             if (releaseResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("释放集合失败: {}", releaseResponse.getMessage());
-                throw new RuntimeException("释放集合失败: " + String.valueOf(releaseResponse.getMessage()));
+                log.error("释放集合失败: {}", safeGetMessage(releaseResponse));
+                throw new RuntimeException("释放集合失败: " + safeGetMessage(releaseResponse));
             }
 
             log.debug("集合释放成功: {}", collectionName);
@@ -289,13 +381,16 @@ public class MilvusService {
      */
     public long getCollectionCount() {
         try {
+            // 确保集合已加载，以获取最新统计信息
+            loadCollection();
+
             GetCollectionStatisticsParam param = GetCollectionStatisticsParam.newBuilder()
                     .withCollectionName(collectionName)
                     .build();
             R<GetCollectionStatisticsResponse> countResponse = milvusClient.getCollectionStatistics(param);
             if (countResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("获取集合统计信息失败: {}", countResponse.getMessage());
-                throw new RuntimeException("获取集合统计信息失败: " + String.valueOf(countResponse.getMessage()));
+                log.error("获取集合统计信息失败: {}", safeGetMessage(countResponse));
+                throw new RuntimeException("获取集合统计信息失败: " + safeGetMessage(countResponse));
             }
 
             long count = 0L;
@@ -363,6 +458,12 @@ public class MilvusService {
         try {
             log.info("按表达式删除向量数据: expr={}", expr);
 
+            // 验证表达式
+            if (expr == null || expr.trim().isEmpty()) {
+                log.error("删除表达式不能为空");
+                return false;
+            }
+
             // 构建删除参数
             DeleteParam deleteParam = DeleteParam.newBuilder()
                     .withCollectionName(collectionName)
@@ -371,7 +472,7 @@ public class MilvusService {
 
             R<MutationResult> deleteResponse = milvusClient.delete(deleteParam);
             if (deleteResponse.getStatus() != R.Status.Success.getCode()) {
-                log.error("删除向量数据失败: {}", deleteResponse.getMessage());
+                log.error("删除向量数据失败: {}", safeGetMessage(deleteResponse));
                 return false;
             }
 
@@ -382,6 +483,50 @@ public class MilvusService {
         } catch (Exception e) {
             log.error("删除向量数据异常", e);
             return false;
+        }
+    }
+
+
+    /**
+     * 删除集合中所有向量数据
+     *
+     * @return 是否删除成功
+     */
+    public boolean deleteAllVectors() {
+        try {
+            log.info("开始删除集合中所有向量数据: collectionName={}", collectionName);
+
+            // 使用 document_id >= 0 匹配所有记录
+            String expr = "document_id >= 0";
+            boolean success = deleteByExpression(expr);
+
+            if (success) {
+                log.info("集合中所有向量数据已删除: collectionName={}", collectionName);
+            } else {
+                log.warn("集合向量数据删除可能未完全成功: collectionName={}", collectionName);
+            }
+
+            return success;
+        } catch (Exception e) {
+            log.error("删除集合中所有向量数据异常", e);
+            return false;
+        }
+    }
+
+    /**
+     * 安全获取R对象的错误消息，避免Milvus SDK 2.3.6的NPE问题
+     * @param response Milvus响应对象
+     * @return 错误消息或空字符串
+     */
+    private String safeGetMessage(R<?> response) {
+        if (response == null) {
+            return "null";
+        }
+        try {
+            String message = response.getMessage();
+            return message != null ? message : "";
+        } catch (NullPointerException e) {
+            return "<无消息>";
         }
     }
 

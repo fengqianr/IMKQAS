@@ -70,6 +70,13 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 // 健康检查
                                 "/actuator/health",
+                                "/api/qa/health",
+                                // QA和对话端点（开发测试用）
+                                "/api/qa/**",
+                                "/api/conversations/**",
+                                "/api/messages/**",
+                                // 数据管理端点
+                                "/api/document-chunks/clear-all",
                                 // 静态资源
                                 "/favicon.ico",
                                 "/error"

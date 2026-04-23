@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -30,6 +32,7 @@ import static org.mockito.Mockito.*;
  * @version 1.0
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CrossEncoderRerankServiceImplTest {
 
     @Mock
@@ -53,7 +56,7 @@ public class CrossEncoderRerankServiceImplTest {
     private CrossEncoderRerankServiceImpl rerankService;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         // 配置模拟的RagConfig
         when(ragConfig.getReranker()).thenReturn(rerankerConfig);
         when(rerankerConfig.getModel()).thenReturn("gte-rerank-v2");
@@ -67,6 +70,13 @@ public class CrossEncoderRerankServiceImplTest {
 
         // 使用反射手动调用init方法，因为@PostConstruct不会在测试中自动执行
         ReflectionTestUtils.invokeMethod(rerankService, "init");
+
+        // 创建并注入模拟的HTTP客户端，防止真实API调用
+        httpClient = mock(OkHttpClient.class);
+        ReflectionTestUtils.setField(rerankService, "httpClient", httpClient);
+
+        // 默认模拟成功API响应，避免真实调用
+        mockSuccessfulApiResponse();
     }
 
     /**
@@ -356,6 +366,33 @@ public class CrossEncoderRerankServiceImplTest {
             results.add(result);
         }
         return results;
+    }
+
+    /**
+     * 模拟成功的API响应（gte-rerank-v2嵌套格式）
+     */
+    private void mockSuccessfulApiResponse() throws IOException {
+        // 创建模拟的响应体
+        ResponseBody responseBody = mock(ResponseBody.class);
+        // gte-rerank-v2嵌套格式响应
+        String mockResponse = "{\"output\": {\"results\": [" +
+                "{\"index\": 0, \"relevance_score\": 0.95}," +
+                "{\"index\": 1, \"relevance_score\": 0.90}," +
+                "{\"index\": 2, \"relevance_score\": 0.85}" +
+                "]}}";
+        when(responseBody.string()).thenReturn(mockResponse);
+
+        // 创建模拟的响应
+        Response response = mock(Response.class);
+        when(response.isSuccessful()).thenReturn(true);
+        when(response.body()).thenReturn(responseBody);
+
+        // 创建模拟的调用
+        Call call = mock(Call.class);
+        when(call.execute()).thenReturn(response);
+
+        // 设置HTTP客户端行为
+        when(httpClient.newCall(any(Request.class))).thenReturn(call);
     }
 
     /**

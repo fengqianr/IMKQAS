@@ -220,7 +220,12 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                    <jvmArguments>-Xmx512m</jvmArguments>
+                    <jvmArguments>-Xmx1g</jvmArguments>
+                    <arguments>
+                        <argument>--spring.config.location=classpath:/</argument>
+                    </arguments>
+                    <useTestClasspath>false</useTestClasspath>
+                    <mainClass>com.student.ImkqasApplication</mainClass>
                 </configuration>
             </plugin>
             <!-- JaCoCo代码覆盖率插件 -->
