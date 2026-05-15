@@ -10,11 +10,6 @@ export default defineConfig({
     }
   },
   css: {
-    postcss: {
-      plugins: [
-        require('@tailwindcss/postcss')
-      ]
-    }
   },
   server: {
     port: 5173,

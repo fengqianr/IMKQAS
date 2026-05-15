@@ -2,6 +2,7 @@ package com.student.service.rag;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.student.service.his.InterviewSuggestion;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -80,6 +81,8 @@ public interface QaService {
         private final double confidence; // 置信度（0-1）
         private final long processingTime; // 处理时间（毫秒）
         private final String modelUsed; // 使用的LLM模型
+        private final String intentType; // 意图分类结果
+        private final InterviewSuggestion questionnaireSuggestion; // 问卷建议（DATA_COLLECTION/MIXED时）
 
         @JsonCreator
         public QaResponse(@JsonProperty("query") String query,
@@ -87,38 +90,33 @@ public interface QaService {
                          @JsonProperty("retrievedContext") List<String> retrievedContext,
                          @JsonProperty("confidence") double confidence,
                          @JsonProperty("processingTime") long processingTime,
-                         @JsonProperty("modelUsed") String modelUsed) {
+                         @JsonProperty("modelUsed") String modelUsed,
+                         @JsonProperty("intentType") String intentType,
+                         @JsonProperty("questionnaireSuggestion") InterviewSuggestion questionnaireSuggestion) {
             this.query = query;
             this.answer = answer;
             this.retrievedContext = retrievedContext;
             this.confidence = confidence;
             this.processingTime = processingTime;
             this.modelUsed = modelUsed;
+            this.intentType = intentType;
+            this.questionnaireSuggestion = questionnaireSuggestion;
         }
 
-        public String getQuery() {
-            return query;
+        /** 兼容旧调用方（不包含意图路由） */
+        public QaResponse(String query, String answer, List<String> retrievedContext,
+                         double confidence, long processingTime, String modelUsed) {
+            this(query, answer, retrievedContext, confidence, processingTime, modelUsed, null, null);
         }
 
-        public String getAnswer() {
-            return answer;
-        }
-
-        public List<String> getRetrievedContext() {
-            return retrievedContext;
-        }
-
-        public double getConfidence() {
-            return confidence;
-        }
-
-        public long getProcessingTime() {
-            return processingTime;
-        }
-
-        public String getModelUsed() {
-            return modelUsed;
-        }
+        public String getQuery() { return query; }
+        public String getAnswer() { return answer; }
+        public List<String> getRetrievedContext() { return retrievedContext; }
+        public double getConfidence() { return confidence; }
+        public long getProcessingTime() { return processingTime; }
+        public String getModelUsed() { return modelUsed; }
+        public String getIntentType() { return intentType; }
+        public InterviewSuggestion getQuestionnaireSuggestion() { return questionnaireSuggestion; }
     }
 
     /**
@@ -134,9 +132,18 @@ public interface QaService {
                                     @JsonProperty("confidence") double confidence,
                                     @JsonProperty("processingTime") long processingTime,
                                     @JsonProperty("modelUsed") String modelUsed,
-                                    @JsonProperty("citations") List<SourceCitation> citations) {
-            super(query, answer, retrievedContext, confidence, processingTime, modelUsed);
+                                    @JsonProperty("citations") List<SourceCitation> citations,
+                                    @JsonProperty("intentType") String intentType,
+                                    @JsonProperty("questionnaireSuggestion") InterviewSuggestion questionnaireSuggestion) {
+            super(query, answer, retrievedContext, confidence, processingTime, modelUsed, intentType, questionnaireSuggestion);
             this.citations = citations;
+        }
+
+        /** 兼容旧调用方 */
+        public QaResponseWithSources(String query, String answer, List<String> retrievedContext,
+                                    double confidence, long processingTime, String modelUsed,
+                                    List<SourceCitation> citations) {
+            this(query, answer, retrievedContext, confidence, processingTime, modelUsed, citations, null, null);
         }
 
         public List<SourceCitation> getCitations() {

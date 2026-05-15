@@ -47,7 +47,7 @@ export const routes: RouteRecordRaw[] = [
     path: '/knowledge',
     name: 'knowledge',
     component: KnowledgeView,
-    meta: { title: '知识库管理', requiresAuth: true }
+    meta: { title: '知识库管理', requiresAuth: true, noLayout: true }
   },
   {
     path: '/stats',

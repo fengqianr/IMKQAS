@@ -85,6 +85,31 @@ public interface QueryRewriteService {
      */
     QueryRewriteStats getStats();
 
+    /**
+     * 查询归一化（新增接口）
+     * 完整的归一化流程：拼写纠正 → 简化 → 术语化
+     * 供LLM服务生成缓存键使用
+     *
+     * @param query 原始查询
+     * @return 归一化后的查询
+     */
+    default String normalize(String query) {
+        // 默认实现：依次调用现有方法
+        if (query == null || query.trim().isEmpty()) {
+            return query;
+        }
+
+        try {
+            String corrected = correctSpelling(query);
+            String simplified = simplify(corrected);
+            String medicalized = medicalize(simplified);
+            return medicalized;
+        } catch (Exception e) {
+            // 降级：返回原始查询
+            return query;
+        }
+    }
+
     // ========== 内部数据类型 ==========
 
     /**

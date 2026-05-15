@@ -1,148 +1,165 @@
 <template>
   <div class="qa-view">
+
     <!-- 顶部导航栏 -->
-    <header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm h-16 flex justify-between items-center px-6">
-      <div class="flex items-center gap-8">
-        <div class="text-xl font-bold text-blue-800 dark:text-blue-200 tracking-tight font-manrope">
+    <header class="qa-header">
+      <div class="custom-flex custom-items-center custom-gap-8">
+        <div class="qa-header-logo">
           Clinical Precision RAG
         </div>
-        <nav class="hidden md:flex items-center gap-6">
-          <a class="font-manrope tracking-tight font-semibold text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400 pb-1 transition-colors" href="/qa">智能问答</a>
-          <a class="font-manrope tracking-tight font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" href="/knowledge">知识库</a>
-          <a class="font-manrope tracking-tight font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" href="/stats">数据分析</a>
-          <a class="font-manrope tracking-tight font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" href="/user">个人中心</a>
+        <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
+          <a class="qa-nav-link qa-nav-link-active" href="/qa">智能问答</a>
+          <a class="qa-nav-link qa-nav-link-inactive" href="/knowledge">知识库</a>
+          <a class="qa-nav-link qa-nav-link-inactive" href="/stats">数据分析</a>
+          <a class="qa-nav-link qa-nav-link-inactive" href="/user">个人中心</a>
         </nav>
       </div>
-      <div class="flex items-center gap-4">
-        <button class="p-2 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container rounded-lg transition-colors material-symbols-outlined">notifications</button>
-        <button class="p-2 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container rounded-lg transition-colors material-symbols-outlined">settings</button>
-        <img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant/15" data-alt="close-up professional portrait of a medical doctor in a white coat with a clean clinical background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg"/>
+      <div class="custom-flex custom-items-center custom-gap-4">
+        <button class="qa-icon-btn material-symbols-outlined">notifications</button>
+        <button class="qa-icon-btn material-symbols-outlined">settings</button>
+        <img alt="User Profile" class="qa-header-avatar" data-alt="close-up professional portrait of a medical doctor in a white coat with a clean clinical background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg"/>
       </div>
     </header>
-    <div class="h-16"></div>
-    <div class="flex flex-1 pt-16 h-screen overflow-hidden">
+
+    <!-- 主内容区域（侧边栏 + 聊天区域 + 检索面板） -->
+    <div class="qa-main-content">
+
       <!-- 侧边栏 -->
-      <aside class="h-screen w-64 bg-secondary-left dark:bg-secondary-left flex flex-col pb-4 border-r-0">
-        <div class="p-6 pt-4">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
+      <aside class="qa-sidebar">
+        <div class="custom-p-6 custom-pt-4">
+          <div class="qa-sidebar-header">
+            <div class="qa-sidebar-icon">
               <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
             </div>
             <div>
-              <div class="text-blue-800 dark:text-blue-300 font-manrope font-bold text-sm">会话管理</div>
-              <div class="text-[10px] text-on-surface-variant uppercase tracking-wider">最近咨询列表</div>
+              <div class="qa-sidebar-title">会话管理</div>
+              <div class="qa-sidebar-subtitle">最近咨询列表</div>
             </div>
           </div>
-          <button @click="createNewSession" class="w-full bg-primary hover:bg-primary-container text-white py-3 rounded-full font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-primary/10">
+          <button @click="createNewSession" class="qa-new-btn">
             <span class="material-symbols-outlined text-sm">add</span>
             新建咨询
           </button>
         </div>
-        <nav class="flex-1 overflow-y-auto no-scrollbar space-y-1">
-          <div v-for="session in sessions" :key="session.id" @click="switchSession(session.id)" :class="['px-4 py-2 mx-2 flex items-center gap-3 cursor-pointer transition-all rounded-lg', session.id === activeSessionId ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800']">
+
+        <nav class="custom-flex-1 qa-no-scrollbar custom-overflow-y-auto space-y-1">
+          <div v-for="session in sessions" :key="session.id"
+               @click="switchSession(session.id)"
+               :class="['qa-session-item', session.id === activeSessionId ? 'qa-session-active' : 'qa-session-inactive']">
             <span class="material-symbols-outlined text-lg">{{ session.icon }}</span>
-            <span class="font-inter text-sm truncate">{{ session.title }}</span>
+            <span class="qa-session-title">{{ session.title }}</span>
           </div>
         </nav>
-        <div class="mt-auto px-2 space-y-1">
-          <div class="text-slate-600 dark:text-slate-400 px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg flex items-center gap-3 cursor-pointer text-sm">
+
+        <div class="qa-sidebar-footer">
+          <div class="qa-sidebar-footer-item">
             <span class="material-symbols-outlined text-lg">delete</span>
             回收站
           </div>
-          <div class="text-slate-600 dark:text-slate-400 px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg flex items-center gap-3 cursor-pointer text-sm">
+          <div class="qa-sidebar-footer-item">
             <span class="material-symbols-outlined text-lg">help</span>
             帮助中心
           </div>
         </div>
       </aside>
-      <!-- 主内容区 -->
-      <main class="flex flex-1 mt-16 h-screen overflow-hidden relative bg-surface">
-        <!-- 聊天界面 -->
-        <section class="flex-1 flex flex-col h-full">
-          <!-- 正文内容——统一滑动区域 -->
-          <div class="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
-            <!-- 医疗安全提示 -->
-            <div class="mx-6 mt-4">
-              <div class="bg-tertiary-fixed/30 border-l-4 border-tertiary p-3 rounded-r-lg flex items-start gap-3">
-                <span class="material-symbols-outlined text-tertiary text-lg">warning</span>
-                <p class="text-xs text-on-tertiary-fixed-variant leading-relaxed">
-                  <span class="font-bold">医疗安全提示：</span>本系统提供的信息仅供临床参考，不作为最终诊断及用药依据。请结合患者实际体征及相关检查结果，由执业医师进行最终决策。
-                </p>
-              </div>
+
+      <!-- 聊天界面 -->
+      <section class="qa-chat-section">
+        <!-- 聊天滑动区域 -->
+        <div class="qa-chat-scroll qa-no-scrollbar qa-scroll-smooth">
+          <!-- 医疗安全提示 -->
+          <div class="custom-mx-6 custom-mt-4">
+            <div class="qa-safety-tip">
+              <span class="qa-safety-tip-icon material-symbols-outlined">warning</span>
+              <p class="qa-safety-tip-text">
+                <span class="qa-safety-tip-bold">医疗安全提示：</span>本系统提供的信息仅供临床参考，不作为最终诊断及用药依据。请结合患者实际体征及相关检查结果，由执业医师进行最终决策。
+              </p>
             </div>
-            <!-- 聊天消息列表 -->
-            <div class="px-8 pb-8 space-y-10">
-            <!-- 用户消息 -->
-            <div v-for="message in messages" :key="message.id" :class="['flex', message.role === 'user' ? 'justify-end' : 'justify-start']">
-              <div v-if="message.role === 'user'" class="max-w-[80%] bg-white rounded-xl rounded-br-sm p-4 shadow-sm border border-outline-variant/10">
-                <p class="text-on-surface text-sm leading-relaxed">{{ message.content }}</p>
-              </div>
-              <!-- AI响应 -->
-              <div v-else class="flex flex-col gap-5">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-on-primary">
-                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+          </div>
+          <!-- 聊天消息列表 -->
+          <div class="qa-messages-container">
+            <div class="qa-messages-list">
+              <div v-for="message in messages" :key="message.id"
+                   :class="['custom-flex', message.role === 'user' ? 'custom-justify-end' : 'custom-justify-start']">
+                <!-- 用户消息 -->
+                <div v-if="message.role === 'user'" class="qa-message-user">
+                  <p class="qa-message-user-text">{{ message.content }}</p>
+                </div>
+                <!-- AI回复 -->
+                <div v-else class="qa-message-ai-wrapper">
+                  <div class="qa-ai-identity">
+                    <div class="qa-ai-avatar">
+                      <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    </div>
+                    <span class="qa-ai-name">PRECISION AI 临床决策支持</span>
                   </div>
-                  <span class="text-xs font-bold text-brand font-headline">PRECISION AI 临床决策支持</span>
-                </div>
-                <div class="bg-surface-container-lowest rounded-xl rounded-bl-sm p-6 shadow-lg border-0 max-w-[90%]">
-                  <div class="prose prose-sm text-on-surface leading-relaxed" v-html="message.content"></div>
+                  <div class="qa-message-ai">
+                    <div class="qa-ai-content text-sm text-on-surface leading-relaxed" v-html="message.content"></div>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+        <!-- 输入区域 -->
+        <div class="qa-input-area">
+          <div class="qa-input-wrapper">
+            <textarea v-model="inputText" @keyup.enter="sendMessage" class="qa-input-field"
+                      placeholder="输入临床问题或上传病例附件..." rows="1"></textarea>
+            <div class="qa-input-actions">
+              <button class="qa-input-btn material-symbols-outlined">attach_file</button>
+              <button @click="sendMessage" class="qa-send-btn">
+                <span class="material-symbols-outlined text-sm">send</span>
+              </button>
             </div>
           </div>
-          <!-- 输入区域 -->
-          <div class="p-6 bg-surface-container-lowest/50 backdrop-blur-md">
-            <div class="max-w-4xl mx-auto relative">
-              <textarea v-model="inputText" @keyup.enter="sendMessage" class="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-brand rounded-full py-4 pl-6 pr-16 text-sm resize-none shadow-lg shadow-brand/5 font-inter" placeholder="输入临床问题或上传病例附件..." rows="1"></textarea>
-              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                <button class="p-2 text-on-surface-variant hover:text-brand transition-colors material-symbols-outlined">attach_file</button>
-                <button @click="sendMessage" class="w-10 h-10 bg-brand text-on-primary rounded-full flex items-center justify-center hover:bg-brand-container transition-all shadow-md shadow-brand/20">
-                  <span class="material-symbols-outlined text-sm">send</span>
-                </button>
-              </div>
-            </div>
-            <div class="text-center mt-3">
-              <span class="text-[10px] text-on-surface-variant">支持 PDF 病历解析 · 实时检索临床指南</span>
-            </div>
+          <div class="qa-input-hint">
+            <span class="qa-input-hint-text">支持 PDF 病历解析 · 实时检索临床指南</span>
           </div>
-        </section>
-        <!-- 检索路径面板（右侧）——独立滑动 -->
-        <aside class="w-80 bg-surface-container-low border-l-0 hidden xl:flex flex-col p-8 overflow-y-auto no-scrollbar scroll-smooth h-full">
-          <div class="mb-10">
-            <h3 class="text-sm font-bold text-on-surface font-headline mb-6 flex items-center gap-2">
-              <span class="material-symbols-outlined text-brand text-lg">schema</span>
-              知识检索路径
-            </h3>
-            <div class="space-y-6">
-              <div v-for="(step, index) in retrievalSteps" :key="index" class="relative pl-6 pb-6 border-l border-brand/20 last:border-l-0">
-                <div class="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full" :class="[step.color === 'secondary' ? 'bg-secondary ring-4 ring-secondary/10' : 'bg-brand ring-4 ring-brand/10']"></div>
-                <div class="text-[11px] font-bold mb-2" :class="[step.color === 'secondary' ? 'text-secondary' : 'text-brand']">{{ step.title }}</div>
-                <div class="bg-surface p-4 rounded-lg shadow-sm text-xs text-on-surface-variant">
+        </div>
+      </section>
+
+      <!-- 检索路径面板（右侧） -->
+      <aside class="qa-panel">
+        <div class="qa-panel-section">
+          <h3 class="qa-panel-title">
+            <span class="qa-panel-title-icon material-symbols-outlined">schema</span>
+            知识检索路径
+          </h3>
+          <div>
+            <div v-for="(step, index) in retrievalSteps" :key="index" class="qa-retrieval-step">
+              <div :class="['qa-step-dot', step.color === 'secondary' ? 'qa-step-dot-secondary' : 'qa-step-dot-primary']"></div>
+              <div :class="['qa-step-title', step.color === 'secondary' ? 'qa-step-title-secondary' : 'qa-step-title-primary']">{{ step.title }}</div>
+              <div class="qa-step-card">
+                <template v-if="step.description.includes('：')">
+                  <span class="text-on-surface-variant">{{ step.description.split('：')[0] }}：</span>
+                  <span class="qa-step-card-text">{{ step.description.split('：').slice(1).join('：') }}</span>
+                </template>
+                <template v-else>
                   {{ step.description }}
-                  <div v-if="step.confidence" class="mt-3 h-1.5 w-full bg-surface-container-low rounded-full overflow-hidden">
-                    <div class="h-full bg-secondary" :style="{ width: step.confidence * 100 + '%' }"></div>
-                  </div>
-                  <div v-if="step.confidence" class="mt-2 text-right text-[10px]">置信度: {{ step.confidence.toFixed(2) }}</div>
+                </template>
+                <div v-if="step.confidence" class="qa-confidence-bar">
+                  <div class="qa-confidence-fill" :style="{ width: step.confidence * 100 + '%' }"></div>
                 </div>
+                <div v-if="step.confidence" class="qa-confidence-label">置信度: {{ step.confidence.toFixed(2) }}</div>
               </div>
             </div>
           </div>
-          <div class="mt-8">
-            <h3 class="text-sm font-bold text-on-surface font-headline mb-6 flex items-center gap-2">
-              <span class="material-symbols-outlined text-brand text-lg">monitoring</span>
-              患者体征快照
-            </h3>
-            <div class="bg-surface rounded-xl p-6 shadow-sm space-y-6 border-0">
-              <div class="flex justify-between items-end" v-for="(value, key) in patientVitals" :key="key">
-                <span class="text-xs text-on-surface-variant">{{ key }}</span>
-                <span class="text-xl font-bold" :class="[key === '最新 INR' ? 'text-brand' : key === '近7日出血风险' ? 'text-accent' : 'text-on-surface']">{{ value }}</span>
-              </div>
+        </div>
+        <div>
+          <h3 class="qa-panel-title">
+            <span class="qa-panel-title-icon material-symbols-outlined">monitoring</span>
+            患者体征快照
+          </h3>
+          <div class="qa-vitals-card">
+            <div v-for="(value, key) in patientVitals" :key="key" class="qa-vital-row">
+              <span class="qa-vital-label">{{ key }}</span>
+              <span :class="['qa-vital-value', key === '最新 INR' ? 'qa-vital-value-primary' : key === '近7日出血风险' ? 'qa-vital-value-accent' : 'qa-vital-value-default']">{{ value }}</span>
             </div>
           </div>
-        </aside>
-      </main>
+        </div>
+      </aside>
+
     </div>
   </div>
 </template>
@@ -414,71 +431,32 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 平滑滚动效果 */
-.scroll-smooth {
+/* ===== 平滑滚动 ===== */
+.qa-scroll-smooth {
   scroll-behavior: smooth;
 }
 
-/* 自定义滚动条隐藏 */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* 确保Material Symbols图标正确显示 */
+/* ===== Material Symbols 图标 ===== */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  transition: font-variation-settings 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 字体设置 */
-:deep(body) {
-  font-family: 'Inter', sans-serif;
+.material-symbols-outlined[style*="font-variation-settings: 'FILL' 1"] {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-:deep(h1), :deep(h2), :deep(h3), .brand-font {
-  font-family: 'Manrope', sans-serif;
+/* ===== 滚动区域 ===== */
+.qa-chat-scroll {
+  scroll-behavior: smooth;
 }
 
-
-/* 玻璃效果 */
-.glass-effect {
-  backdrop-filter: blur(20px);
-}
-
-
-
-/* 交互效果增强 - 确保与原型图一致 */
-/* 悬停状态 */
-.hover\:bg-primary-container:hover {
-  background-color: var(--color-primary-container);
-}
-
-.hover\:bg-secondary-fixed:hover {
-  background-color: var(--color-secondary-fixed);
-}
-
-.hover\:bg-tertiary-fixed:hover {
-  background-color: var(--color-tertiary-fixed);
-}
-
-/* 聚焦状态 */
-.focus\:ring-2:focus {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  ring-width: 2px;
-  ring-color: var(--color-primary);
-}
-
-.focus\:ring-primary:focus {
-  --tw-ring-color: var(--color-primary);
-}
-
-/* 活动状态动画 */
-.active\:scale-95:active {
+/* ===== 弹跳动画 ===== */
+.active-scale-95:active {
   transform: scale(0.95);
-  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 过渡效果优化 */
+/* ===== 过渡效果 ===== */
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -491,20 +469,7 @@ onMounted(() => {
   transition-duration: 150ms;
 }
 
-/* 阴影效果增强 */
-.shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.shadow-sm {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-/* 玻璃效果增强 */
+/* ===== 玻璃效果 ===== */
 .glass-effect {
   backdrop-filter: blur(20px);
   background: linear-gradient(
@@ -513,28 +478,5 @@ onMounted(() => {
     rgba(255, 255, 255, 0.4) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* 响应式断点优化 */
-@media (max-width: 768px) {
-  .md\:hidden {
-    display: none;
-  }
-}
-
-@media (min-width: 1280px) {
-  .xl\:flex {
-    display: flex;
-  }
-}
-
-/* 确保Material Symbols图标在所有状态下正确显示 */
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  transition: font-variation-settings 150ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.material-symbols-outlined[style*="font-variation-settings: 'FILL' 1"] {
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 </style>

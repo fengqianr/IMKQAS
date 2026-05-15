@@ -225,15 +225,16 @@ public class RrfFusionServiceImpl implements RrfFusionService {
         // 转换为RetrievalResult格式
         List<MultiRetrievalService.RetrievalResult> finalResults = new ArrayList<>();
         for (RrfFusedResult fusedResult : fusedResults) {
-            // 创建融合结果
+            // 创建融合结果（保留原始metadata）
             MultiRetrievalService.RetrievalResult result = new MultiRetrievalService.RetrievalResult(
                     fusedResult.chunkId,
                     fusedResult.documentId,
-                    fusedResult.rrfScore, // 使用RRF分数作为最终分数
+                    fusedResult.rrfScore,
                     fusedResult.content,
                     MultiRetrievalService.RetrievalSource.HYBRID,
                     fusedResult.vectorScore,
-                    fusedResult.keywordScore
+                    fusedResult.keywordScore,
+                    fusedResult.metadata
             );
             finalResults.add(result);
 
@@ -255,11 +256,13 @@ public class RrfFusionServiceImpl implements RrfFusionService {
         double rrfScore = 0.0;
         double vectorScore = 0.0;
         double keywordScore = 0.0;
+        Map<String, Object> metadata;
 
         RrfFusedResult(MultiRetrievalService.RetrievalResult result) {
             this.chunkId = result.getChunkId();
             this.documentId = result.getDocumentId();
             this.content = result.getContent();
+            this.metadata = result.getMetadata();
         }
 
         void addScore(double score) {

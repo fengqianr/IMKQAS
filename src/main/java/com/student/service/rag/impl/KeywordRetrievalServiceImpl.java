@@ -540,7 +540,7 @@ public class KeywordRetrievalServiceImpl implements KeywordRetrievalService {
         Map<String, Object> metadata = new HashMap<>();
         if (metadataStr == null || metadataStr.trim().isEmpty()) {
             return metadata;
-        }
+    }
 
         // 简化解析，用于处理简单的键值对
         if (metadataStr.startsWith("{") && metadataStr.endsWith("}")) {

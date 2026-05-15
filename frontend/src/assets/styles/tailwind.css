@@ -1,2 +1,2 @@
-/* Tailwind CSS v4 导入 */
-@import "tailwindcss";
+/* 自定义CSS系统 - 完全替代Tailwind CSS */
+@import "./custom.css";

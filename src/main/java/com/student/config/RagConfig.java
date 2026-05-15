@@ -1,13 +1,14 @@
 package com.student.config;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
-import jakarta.validation.constraints.*;
+import java.util.List;
 
 /**
  * RAG配置类
@@ -348,6 +349,88 @@ public class RagConfig {
     /** 性能监控配置 */
     private MonitoringConfig monitoring = new MonitoringConfig();
 
+    // ========== 质量过滤配置 ==========
+
+    /** 质量过滤配置 */
+    @Data
+    public static class QualityFilterConfig {
+        /** 最小片段长度（字符数，低于此值丢弃） */
+        private int minFragmentLength = 20;
+        /** 黑名单域名 */
+        private List<String> blacklistDomains = List.of(
+                "zhidao.baidu.com", "baike.baidu.com",
+                "zhihu.com", "tieba.baidu.com",
+                "haodf.com", "xywy.com"
+        );
+        /** 黑名单来源的长度阈值 */
+        private int blacklistMinLength = 100;
+        /** 是否启用矛盾检测 */
+        private boolean contradictionDetectionEnabled = true;
+        /** 矛盾检测权威性阈值 */
+        private double contradictionAuthorityThreshold = 0.7;
+    }
+
+    /** 质量过滤配置 */
+    private QualityFilterConfig qualityFilter = new QualityFilterConfig();
+
+    // ========== 多因子重排序配置 ==========
+
+    /** 多因子重排序配置 */
+    @Data
+    public static class MultiFactorRerankConfig {
+        /** 维度权重 */
+        @Data
+        public static class FactorWeights {
+            private double authority = 0.4;
+            private double timeliness = 0.2;
+            private double semantic = 0.4;
+        }
+        private FactorWeights weights = new FactorWeights();
+        /** 时效性衰减率 λ */
+        private double decayRate = 0.3;
+        /** 各知识类型半衰期（年） */
+        @Data
+        public static class HalfLives {
+            private double treatment = 3.0;
+            private double diagnosis = 6.0;
+            private double device = 5.0;
+            private double basicScience = 18.0;
+            private double publicHealth = 4.0;
+            private double classicResearch = 100.0;
+            private double unknown = 5.0;
+        }
+        private HalfLives halfLives = new HalfLives();
+    }
+
+    /** 多因子重排序配置 */
+    private MultiFactorRerankConfig multiFactorRerank = new MultiFactorRerankConfig();
+
+    // ========== 语义缓存链配置 ==========
+
+    /** 语义缓存链配置 */
+    @Data
+    public static class SemanticCacheConfig {
+        /** 是否启用语义缓存 */
+        private boolean enabled = true;
+        /** Redis缓存TTL（秒），作为最终兜底 */
+        @Min(300)
+        private int ttl = 7200; // 2小时
+        /** 分布式锁等待超时（秒） */
+        @Min(1)
+        private int lockWaitTimeout = 5;
+        /** 分布式锁TTL（秒），防止死锁 */
+        @Min(1)
+        private int lockTtl = 30;
+        /** 术语映射版本定时检查间隔（秒） */
+        @Min(300)
+        private int versionCheckInterval = 3600; // 1小时
+        /** 知识库当前版本（可通过API递增） */
+        private int knowledgeVersion = 1;
+    }
+
+    /** 语义缓存链配置 */
+    private SemanticCacheConfig semanticCache = new SemanticCacheConfig();
+
     /**
      * 配置初始化方法
      */
@@ -363,5 +446,14 @@ public class RagConfig {
                 embedding.getModel(), embedding.getDimension());
         log.info("LLM模型: {}, 温度: {}, 最大token: {}",
                 llm.getModel(), llm.getTemperature(), llm.getMaxTokens());
+        log.info("质量过滤: 最小片段长度={}, 黑名单域名数={}, 矛盾检测={}",
+                qualityFilter.getMinFragmentLength(), qualityFilter.getBlacklistDomains().size(),
+                qualityFilter.isContradictionDetectionEnabled() ? "启用" : "禁用");
+        log.info("多因子重排序: 权威权重={}, 时效权重={}, 语义权重={}",
+                multiFactorRerank.getWeights().getAuthority(),
+                multiFactorRerank.getWeights().getTimeliness(),
+                multiFactorRerank.getWeights().getSemantic());
+        log.info("语义缓存链: 启用={}, TTL={}s, 版本={}",
+                semanticCache.isEnabled(), semanticCache.getTtl(), semanticCache.getKnowledgeVersion());
     }
 }
