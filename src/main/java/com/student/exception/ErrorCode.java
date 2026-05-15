@@ -107,11 +107,31 @@ public enum ErrorCode {
     /**
      * 第三方服务错误
      */
+    /**
+     * FHIR资源未找到
+     */
+    FHIR_RESOURCE_NOT_FOUND("50003", "FHIR资源未找到"),
+
+    /**
+     * FHIR资源冲突（已存在）
+     */
+    FHIR_RESOURCE_CONFLICT("60003", "FHIR资源已存在"),
+
+    /**
+     * FHIR数据校验失败
+     */
+    FHIR_VALIDATION_ERROR("20003", "FHIR数据校验失败"),
+
     THIRD_PARTY_ERROR("70000", "第三方服务错误"),
 
     /**
      * 外部API调用失败
      */
+    /**
+     * HIS服务不可用，使用本地缓存数据
+     */
+    HIS_SERVICE_UNAVAILABLE("70002", "HIS服务不可用，使用本地缓存数据"),
+
     EXTERNAL_API_ERROR("70001", "外部API调用失败"),
 
     /**

@@ -1,0 +1,80 @@
+version: '3.8'
+
+# Snowstorm Lite 单节点部署
+# 用于提供 SNOMED CT FHIR API 服务
+# 使用轻量级版本，适合开发测试环境
+
+services:
+  snowstorm:
+    image: SNOMEDInternational/snowstorm-lite:5.2.4
+    container_name: imkqas-snowstorm
+    ports:
+      - "8082:8082"
+    environment:
+      # Java堆内存配置（根据需要调整）
+      JAVA_OPTS: "-Xms512m -Xmx2g -XX:+UseG1GC"
+      # Spring配置
+      SPRING_PROFILES_ACTIVE: "impatient"
+      # 使用内存模式（轻量级）
+      spring.r2dbc.url: r2dbc:pool:mem://snowstorm
+      # 启用FHIR API
+      spring.fhir.enabled: true
+      spring.fhir.base-path: /fhir
+      # 允许跨域（如果前端需要直接访问）
+      spring.cors.allowed-origins: "*"
+      # 提前加载常用版本（优化首次查询性能）
+      snowstorm.initial_load_version: "v20240131"
+    volumes:
+      # 持久化索引数据（可选，首次启动后注释掉以加快启动）
+      # - snowstorm_data:/data
+      # 预加载的RF2包（可选）
+      # - ./rf2:/rf2:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - imkqas-network
+
+# 可选：完整版Snowstorm（需要外部数据库）
+# services:
+#   snowstorm-full:
+#     image: SNOMEDInternational/snowstorm:5.2.4
+#     container_name: imkqas-snowstorm-full
+#     ports:
+#       - "8082:8082"
+#     environment:
+#       JAVA_OPTS: "-Xms1g -Xmx4g"
+#       SPRING_PROFILES_ACTIVE: "docker"
+#       # PostgreSQL配置（需要外部数据库容器）
+#       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/snowstorm
+#       SPRING_DATASOURCE_USERNAME: snowstorm
+#       SPRING_DATASOURCE_PASSWORD: snowstorm
+#       spring.r2dbc.url: r2dbc:pool:postgresql://postgres:5432/snowstorm
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#   postgres:
+#     image: postgres:15-alpine
+#     container_name: imkqas-postgres
+#     environment:
+#       POSTGRES_DB: snowstorm
+#       POSTGRES_USER: snowstorm
+#       POSTGRES_PASSWORD: snowstorm
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U snowstorm"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+
+volumes:
+  # snowstorm_data:
+  # postgres_data:
+
+networks:
+  imkqas-network:
+    driver: bridge

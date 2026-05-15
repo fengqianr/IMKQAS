@@ -1,0 +1,119 @@
+/* 自定义状态类 - 替代Tailwind hover/focus/active/group类 */
+
+/* ===== 光标 ===== */
+.cursor-auto { cursor: auto; }
+.cursor-default { cursor: default; }
+.cursor-pointer { cursor: pointer; }
+.cursor-wait { cursor: wait; }
+.cursor-text { cursor: text; }
+.cursor-move { cursor: move; }
+.cursor-help { cursor: help; }
+.cursor-not-allowed { cursor: not-allowed; }
+.cursor-none { cursor: none; }
+.cursor-context-menu { cursor: context-menu; }
+.cursor-progress { cursor: progress; }
+.cursor-cell { cursor: cell; }
+.cursor-crosshair { cursor: crosshair; }
+.cursor-vertical-text { cursor: vertical-text; }
+.cursor-alias { cursor: alias; }
+.cursor-copy { cursor: copy; }
+.cursor-no-drop { cursor: no-drop; }
+.cursor-grab { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+.cursor-zoom-in { cursor: zoom-in; }
+.cursor-zoom-out { cursor: zoom-out; }
+
+/* ===== 用户选择 ===== */
+.select-none { user-select: none; }
+.select-text { user-select: text; }
+.select-all { user-select: all; }
+.select-auto { user-select: auto; }
+
+/* ===== 指针事件 ===== */
+.pointer-events-none { pointer-events: none; }
+.pointer-events-auto { pointer-events: auto; }
+
+/* ===== 可见性 ===== */
+.visible { visibility: visible; }
+.invisible { visibility: hidden; }
+
+/* ===== 悬停状态 (hover) ===== */
+.hover-bg-primary-fixed:hover { background-color: var(--color-primary-fixed, #d6e3ff); }
+.hover-bg-surface-container-low:hover { background-color: var(--color-surface-container-low, #f3f4f5); }
+.hover-bg-surface:hover { background-color: var(--color-surface, #f8f9fa); }
+.hover-bg-subtle:hover { background-color: #f1f5f9; }
+.hover-bg-processing-20:hover { background-color: rgba(237, 108, 2, 0.2); }
+.hover-bg-surface-container-lowest:hover { background-color: var(--color-surface-container-lowest, #ffffff); }
+.hover-bg-surface-container:hover { background-color: var(--color-surface-container, #edeeef); }
+
+.hover-text-primary:hover { color: var(--color-primary, #00478d); }
+.hover-text-brand:hover { color: var(--color-brand, #005eb8); }
+.hover-text-on-surface:hover { color: var(--color-on-surface, #191c1d); }
+
+.hover-border-primary-50:hover { border-color: rgba(0, 71, 141, 0.5); }
+.hover-border-brand:hover { border-color: var(--color-brand, #005eb8); }
+
+.hover-opacity-90:hover { opacity: 0.9; }
+.hover-opacity-100:hover { opacity: 1; }
+.hover-opacity-80:hover { opacity: 0.8; }
+
+.hover-shadow-ambient:hover { box-shadow: var(--shadow-ambient); }
+.hover-shadow-card:hover { box-shadow: var(--shadow-card); }
+.hover-shadow-medium:hover { box-shadow: var(--shadow-medium); }
+
+/* ===== 焦点状态 (focus) ===== */
+.focus-ring-2:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+.focus-ring-primary-20:focus {
+  --tw-ring-color: rgba(0, 71, 141, 0.2);
+}
+.focus-ring-brand:focus {
+  --tw-ring-color: var(--color-brand, #005eb8);
+}
+.focus-outline-none:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.focus-border-primary:focus {
+  border-color: var(--color-primary, #00478d);
+}
+
+/* ===== 活跃状态 (active) ===== */
+.active-scale-95:active {
+  transform: scale(0.95);
+}
+.active-scale-100:active {
+  transform: scale(1);
+}
+.active-translate-y-0:active {
+  transform: translateY(0);
+}
+
+/* ===== 组悬停 (group) ===== */
+.group {
+  /* group容器 - 用于group-hover效果 */
+}
+.group-hover-scale-110:hover .group-hover-scale-110,
+.group:hover .group-hover-scale-110 {
+  transform: scale(1.1);
+}
+.group-hover-opacity-100:hover .group-hover-opacity-100,
+.group:hover .group-hover-opacity-100 {
+  opacity: 1;
+}
+
+/* ===== 禁用状态 ===== */
+.disabled-opacity-50:disabled { opacity: 0.5; }
+.disabled-opacity-60:disabled { opacity: 0.6; }
+.disabled-cursor-not-allowed:disabled { cursor: not-allowed; }
+
+/* ===== 占位符 ===== */
+.placeholder-on-surface-variant::placeholder {
+  color: var(--color-on-surface-variant, #424752);
+  opacity: 0.6;
+}

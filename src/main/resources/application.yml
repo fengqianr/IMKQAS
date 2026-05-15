@@ -18,6 +18,10 @@ spring:
       connection-timeout: 30000
       maximum-pool-size: 10
       minimum-idle: 5
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+      max-lifetime: 600000
+      idle-timeout: 300000
 
 
   # 文件上传配置
@@ -132,8 +136,9 @@ imkqas:
       weights:
         vector: 0.6
         keyword: 0.4
-      # top-k配置
-      initial-top-k: 20
+      # 双路召回各取 K=30，RRF融合后输出候选集
+      initial-top-k: 30
+      # 精排输出 top5 送入 LLM 生成
       rerank-top-k: 5
       # RRF融合参数
       rrf-k: 60
@@ -190,6 +195,47 @@ imkqas:
         ttl: 1800  # 30分钟
         max-size: 500
 
+    # SNOMED CT 配置
+    snomed:
+      # 是否启用SNOMED CT服务
+      enabled: true
+      # Snowstorm服务基础URL
+      base-url: http://localhost:8082
+      # FHIR API路径
+      fhir-path: /fhir
+      # 连接超时时间（毫秒）
+      connect-timeout: 5000
+      # 读取超时时间（毫秒）
+      read-timeout: 10000
+      # 最大重试次数
+      max-retries: 3
+      # 缓存过期时间（小时）
+      cache-expiration-hours: 24
+      # 是否启用本地降级映射
+      fallback-enabled: true
+      # 批量查询最大数量
+      batch-max-size: 100
+
+    # 查询预处理配置
+    query-rewrite:
+      # THUOCL医学词库路径
+      thuocl-dict-path: /data/dict/thuocl_medical.txt
+      # 同义词文件
+      synonyms-file: classpath:synonyms.txt
+      # 停用词文件
+      stopwords-file: classpath:stopwords.txt
+      # 拼写纠正开关
+      enable-spell-checker: true
+
+      # 同义词扩展配置
+      synonym-expansion:
+        # 未映射率告警阈值（百分比，超过此值触发告警）
+        unmapped-alert-threshold: 5.0
+        # LLM推断最低置信度阈值（低于此值不采纳）
+        llm-min-confidence: 0.85
+        # 是否启用LLM兜底推断
+        llm-fallback-enabled: true
+
     # 性能监控配置
     monitoring:
       enabled: true
@@ -199,6 +245,138 @@ imkqas:
       slow-query-threshold: 5000
       # 错误率阈值 (%)
       error-rate-threshold: 5.0
+
+    # ─── 质量过滤配置 ───
+    quality-filter:
+      # 最小片段长度（字符数，低于此值丢弃）
+      min-fragment-length: 20
+      # 黑名单域名（低质量来源）
+      blacklist-domains:
+        - zhidao.baidu.com
+        - baike.baidu.com
+        - zhihu.com
+        - tieba.baidu.com
+        - haodf.com
+        - xywy.com
+      # 黑名单来源的内容长度阈值（低于此值才丢弃）
+      blacklist-min-length: 100
+      # 是否启用矛盾检测
+      contradiction-detection-enabled: true
+      # 矛盾检测权威性阈值
+      contradiction-authority-threshold: 0.7
+
+    # ─── 语义缓存链配置 ───
+    semantic-cache:
+      # 是否启用语义缓存
+      enabled: true
+      # Redis缓存TTL（秒），作为最终兜底（超过则缓存自动失效，懒加载重建）
+      ttl: 7200
+      # 分布式锁等待超时（秒）
+      lock-wait-timeout: 5
+      # 分布式锁TTL（秒），防止死锁
+      lock-ttl: 30
+      # 术语映射版本定时检查间隔（秒）
+      version-check-interval: 3600
+      # 知识库当前版本（可通过 /api/admin/cache/version/increment 递增）
+      knowledge-version: 1
+
+    # ─── 多因子重排序配置 ───
+    multi-factor-rerank:
+      # 三维度权重（和为1）
+      weights:
+        # 权威性权重（证据金字塔等级）
+        authority: 0.4
+        # 时效性权重（指数衰减）
+        timeliness: 0.2
+        # 语义相似度权重（交叉编码器）
+        semantic: 0.4
+      # 时效性衰减率 λ
+      decay-rate: 0.3
+      # 各知识类型半衰期（年）
+      half-lives:
+        treatment: 3.0
+        diagnosis: 6.0
+        device: 5.0
+        basic-science: 18.0
+        public-health: 4.0
+        classic-research: 100.0
+        unknown: 5.0
+
+    # 安全兜底配置
+    safety:
+      # 总开关
+      enabled: true
+
+      # ─── ① 急症预检 ───
+      emergency:
+        enabled: true
+        # 关键词分级库
+        keywords:
+          CRITICAL:
+            - "胸痛剧烈"
+            - "呼吸困难"
+            - "大出血"
+            - "昏迷不醒"
+            - "心跳停止"
+            - "窒息"
+            - "严重过敏反应"
+            - "药物中毒"
+            - "农药中毒"
+            - "意识丧失"
+            - "抽搐不止"
+            - "剧烈头痛伴呕吐"
+          HIGH:
+            - "高烧不退"
+            - "持续呕吐"
+            - "严重外伤"
+            - "开放性骨折"
+            - "大面积烧伤"
+            - "吐血"
+            - "便血"
+            - "剧烈腹痛"
+            - "抽搐"
+            - "言语不清"
+            - "半身麻木"
+            - "口眼歪斜"
+          MEDIUM:
+            - "持续腹泻"
+            - "严重皮疹"
+            - "持续头晕"
+            - "视力模糊"
+            - "持续发热"
+        # 各级别回复模板
+        response-templates:
+          CRITICAL: "⚠️ 您描述的症状可能属于医疗急症，请立即停止线上咨询，拨打120急救电话或前往最近医院的急诊科就诊！这是紧急情况，请务必尽快就医！"
+          HIGH: "⚠️ 您描述的症状较为严重，建议尽快就医。请立即前往医院急诊科或相关专科就诊，不要延误。"
+          MEDIUM: "⚠️ 您描述的症状需要引起注意，建议尽快就医。如症状持续或加重，请及时到医疗机构就诊。"
+
+      # ─── ② 置信度门控 ───
+      confidence:
+        enabled: true
+        # 硬阻断阈值：低于此值不调用 LLM
+        min-threshold: 0.35
+        # 警告阈值：低于此值 LLM 正常生成但添加免责声明
+        warning-threshold: 0.6
+        # 检索结果为空时的响应
+        no-retrieval-response: "抱歉，我无法从现有医学资料库中找到与您问题相关的信息。医疗建议需要基于确切的医学知识，建议您咨询专业医生获取准确的诊断和治疗方案。"
+        # 低于 min-threshold 时的响应
+        low-confidence-response: "抱歉，当前检索到的医学资料与您问题的相关性较低，无法生成可靠的回答。为了您的健康安全，建议您咨询专业医生获取准确信息。"
+
+      # ─── ③ 回答安全校验 ───
+      answer-safety:
+        enabled: true
+        # LLM 回答中禁止出现的模式（正则表达式）
+        blocked-patterns:
+          - "建议(服用|使用|口服|注射).*药物"
+          - "推荐.*(剂量|用量|用法)"
+          - "请服用"
+          - "处方药.*[剂量用量]"
+        # 命中时的替换文本
+        replacement-text: "[请遵医嘱用药]"
+        # 免责声明模板
+        disclaimer: "\n\n---\n*免责声明：以上信息仅供参考，不能替代专业医疗建议。如有身体不适，请及时前往医疗机构就诊。*"
+        # 免责声明的置信度上限
+        disclaimer-max-confidence: 0.8
 
   # 安全配置
   security:
@@ -312,3 +490,62 @@ imkqas:
       llm-unavailable-fallback: "RULE_ENGINE"
       rule-engine-unavailable-fallback: "FALLBACK"
       fallback-advice: "建议咨询医院导诊台或全科医学科"
+
+  # ─── 评估系统配置 ───
+  evaluation:
+    # 总开关
+    enabled: true
+
+    # 离线评估配置
+    offline:
+      max-concurrency: 4
+      default-k-values: [1, 5, 10, 20, 30]
+      llm-judge:
+        enabled: true
+        model: qwen-plus
+        max-retries: 3
+        timeout: 30
+        cache-enabled: true
+
+    # 在线监控配置
+    online:
+      enabled: true
+      collection-interval: 60
+      retention-days: 30
+      percentile-enabled: true
+      percentile-window-size: 100
+      unmapped-term-alert-threshold: 5.0
+      slow-query-threshold-ms: 5000
+      error-rate-alert-threshold: 5.0
+
+    # 报告配置
+    report:
+      output-dir: ./evaluation-reports
+      default-format: BOTH
+      retention-days: 90
+      auto-baseline: true
+
+  # HIS/FHIR集成配置（预留）
+  his:
+    # 是否启用HIS集成（预留阶段关闭）
+    enabled: false
+    # HIS FHIR服务器基础URL
+    base-url: http://localhost:8083
+    # FHIR API路径
+    fhir-path: /fhir
+    # HIS系统名称
+    system-name: HIS
+    # 连接超时（毫秒）
+    connect-timeout: 5000
+    # 读取超时（毫秒）
+    read-timeout: 15000
+    # 最大重试次数
+    max-retries: 2
+    # 缓存过期时间（小时）
+    cache-expiration-hours: 24
+    # 默认分页大小
+    default-page-size: 20
+    # 最大分页大小
+    max-page-size: 100
+    # 问卷会话超时（分钟）
+    interview-session-timeout-minutes: 30

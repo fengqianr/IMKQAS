@@ -1,0 +1,124 @@
+/* 自定义效果类 - 替代Tailwind阴影/透明度/渐变/滤镜类 */
+
+/* 阴影 - 基于项目设计系统的值 */
+.shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+.shadow { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06); }
+.shadow-md { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06); }
+.shadow-lg { box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05); }
+.shadow-xl { box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04); }
+.shadow-2xl { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25); }
+.shadow-inner { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06); }
+.shadow-none { box-shadow: 0 0 #0000; }
+
+/* 项目特定阴影（从变量映射） */
+.shadow-ambient { box-shadow: var(--shadow-ambient); }
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-floating { box-shadow: var(--shadow-floating); }
+.shadow-soft { box-shadow: var(--shadow-soft); }
+.shadow-medium { box-shadow: var(--shadow-medium); }
+.shadow-hard { box-shadow: var(--shadow-hard); }
+.shadow-glow { box-shadow: var(--shadow-glow); }
+
+/* 透明度 */
+.opacity-0 { opacity: 0; }
+.opacity-5 { opacity: 0.05; }
+.opacity-10 { opacity: 0.1; }
+.opacity-20 { opacity: 0.2; }
+.opacity-25 { opacity: 0.25; }
+.opacity-30 { opacity: 0.3; }
+.opacity-40 { opacity: 0.4; }
+.opacity-50 { opacity: 0.5; }
+.opacity-60 { opacity: 0.6; }
+.opacity-70 { opacity: 0.7; }
+.opacity-75 { opacity: 0.75; }
+.opacity-80 { opacity: 0.8; }
+.opacity-90 { opacity: 0.9; }
+.opacity-95 { opacity: 0.95; }
+.opacity-100 { opacity: 1; }
+
+/* 渐变 - 方向 */
+.bg-gradient-to-t { background-image: linear-gradient(to top, var(--tw-gradient-stops)); }
+.bg-gradient-to-tr { background-image: linear-gradient(to top right, var(--tw-gradient-stops)); }
+.bg-gradient-to-r { background-image: linear-gradient(to right, var(--tw-gradient-stops)); }
+.bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)); }
+.bg-gradient-to-b { background-image: linear-gradient(to bottom, var(--tw-gradient-stops)); }
+.bg-gradient-to-bl { background-image: linear-gradient(to bottom left, var(--tw-gradient-stops)); }
+.bg-gradient-to-l { background-image: linear-gradient(to left, var(--tw-gradient-stops)); }
+.bg-gradient-to-tl { background-image: linear-gradient(to top left, var(--tw-gradient-stops)); }
+
+/* 渐变颜色停止 */
+.from-brand { --tw-gradient-from: #005eb8; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(0, 94, 184, 0)); }
+.to-brand { --tw-gradient-to: #005eb8; }
+.from-brand-dark { --tw-gradient-from: #00478d; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(0, 71, 141, 0)); }
+.to-brand-dark { --tw-gradient-to: #00478d; }
+.from-brand-light { --tw-gradient-from: #a9c7ff; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(169, 199, 255, 0)); }
+.to-brand-light { --tw-gradient-to: #a9c7ff; }
+.from-primary { --tw-gradient-from: #00478d; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(0, 71, 141, 0)); }
+.to-primary { --tw-gradient-to: #00478d; }
+.from-primary-container { --tw-gradient-from: #005eb8; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(0, 94, 184, 0)); }
+.to-primary-container { --tw-gradient-to: #005eb8; }
+.from-transparent { --tw-gradient-from: transparent; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(0, 0, 0, 0)); }
+.to-transparent { --tw-gradient-to: transparent; }
+.from-white { --tw-gradient-from: #ffffff; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(255, 255, 255, 0)); }
+.to-white { --tw-gradient-to: #ffffff; }
+.from-black { --tw-gradient-from: #000000; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(0, 0, 0, 0)); }
+.to-black { --tw-gradient-to: #000000; }
+
+/* 混合模式 */
+.mix-blend-normal { mix-blend-mode: normal; }
+.mix-blend-multiply { mix-blend-mode: multiply; }
+.mix-blend-screen { mix-blend-mode: screen; }
+.mix-blend-overlay { mix-blend-mode: overlay; }
+
+.bg-blend-normal { background-blend-mode: normal; }
+.bg-blend-multiply { background-blend-mode: multiply; }
+.bg-blend-screen { background-blend-mode: screen; }
+.bg-blend-overlay { background-blend-mode: overlay; }
+
+/* 滤镜 */
+.blur-none { filter: blur(0); }
+.blur-sm { filter: blur(4px); }
+.blur { filter: blur(8px); }
+.blur-md { filter: blur(12px); }
+.blur-lg { filter: blur(16px); }
+.blur-xl { filter: blur(24px); }
+.blur-2xl { filter: blur(40px); }
+.blur-3xl { filter: blur(64px); }
+
+.backdrop-blur-none { backdrop-filter: blur(0); }
+.backdrop-blur-sm { backdrop-filter: blur(4px); }
+.backdrop-blur { backdrop-filter: blur(8px); }
+.backdrop-blur-md { backdrop-filter: blur(12px); }
+.backdrop-blur-lg { backdrop-filter: blur(16px); }
+.backdrop-blur-xl { backdrop-filter: blur(24px); }
+.backdrop-blur-2xl { backdrop-filter: blur(40px); }
+.backdrop-blur-3xl { backdrop-filter: blur(64px); }
+
+/* 亮度/对比度等 */
+.brightness-0 { filter: brightness(0); }
+.brightness-50 { filter: brightness(0.5); }
+.brightness-75 { filter: brightness(0.75); }
+.brightness-90 { filter: brightness(0.9); }
+.brightness-100 { filter: brightness(1); }
+.brightness-110 { filter: brightness(1.1); }
+.brightness-125 { filter: brightness(1.25); }
+.brightness-150 { filter: brightness(1.5); }
+.brightness-200 { filter: brightness(2); }
+
+/* 对象适配 */
+.object-contain { object-fit: contain; }
+.object-cover { object-fit: cover; }
+.object-fill { object-fit: fill; }
+.object-none { object-fit: none; }
+.object-scale-down { object-fit: scale-down; }
+
+/* 对象位置 */
+.object-bottom { object-position: bottom; }
+.object-center { object-position: center; }
+.object-left { object-position: left; }
+.object-left-bottom { object-position: left bottom; }
+.object-left-top { object-position: left top; }
+.object-right { object-position: right; }
+.object-right-bottom { object-position: right bottom; }
+.object-right-top { object-position: right top; }
+.object-top { object-position: top; }

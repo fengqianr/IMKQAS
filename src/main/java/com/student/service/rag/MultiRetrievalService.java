@@ -1,13 +1,16 @@
 package com.student.service.rag;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 多路检索服务接口
  * 协调向量检索、关键词检索和混合检索，实现多路检索融合
  *
  * @author 系统
- * @version 1.0
+ * @version 1.1
  */
 public interface MultiRetrievalService {
 
@@ -90,9 +93,16 @@ public interface MultiRetrievalService {
         private final RetrievalSource source; // 来源：向量/关键词/混合
         private final Double vectorScore;     // 向量检索分数
         private final Double keywordScore;    // 关键词检索分数
+        private final Map<String, Object> metadata; // 扩展元数据（来源类型、发表年份、来源URL等）
 
         public RetrievalResult(Long chunkId, Long documentId, Double score, String content,
                                RetrievalSource source, Double vectorScore, Double keywordScore) {
+            this(chunkId, documentId, score, content, source, vectorScore, keywordScore, Collections.emptyMap());
+        }
+
+        public RetrievalResult(Long chunkId, Long documentId, Double score, String content,
+                               RetrievalSource source, Double vectorScore, Double keywordScore,
+                               Map<String, Object> metadata) {
             this.chunkId = chunkId;
             this.documentId = documentId;
             this.score = score;
@@ -100,6 +110,7 @@ public interface MultiRetrievalService {
             this.source = source;
             this.vectorScore = vectorScore;
             this.keywordScore = keywordScore;
+            this.metadata = metadata != null ? new HashMap<>(metadata) : new HashMap<>();
         }
 
         public Long getChunkId() {
@@ -128,6 +139,17 @@ public interface MultiRetrievalService {
 
         public Double getKeywordScore() {
             return keywordScore;
+        }
+
+        /** 获取扩展元数据（来源类型、发表年份、来源URL等） */
+        public Map<String, Object> getMetadata() {
+            return metadata;
+        }
+
+        /** 便捷获取元数据字符串值 */
+        public String getMetadataString(String key) {
+            Object val = metadata.get(key);
+            return val != null ? val.toString() : null;
         }
 
         @Override

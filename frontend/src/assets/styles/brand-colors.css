@@ -45,6 +45,7 @@
 
 /* 表面色 */
 .bg-surface { background-color: #f8f9fa; }
+.bg-on-surface-variant { background-color: #424752; }
 .text-on-surface { color: #191c1d; }
 
 .bg-surface-container { background-color: #edeeef; }
@@ -52,6 +53,10 @@
 .bg-surface-container-high { background-color: #e7e8e9; }
 .bg-surface-container-lowest { background-color: #ffffff; }
 .bg-surface-dim { background-color: #2e3132; }
+
+/* 辅助色背景 */
+.bg-secondary-container { background-color: #c0d5ff; }
+.bg-subtle { background-color: #f1f5f9; }
 
 /* 轮廓色 */
 .border-outline { border-color: #727783; }
@@ -93,6 +98,7 @@
 .text-blue-300 { color: #93c5fd; } /* Tailwind默认blue-300 */
 .text-blue-200 { color: #bfdbfe; } /* Tailwind默认blue-200 */
 
+.bg-blue-600 { background-color: #2563eb; } /* Tailwind默认blue-600 */
 .bg-blue-100 { background-color: #dbeafe; } /* Tailwind默认blue-100 */
 .bg-blue-50 { background-color: #eff6ff; } /* Tailwind默认blue-50 */
 
@@ -102,6 +108,23 @@
 /* 透明/叠加效果 */
 .bg-white-80 { background-color: rgba(255, 255, 255, 0.8); }
 .bg-black-80 { background-color: rgba(0, 0, 0, 0.8); }
+
+/* 原型图补充色 - 基于document.html原型分析 */
+.bg-primary-fixed { background-color: #d6e3ff; }
+.text-on-primary-fixed { color: #001b3d; }
+.text-on-primary-container { color: #c8daff; }
+.text-on-secondary-container { color: #475c80; }
+.text-on-brand { color: #ffffff; }
+.text-outline { color: #727783; }
+.text-processing { color: #ed6c02; }
+
+/* 红色调色板 - 文档类型图标等 */
+.text-red-600 { color: #dc2626; }
+.text-red-500 { color: #ef4444; }
+.text-red-400 { color: #f87171; }
+.bg-red-50 { background-color: #fef2f2; }
+.bg-red-100 { background-color: #fee2e2; }
+.border-red-600 { border-color: #dc2626; }
 
 /* 原型图兼容类 - 添加以匹配原型图样式 */
 /* primary 颜色系统 (#00478d) */

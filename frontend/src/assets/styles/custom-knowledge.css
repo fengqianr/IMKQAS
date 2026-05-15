@@ -1,0 +1,354 @@
+/* 知识库页面专用样式 - 基于原型图document.html生成 */
+/* 来源原型图: http://localhost:63342/IMKQAS/frontend/image/html/document.html */
+
+/* ===== 布局 ===== */
+.knowledge-layout {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.knowledge-sidebar {
+  grid-column: span 3 / span 3;
+}
+
+.knowledge-main {
+  grid-column: span 9 / span 9;
+}
+
+.knowledge-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+/* ===== 分类导航项 ===== */
+.category-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  transition: all 150ms ease;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  background: transparent;
+}
+
+.category-item:hover {
+  background-color: var(--color-surface-container-low, #f3f4f5);
+}
+
+.category-item-active {
+  background-color: var(--color-primary-fixed, #d6e3ff);
+  color: var(--color-on-primary-fixed, #001b3d);
+}
+
+/* ===== 上传区域 ===== */
+.upload-area {
+  background-color: var(--color-surface-container-lowest, #ffffff);
+  border: 2px dashed rgba(194, 198, 212, 0.3);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.upload-area:hover {
+  border-color: rgba(0, 71, 141, 0.5);
+}
+
+.upload-area-dragging {
+  border-color: rgba(0, 71, 141, 0.5);
+}
+
+/* ===== 上传图标容器 ===== */
+.upload-icon-wrapper {
+  background-color: var(--color-primary-fixed, #d6e3ff);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  transition: transform 150ms ease;
+}
+
+.group:hover .upload-icon-wrapper {
+  transform: scale(1.1);
+}
+
+/* ===== 搜索栏 ===== */
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.search-input {
+  padding-left: 2.5rem;
+  padding-right: 1rem;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  background-color: var(--color-surface-container-low, #f3f4f5);
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  width: 20rem;
+  transition: all 150ms ease;
+  font-family: inherit;
+}
+
+.search-input:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  --tw-ring-color: rgba(0, 71, 141, 0.2);
+  box-shadow: 0 0 0 2px rgba(0, 71, 141, 0.2);
+}
+
+.search-input::placeholder {
+  color: var(--color-on-surface-variant, #424752);
+}
+
+/* ===== 表格 ===== */
+.knowledge-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.knowledge-table th {
+  background-color: rgba(243, 244, 245, 0.5);
+  color: var(--color-on-surface-variant, #424752);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.5rem;
+}
+
+.knowledge-table td {
+  padding: 1rem 1.5rem;
+}
+
+.knowledge-table-body > tr + tr {
+  border-top: 1px solid rgba(194, 198, 212, 0.1);
+}
+
+.knowledge-table tr {
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.knowledge-table tr:hover {
+  background-color: var(--color-surface, #f8f9fa);
+}
+
+/* ===== 文档类型图标 ===== */
+.doc-icon-pdf {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.doc-icon-doc {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+/* ===== 预览面板 ===== */
+.preview-panel {
+  background-color: var(--color-surface-container-lowest, #ffffff);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-ambient);
+  border: 1px solid rgba(194, 198, 212, 0.1);
+}
+
+.preview-header {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(194, 198, 212, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-content {
+  flex: 1;
+  background-color: var(--color-surface-container-low, #f3f4f5);
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* ===== 文档模拟页 ===== */
+.mock-doc-page {
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1 / 1.414;
+  padding: 2.5rem;
+}
+
+.mock-doc-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 2px solid rgba(0, 94, 184, 0.2);
+  padding-bottom: 1rem;
+  color: var(--color-primary, #00478d);
+}
+
+.mock-doc-line {
+  height: 1rem;
+  background-color: #f1f5f9;
+  border-radius: 0.25rem;
+}
+
+.mock-doc-chunk {
+  height: 8rem;
+  background-color: rgba(0, 94, 184, 0.1);
+  border-radius: 0.5rem;
+  border-left: 4px solid var(--color-brand, #005eb8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Chunk分块 ===== */
+.chunk-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(194, 198, 212, 0.3);
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+
+.chunk-card:hover {
+  background-color: #f1f5f9;
+}
+
+.chunk-card-active {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-brand, #005eb8);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== 操作按钮 ===== */
+.action-btn-gradient {
+  background: linear-gradient(to right, var(--color-brand, #005eb8), var(--color-brand, #005eb8));
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.action-btn-gradient:hover {
+  opacity: 0.9;
+}
+
+.action-btn-gradient:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn-outline {
+  border: 1px solid var(--color-outline-variant, #c2c6d4);
+  border-radius: 9999px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.action-btn-outline:hover {
+  background-color: var(--color-surface-container-low, #f3f4f5);
+}
+
+/* ===== 状态指示器 ===== */
+.status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+.status-dot-success {
+  background-color: #2e7d32;
+}
+
+.status-dot-processing {
+  background-color: #2563eb;
+}
+
+.status-dot-pending {
+  background-color: var(--color-on-surface-variant, #424752);
+}
+
+/* ===== 选中行高亮 ===== */
+.table-row-selected {
+  background-color: rgba(0, 71, 141, 0.05);
+}
+
+/* ===== 空状态 ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+/* ===== 知识库专用辅助类 ===== */
+
+/* aspect-ratio */
+.aspect-square { aspect-ratio: 1 / 1; }
+
+/* 背景色透明度变体 */
+.bg-surface-container-low\/50 { background-color: rgba(243, 244, 245, 0.5); }
+.bg-surface\/80 { background-color: rgba(248, 249, 250, 0.8); }
+.bg-brand\/10 { background-color: rgba(0, 94, 184, 0.1); }
+.bg-processing\/10 { background-color: rgba(237, 108, 2, 0.1); }
+.hover-bg-processing\/20:hover { background-color: rgba(237, 108, 2, 0.2); }
+.bg-brand\/20 { background-color: rgba(0, 94, 184, 0.2); }
+
+/* 边框色透明度变体 */
+.border-outline-variant\/30 { border-color: rgba(194, 198, 212, 0.3); }
+.border-brand\/20 { border-color: rgba(0, 94, 184, 0.2); }
+.border-primary\/50 { border-color: rgba(0, 71, 141, 0.5); }
+.hover-border-primary\/50:hover { border-color: rgba(0, 71, 141, 0.5); }
+
+/* 阴影变体 */
+.hover-shadow-brand\/10:hover { box-shadow: 0 12px 40px rgba(0, 94, 184, 0.1); }
+
+/* 定位辅助 */
+.custom-left-3 { left: 0.75rem; }
+.custom-right-3 { right: 0.75rem; }
+.custom-top-3 { top: 0.75rem; }
+.top-1\/2 { top: 50%; }
+.-translate-y-1\/2 { transform: translateY(-50%); }
+
+/* 自定义尺寸 */
+.custom-h-580 { height: 580px; }
+.custom-max-w-420 { max-width: 420px; }
+.custom-py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+.custom-mb-10 { margin-bottom: 2.5rem; }
+
+/* backdrop-filter (毛玻璃) */
+.backdrop-blur-xl { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }

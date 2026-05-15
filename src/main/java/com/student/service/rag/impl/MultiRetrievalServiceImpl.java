@@ -5,7 +5,7 @@ import com.student.service.dataBase.MilvusService;
 import com.student.service.rag.EmbeddingService;
 import com.student.service.rag.KeywordRetrievalService;
 import com.student.service.rag.MultiRetrievalService;
-import lombok.RequiredArgsConstructor;
+import com.student.service.rag.RrfFusionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -13,24 +13,36 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 /**
  * 多路检索服务实现类
- * 整合向量检索和关键词检索，实现混合检索和结果融合
+ * 整合向量检索和关键词检索，使用标准RRF融合算法进行混合检索
+ * 双路并行召回（各30条），通过RRF融合去重排序后输出候选集
  *
  * @author 系统
- * @version 1.0
+ * @version 2.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class MultiRetrievalServiceImpl implements MultiRetrievalService {
 
     private final EmbeddingService embeddingService;
     private final MilvusService milvusService;
     private final KeywordRetrievalService keywordRetrievalService;
+    private final RrfFusionService rrfFusionService;
     private final RagConfig ragConfig;
+
+    public MultiRetrievalServiceImpl(EmbeddingService embeddingService,
+                                     MilvusService milvusService,
+                                     KeywordRetrievalService keywordRetrievalService,
+                                     RrfFusionService rrfFusionService,
+                                     RagConfig ragConfig) {
+        this.embeddingService = embeddingService;
+        this.milvusService = milvusService;
+        this.keywordRetrievalService = keywordRetrievalService;
+        this.rrfFusionService = rrfFusionService;
+        this.ragConfig = ragConfig;
+    }
 
     // 检索模式
     private volatile RetrievalMode currentMode = RetrievalMode.HYBRID;
@@ -145,7 +157,6 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
 
     @Override
     public List<RetrievalResult> hybridRetrieval(String query, int topK) {
-        // 使用配置中的默认权重
         RagConfig.RetrievalConfig.WeightsConfig weights = ragConfig.getRetrieval().getWeights();
         return hybridRetrieval(query, topK, weights.getVector(), weights.getKeyword());
     }
@@ -156,26 +167,29 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
         totalQueries.incrementAndGet();
         hybridQueries.incrementAndGet();
 
-        // 确保权重和为1
+        // 归一化权重
         double totalWeight = vectorWeight + keywordWeight;
         if (totalWeight != 1.0) {
             vectorWeight = vectorWeight / totalWeight;
             keywordWeight = keywordWeight / totalWeight;
         }
 
+        // 双路各召回 K=30，为RRF融合提供足够候选
+        int perSideK = ragConfig.getRetrieval().getInitialTopK();
+
         try {
-            // 1. 并行执行向量检索和关键词检索
+            // 1. 并行执行向量检索和关键词检索（各 K=30）
             CompletableFuture<List<RetrievalResult>> vectorFuture = CompletableFuture.supplyAsync(
-                    () -> vectorRetrieval(query, topK * 2), // 获取更多结果用于融合
+                    () -> vectorRetrieval(query, perSideK),
                     executorService
             );
 
             CompletableFuture<List<RetrievalResult>> keywordFuture = CompletableFuture.supplyAsync(
-                    () -> keywordRetrieval(query, topK * 2), // 获取更多结果用于融合
+                    () -> keywordRetrieval(query, perSideK),
                     executorService
             );
 
-            // 2. 等待两个检索完成
+            // 2. 等待双路检索完成
             CompletableFuture.allOf(vectorFuture, keywordFuture).get(
                     ragConfig.getRetrieval().getTimeout(),
                     TimeUnit.MILLISECONDS
@@ -184,8 +198,8 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
             List<RetrievalResult> vectorResults = vectorFuture.get();
             List<RetrievalResult> keywordResults = keywordFuture.get();
 
-            // 3. 融合结果
-            List<RetrievalResult> fusedResults = fuseResults(
+            // 3. 使用标准RRF融合算法
+            List<RetrievalResult> fusedResults = rrfFusionService.fuseVectorAndKeyword(
                     vectorResults, keywordResults,
                     vectorWeight, keywordWeight,
                     topK
@@ -196,15 +210,14 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
             totalResponseTime.addAndGet(responseTime);
             hybridSuccessCount.incrementAndGet();
 
-            log.info("混合检索完成: query={}, vectorResults={}, keywordResults={}, fusedResults={}, time={}ms, weights=[vector={}, keyword={}]",
-                    query, vectorResults.size(), keywordResults.size(), fusedResults.size(),
-                    responseTime, vectorWeight, keywordWeight);
+            log.info("混合检索(RRF)完成: query={}, vector={}, keyword={}, fused={}, time={}ms, k={}",
+                    truncate(query), vectorResults.size(), keywordResults.size(),
+                    fusedResults.size(), responseTime, ragConfig.getRetrieval().getRrfK());
 
             return fusedResults;
 
         } catch (TimeoutException e) {
             log.error("混合检索超时: query={}, timeout={}ms", query, ragConfig.getRetrieval().getTimeout());
-            // 超时后尝试降级检索
             return fallbackRetrieval(query, topK, vectorWeight > keywordWeight);
         } catch (Exception e) {
             log.error("混合检索异常: query={}", query, e);
@@ -250,94 +263,6 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
     // ========== 私有辅助方法 ==========
 
     /**
-     * 融合向量检索和关键词检索结果
-     */
-    private List<RetrievalResult> fuseResults(
-            List<RetrievalResult> vectorResults,
-            List<RetrievalResult> keywordResults,
-            double vectorWeight,
-            double keywordWeight,
-            int topK
-    ) {
-        if (vectorResults.isEmpty() && keywordResults.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        if (vectorResults.isEmpty()) {
-            return keywordResults.stream()
-                    .limit(topK)
-                    .collect(Collectors.toList());
-        }
-
-        if (keywordResults.isEmpty()) {
-            return vectorResults.stream()
-                    .limit(topK)
-                    .collect(Collectors.toList());
-        }
-
-        // 创建结果映射，用于去重和分数融合
-        Map<Long, FusedResult> fusedMap = new HashMap<>();
-
-        // 处理向量检索结果
-        for (int i = 0; i < vectorResults.size(); i++) {
-            RetrievalResult result = vectorResults.get(i);
-            double normalizedScore = 1.0 / (i + 1); // 使用排名的倒数作为标准化分数
-            double weightedScore = normalizedScore * vectorWeight;
-
-            FusedResult fusedResult = new FusedResult(result);
-            fusedResult.vectorScore = result.getVectorScore();
-            fusedResult.weightedScore = weightedScore;
-            fusedMap.put(result.getChunkId(), fusedResult);
-        }
-
-        // 处理关键词检索结果
-        for (int i = 0; i < keywordResults.size(); i++) {
-            RetrievalResult result = keywordResults.get(i);
-            double normalizedScore = 1.0 / (i + 1); // 使用排名的倒数作为标准化分数
-            double weightedScore = normalizedScore * keywordWeight;
-
-            FusedResult fusedResult = fusedMap.get(result.getChunkId());
-            if (fusedResult == null) {
-                fusedResult = new FusedResult(result);
-                fusedResult.keywordScore = result.getKeywordScore();
-                fusedResult.weightedScore = weightedScore;
-                fusedMap.put(result.getChunkId(), fusedResult);
-            } else {
-                fusedResult.keywordScore = result.getKeywordScore();
-                fusedResult.weightedScore += weightedScore;
-            }
-        }
-
-        // 转换为最终结果并排序
-        List<FusedResult> fusedResults = new ArrayList<>(fusedMap.values());
-        fusedResults.sort((a, b) -> Double.compare(b.weightedScore, a.weightedScore));
-
-        // 转换为RetrievalResult
-        List<RetrievalResult> finalResults = new ArrayList<>();
-        for (FusedResult fusedResult : fusedResults) {
-            // 计算最终分数（加权平均）
-            double finalScore = fusedResult.weightedScore;
-
-            RetrievalResult result = new RetrievalResult(
-                    fusedResult.chunkId,
-                    fusedResult.documentId,
-                    finalScore,
-                    fusedResult.content,
-                    RetrievalSource.HYBRID,
-                    fusedResult.vectorScore,
-                    fusedResult.keywordScore
-            );
-            finalResults.add(result);
-
-            if (finalResults.size() >= topK) {
-                break;
-            }
-        }
-
-        return finalResults;
-    }
-
-    /**
      * 降级检索（当混合检索失败时）
      */
     private List<RetrievalResult> fallbackRetrieval(String query, int topK, boolean preferVector) {
@@ -363,24 +288,6 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
     }
 
     /**
-     * 融合结果内部类
-     */
-    private static class FusedResult {
-        Long chunkId;
-        Long documentId;
-        String content;
-        double vectorScore = 0.0;
-        double keywordScore = 0.0;
-        double weightedScore = 0.0;
-
-        FusedResult(RetrievalResult result) {
-            this.chunkId = result.getChunkId();
-            this.documentId = result.getDocumentId();
-            this.content = result.getContent();
-        }
-    }
-
-    /**
      * 服务销毁时清理资源
      */
     public void destroy() {
@@ -395,5 +302,9 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
             Thread.currentThread().interrupt();
             log.error("多路检索服务资源清理被中断", e);
         }
+    }
+
+    private static String truncate(String s) {
+        return s != null && s.length() > 60 ? s.substring(0, 60) + "..." : s;
     }
 }

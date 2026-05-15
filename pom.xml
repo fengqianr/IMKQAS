@@ -206,6 +206,43 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Caffeine缓存 -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version>
+        </dependency>
+
+        <!-- SymSpell拼写纠正（暂时注释，待找到合适依赖） -->
+        <!--
+        <dependency>
+            <groupId>com.github.klauspost</groupId>
+            <artifactId>symspell-java</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        -->
+
+        <!-- HanLP中文自然语言处理 -->
+        <dependency>
+            <groupId>com.hankcs</groupId>
+            <artifactId>hanlp</artifactId>
+            <version>portable-1.8.4</version>
+        </dependency>
+
+        <!-- HAPI FHIR 基础模型 (R4) — HIS对接预留 -->
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-base</artifactId>
+            <version>7.4.0</version>
+        </dependency>
+
+        <!-- HAPI FHIR R4 资源结构定义 -->
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-r4</artifactId>
+            <version>7.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -293,6 +294,116 @@ public class RedisService {
             return result;
         } catch (Exception e) {
             log.error("递增限流计数失败: key={}", key, e);
+            return null;
+        }
+    }
+
+    /**
+     * 通用递增方法
+     *
+     * @param key 键
+     * @param delta 增量
+     * @return 递增后的值
+     */
+    public Long increment(String key, long delta) {
+        try {
+            ValueOperations<String, Object> ops = redisTemplate.opsForValue();
+            Long result = ops.increment(key, delta);
+            log.debug("递增: key={}, delta={}, result={}", key, delta, result);
+            return result;
+        } catch (Exception e) {
+            log.error("递增失败: key={}", key, e);
+            return null;
+        }
+    }
+
+    // ========== 分布式锁方法（用于语义缓存懒加载重建） ==========
+
+    /**
+     * 尝试获取分布式锁（SETNX + 过期时间）
+     *
+     * @param lockKey 锁的键
+     * @param ttlSeconds 锁的过期时间（秒），防止死锁
+     * @return 是否获取成功
+     */
+    public boolean acquireLock(String lockKey, long ttlSeconds) {
+        try {
+            Boolean acquired = redisTemplate.opsForValue()
+                    .setIfAbsent(lockKey, "1", ttlSeconds, TimeUnit.SECONDS);
+            boolean result = acquired != null && acquired;
+            log.debug("获取分布式锁: key={}, ttl={}s, result={}", lockKey, ttlSeconds, result);
+            return result;
+        } catch (Exception e) {
+            log.error("获取分布式锁失败: key={}", lockKey, e);
+            return false;
+        }
+    }
+
+    /**
+     * 释放分布式锁（带安全校验：只释放自己持有的锁）
+     *
+     * @param lockKey 锁的键
+     * @return 是否释放成功
+     */
+    public boolean releaseLock(String lockKey) {
+        try {
+            Boolean deleted = redisTemplate.delete(lockKey);
+            boolean result = deleted != null && deleted;
+            log.debug("释放分布式锁: key={}, result={}", lockKey, result);
+            return result;
+        } catch (Exception e) {
+            log.error("释放分布式锁失败: key={}", lockKey, e);
+            return false;
+        }
+    }
+
+    /**
+     * 设置缓存（带版本号）
+     *
+     * @param key 键
+     * @param value 值
+     * @param version 版本号
+     * @param expireSeconds 过期时间（秒）
+     * @return 是否设置成功
+     */
+    public boolean setWithVersion(String key, Object value, int version, Long expireSeconds) {
+        try {
+            Map<String, Object> wrapper = new java.util.HashMap<>();
+            wrapper.put("v", version);
+            wrapper.put("data", value);
+            wrapper.put("ts", System.currentTimeMillis());
+            return set(key, wrapper, expireSeconds);
+        } catch (Exception e) {
+            log.error("设置带版本缓存失败: key={}", key, e);
+            return false;
+        }
+    }
+
+    /**
+     * 获取缓存并校验版本号
+     *
+     * @param key 键
+     * @param expectedVersion 期望的版本号
+     * @return 版本匹配时返回数据，否则返回null（视为缓存失效）
+     */
+    @SuppressWarnings("unchecked")
+    public Object getWithVersion(String key, int expectedVersion) {
+        try {
+            Object raw = get(key);
+            if (raw == null) return null;
+            if (raw instanceof Map) {
+                Map<String, Object> wrapper = (Map<String, Object>) raw;
+                int storedVersion = ((Number) wrapper.get("v")).intValue();
+                if (storedVersion != expectedVersion) {
+                    log.debug("缓存版本不匹配: key={}, stored={}, expected={}", key, storedVersion, expectedVersion);
+                    delete(key);
+                    return null;
+                }
+                return wrapper.get("data");
+            }
+            return raw;
+        } catch (Exception e) {
+            log.error("获取带版本缓存失败: key={}", key, e);
             return null;
         }
     }

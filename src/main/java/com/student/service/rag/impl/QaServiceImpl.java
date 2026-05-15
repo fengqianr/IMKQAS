@@ -1,11 +1,12 @@
 package com.student.service.rag.impl;
 
 import com.student.config.RagConfig;
+import com.student.entity.Document;
 import com.student.service.*;
-import com.student.service.rag.CrossEncoderRerankService;
-import com.student.service.rag.MultiRetrievalService;
-import com.student.service.rag.QaService;
-import lombok.RequiredArgsConstructor;
+import com.student.service.document.DocumentService;
+import com.student.service.his.*;
+import com.student.service.rag.*;
+import com.student.utils.evaluation.PipelineTraceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -18,21 +19,56 @@ import java.util.stream.Collectors;
 
 /**
  * 问答服务实现类
- * 实现完整的RAG问答流程：检索 -> 重排序 -> 生成回答
+ * 完整的RAG问答管线：查询预处理 → 双路召回(RRF融合) → 质量过滤 → 矛盾检测 → 多因子重排序 → LLM生成
  *
  * @author 系统
- * @version 1.0
+ * @version 3.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class QaServiceImpl implements QaService {
 
     private final MultiRetrievalService multiRetrievalService;
-    private final CrossEncoderRerankService rerankService;
+    private final MultiFactorRerankService multiFactorRerankService;
+    private final QualityFilterService qualityFilterService;
     private final LlmService llmService;
     private final RedisService redisService;
     private final RagConfig ragConfig;
+    private final DocumentService documentService;
+    private final SafetyGuardService safetyGuardService;
+    private final QueryRewriteService queryRewriteService;
+    private final SemanticCacheService semanticCacheService;
+    private final IntentRouter intentRouter;
+    private final InterviewEngine interviewEngine;
+
+    public QaServiceImpl(MultiRetrievalService multiRetrievalService,
+                         MultiFactorRerankService multiFactorRerankService,
+                         QualityFilterService qualityFilterService,
+                         LlmService llmService,
+                         RedisService redisService,
+                         RagConfig ragConfig,
+                         DocumentService documentService,
+                         SafetyGuardService safetyGuardService,
+                         QueryRewriteService queryRewriteService,
+                         SemanticCacheService semanticCacheService,
+                         IntentRouter intentRouter,
+                         InterviewEngine interviewEngine) {
+        this.multiRetrievalService = multiRetrievalService;
+        this.multiFactorRerankService = multiFactorRerankService;
+        this.qualityFilterService = qualityFilterService;
+        this.llmService = llmService;
+        this.redisService = redisService;
+        this.ragConfig = ragConfig;
+        this.documentService = documentService;
+        this.safetyGuardService = safetyGuardService;
+        this.queryRewriteService = queryRewriteService;
+        this.semanticCacheService = semanticCacheService;
+        this.intentRouter = intentRouter;
+        this.interviewEngine = interviewEngine;
+    }
+
+    // 文档标题缓存（避免重复查询）
+    private final Map<Long, String> documentTitleCache = new ConcurrentHashMap<>();
 
     // 统计信息
     private final AtomicInteger totalQueries = new AtomicInteger(0);
@@ -42,72 +78,189 @@ public class QaServiceImpl implements QaService {
     private final AtomicInteger totalRetrievedDocuments = new AtomicInteger(0);
     private final AtomicInteger totalGeneratedTokens = new AtomicInteger(0);
 
-    // 缓存：查询 -> 问答结果（可选）
-    private final Map<String, QaResponse> responseCache = new ConcurrentHashMap<>();
-
     @Override
     public QaResponse answer(String query, Long userId, Long conversationId) {
         long startTime = System.currentTimeMillis();
         totalQueries.incrementAndGet();
-
-        // 检查缓存
-        if (ragConfig.getCache().getQuery().isEnabled()) {
-            String cacheKey = generateCacheKey(query, userId, conversationId);
-            Object cached = redisService.get(cacheKey);
-            if (cached instanceof QaResponse) {
-                log.debug("问答缓存命中: query={}, userId={}, conversationId={}",
-                        query.substring(0, Math.min(query.length(), 50)), userId, conversationId);
-                return (QaResponse) cached;
-            }
-        }
+        PipelineTraceContext.start();
 
         try {
-            // 1. 检索文档
-            List<MultiRetrievalService.RetrievalResult> retrievalResults = retrieveDocuments(query);
+            // ═══ [1] 意图路由：LLM分类 + 关键词兜底 ═══
+            IntentType intent = intentRouter.classify(query);
+            InterviewSuggestion suggestion = null;
+            if (intent == IntentType.DATA_COLLECTION || intent == IntentType.MIXED) {
+                suggestion = interviewEngine.suggestQuestionnaire(query);
+            }
+            log.info("意图路由: query={}, intent={}, hasSuggestion={}",
+                    truncate(query, 50), intent, suggestion != null && suggestion.isMatched());
+
+            // DATA_COLLECTION → 仅返回问卷建议，不走RAG
+            if (intent == IntentType.DATA_COLLECTION) {
+                PipelineTraceContext.finish();
+                long processingTime = System.currentTimeMillis() - startTime;
+                successfulQueries.incrementAndGet();
+                String answerText = suggestion.isMatched()
+                        ? suggestion.getSuggestionText()
+                        : "感谢您的描述。目前暂未匹配到合适的评估问卷，建议您咨询专业医生获取更准确的评估。";
+                return new QaResponse(query, answerText, Collections.emptyList(),
+                        0.85, processingTime, "intent-router",
+                        intent.name(), suggestion);
+            }
+
+            // ═══ [2] 查询预处理：分词 + 实体识别 + 同义词扩展 ═══
+            long t2 = System.currentTimeMillis();
+            String processedQuery = queryRewriteService.rewrite(query, userId, conversationId);
+            PipelineTraceContext.recordStep("查询预处理", 2, System.currentTimeMillis() - t2);
+            if (processedQuery != null && !processedQuery.equals(query)) {
+                log.info("查询预处理完成: raw={}, processed={}", query, processedQuery);
+            }
+
+            // ═══ [3] 安全兜底：急症预检 ═══
+            long t3 = System.currentTimeMillis();
+            SafetyDecision emergencyDecision = safetyGuardService.checkEmergency(processedQuery);
+            PipelineTraceContext.recordStep("安全兜底①-急症预检", 3, System.currentTimeMillis() - t3);
+            if (emergencyDecision.isBlocked()) {
+                PipelineTraceContext.finish();
+                return buildEmergencyResponse(query, emergencyDecision, startTime, intent);
+            }
+
+            // [4][5] 双路召回 + RRF融合检索
+            long t4 = System.currentTimeMillis();
+            List<MultiRetrievalService.RetrievalResult> retrievalResults = retrieveDocuments(processedQuery);
+            PipelineTraceContext.recordStep("双路召回+RRF融合", 5, System.currentTimeMillis() - t4);
             totalRetrievedDocuments.addAndGet(retrievalResults.size());
 
-            // 2. 重排序（如果启用）
-            List<MultiRetrievalService.RetrievalResult> rerankedResults = rerankDocuments(query, retrievalResults);
+            // [6] 质量过滤
+            long t6 = System.currentTimeMillis();
+            QualityFilterService.FilterResult filterResult = qualityFilterService.filter(retrievalResults);
+            List<MultiRetrievalService.RetrievalResult> filteredResults = filterResult.getPassed();
+            PipelineTraceContext.recordStep("质量过滤", 6, System.currentTimeMillis() - t6);
+            log.info("质量过滤: 输入={}, 通过={}, 丢弃={}",
+                    retrievalResults.size(), filteredResults.size(), filterResult.getDiscardedCount());
 
-            // 3. 提取上下文内容
+            // [7] 矛盾检测
+            long t7 = System.currentTimeMillis();
+            QualityFilterService.ContradictionResult contradiction =
+                    qualityFilterService.detectContradictions(filteredResults, query);
+            PipelineTraceContext.recordStep("矛盾检测", 7, System.currentTimeMillis() - t7);
+            if (contradiction.isHasContradiction()) {
+                log.warn("矛盾检测命中: pair={}, 阻断LLM调用", contradiction.getDrugPopulationPair());
+                PipelineTraceContext.finish();
+                return buildContradictionResponse(query, contradiction, startTime, intent);
+            }
+
+            // [8] 多因子重排序
+            long t8 = System.currentTimeMillis();
+            List<MultiRetrievalService.RetrievalResult> rerankedResults =
+                    rerankDocuments(processedQuery, filteredResults);
+            PipelineTraceContext.recordStep("多因子重排序", 8, System.currentTimeMillis() - t8);
+
+            // ═══ [9] 安全兜底：置信度门控 ═══
+            long t9 = System.currentTimeMillis();
+            ConfidenceDecision confidenceDecision = safetyGuardService.assessConfidence(rerankedResults);
+            PipelineTraceContext.recordStep("安全兜底②-置信度门控", 9, System.currentTimeMillis() - t9);
+            if (confidenceDecision.isBlocked()) {
+                PipelineTraceContext.finish();
+                return buildLowConfidenceResponse(query, confidenceDecision, startTime, intent);
+            }
+
             List<String> context = extractContext(rerankedResults);
 
-            // 4. 生成回答
-            String answer = generateAnswer(query, context);
+            // ═══ [10][11] 语义化缓存链 → LLM生成 ═══
+            String answer;
+            String modelUsed = llmService.getModelInfo().getName();
+            String normalizedQuery = queryRewriteService.normalize(query);
+            List<Long> sortedFragmentIds = extractSortedFragmentIds(rerankedResults);
 
-            // 5. 计算置信度
+            long t10 = System.currentTimeMillis();
+            boolean cacheHit = false;
+            SemanticCacheService.CachedAnswer cached = semanticCacheService.get(normalizedQuery, sortedFragmentIds);
+            if (cached != null) {
+                cacheHit = true;
+                PipelineTraceContext.recordStep("语义缓存(命中)", 10, System.currentTimeMillis() - t10);
+                answer = safetyGuardService.sanitizeAnswer(cached.getAnswer(), 0.8);
+                log.info("语义缓存命中: query={}, version={}, latency=0ms(L2)",
+                        truncate(query, 50), cached.getVersion());
+            } else {
+                PipelineTraceContext.recordStep("语义缓存(未命中)", 10, System.currentTimeMillis() - t10);
+                boolean lockAcquired = semanticCacheService instanceof SemanticCacheServiceImpl
+                        && ((SemanticCacheServiceImpl) semanticCacheService)
+                                .tryAcquireRebuildLock(normalizedQuery, sortedFragmentIds);
+
+                if (lockAcquired) {
+                    try {
+                        long t11 = System.currentTimeMillis();
+                        answer = generateAnswer(query, context);
+                        PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t11);
+
+                        long t12 = System.currentTimeMillis();
+                        answer = safetyGuardService.sanitizeAnswer(answer,
+                                calculateConfidence(rerankedResults, answer));
+                        PipelineTraceContext.recordStep("安全兜底③-答案净化", 12, System.currentTimeMillis() - t12);
+
+                        List<String> sources = context.stream().limit(3).collect(Collectors.toList());
+                        semanticCacheService.put(normalizedQuery, sortedFragmentIds, answer, sources);
+                        log.debug("语义缓存写入完成: query={}", truncate(query, 50));
+                    } finally {
+                        ((SemanticCacheServiceImpl) semanticCacheService)
+                                .releaseRebuildLock(normalizedQuery, sortedFragmentIds);
+                    }
+                } else {
+                    try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+                    SemanticCacheService.CachedAnswer retryCached =
+                            semanticCacheService.get(normalizedQuery, sortedFragmentIds);
+                    if (retryCached != null) {
+                        cacheHit = true;
+                        answer = safetyGuardService.sanitizeAnswer(retryCached.getAnswer(), 0.8);
+                        log.info("语义缓存重试命中: query={}", truncate(query, 50));
+                    } else {
+                        long t11 = System.currentTimeMillis();
+                        answer = generateAnswer(query, context);
+                        PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t11);
+
+                        long t12 = System.currentTimeMillis();
+                        answer = safetyGuardService.sanitizeAnswer(answer,
+                                calculateConfidence(rerankedResults, answer));
+                        PipelineTraceContext.recordStep("安全兜底③-答案净化", 12, System.currentTimeMillis() - t12);
+
+                        log.debug("语义缓存未命中且未获取锁，直接调用LLM: query={}", truncate(query, 50));
+                    }
+                }
+            }
+
+            // MIXED：在RAG回答末尾附加问卷推荐
+            if (intent == IntentType.MIXED && suggestion != null && suggestion.isMatched()) {
+                answer = answer + "\n\n---\n\n" + suggestion.getSuggestionText();
+            }
+
             double confidence = calculateConfidence(rerankedResults, answer);
 
-            // 6. 构建响应
             long processingTime = System.currentTimeMillis() - startTime;
             totalProcessingTime.addAndGet(processingTime);
             successfulQueries.incrementAndGet();
 
             QaResponse response = new QaResponse(
-                    query,
-                    answer,
-                    context.stream().limit(3).collect(Collectors.toList()), // 只返回前3个上下文摘要
-                    confidence,
-                    processingTime,
-                    llmService.getModelInfo().getName()
-            );
+                    query, answer,
+                    context.stream().limit(3).collect(Collectors.toList()),
+                    confidence, processingTime, modelUsed,
+                    intent.name(), suggestion);
 
-            // 7. 缓存结果
-            if (ragConfig.getCache().getQuery().isEnabled()) {
-                String cacheKey = generateCacheKey(query, userId, conversationId);
-                redisService.set(cacheKey, response, (long) ragConfig.getCache().getQuery().getTtl());
-                log.debug("问答缓存设置: query={}, userId={}, conversationId={}",
-                        query.substring(0, Math.min(query.length(), 50)), userId, conversationId);
-            }
+            log.info("问答完成: query={}, intent={}, contextCount={}, answerLength={}, confidence={}, time={}ms",
+                    truncate(query, 50), intent, context.size(),
+                    answer.length(), confidence, processingTime);
 
-            log.info("问答完成: query={}, contextCount={}, answerLength={}, confidence={}, time={}ms",
-                    query, context.size(), answer.length(), confidence, processingTime);
+            PipelineTraceContext.get().putMetadata("confidence", confidence);
+            PipelineTraceContext.get().putMetadata("cacheHit", cacheHit);
+            PipelineTraceContext.get().putMetadata("intentType", intent.name());
+            PipelineTraceContext.get().putMetadata("totalTimeMs", processingTime);
+            PipelineTraceContext.finish();
 
             return response;
 
         } catch (Exception e) {
             log.error("问答异常: query={}, userId={}, conversationId={}", query, userId, conversationId, e);
             failedQueries.incrementAndGet();
+            PipelineTraceContext.clear();
             return getFallbackResponse(query, startTime);
         }
     }
@@ -136,28 +289,83 @@ public class QaServiceImpl implements QaService {
         totalQueries.incrementAndGet();
 
         try {
-            // 1. 检索文档
-            List<MultiRetrievalService.RetrievalResult> retrievalResults = retrieveDocuments(query);
+            // 意图路由
+            IntentType intent = intentRouter.classify(query);
+            InterviewSuggestion suggestion = null;
+            if (intent == IntentType.DATA_COLLECTION || intent == IntentType.MIXED) {
+                suggestion = interviewEngine.suggestQuestionnaire(query);
+            }
+
+            // DATA_COLLECTION → 仅返回问卷建议
+            if (intent == IntentType.DATA_COLLECTION) {
+                long processingTime = System.currentTimeMillis() - startTime;
+                successfulQueries.incrementAndGet();
+                String answerText = suggestion.isMatched()
+                        ? suggestion.getSuggestionText()
+                        : "感谢您的描述。目前暂未匹配到合适的评估问卷，建议您咨询专业医生获取更准确的评估。";
+                return new QaResponseWithSources(query, answerText, Collections.emptyList(),
+                        0.85, processingTime, "intent-router", Collections.emptyList(),
+                        intent.name(), suggestion);
+            }
+
+            // ═══ 查询预处理 ═══
+            String processedQuery = queryRewriteService.rewrite(query, userId, conversationId);
+            if (processedQuery != null && !processedQuery.equals(query)) {
+                log.info("查询预处理完成(WithSources): raw={}, processed={}", query, processedQuery);
+            }
+
+            // ═══ 安全兜底：急症预检 ═══
+            SafetyDecision emergencyDecision = safetyGuardService.checkEmergency(processedQuery);
+            if (emergencyDecision.isBlocked()) {
+                QaResponse er = buildEmergencyResponse(query, emergencyDecision, startTime, intent);
+                return new QaResponseWithSources(
+                        er.getQuery(), er.getAnswer(), er.getRetrievedContext(),
+                        er.getConfidence(), er.getProcessingTime(), er.getModelUsed(),
+                        Collections.emptyList(), er.getIntentType(), er.getQuestionnaireSuggestion());
+            }
+
+            List<MultiRetrievalService.RetrievalResult> retrievalResults = retrieveDocuments(processedQuery);
             totalRetrievedDocuments.addAndGet(retrievalResults.size());
 
-            // 2. 重排序（如果启用）
-            List<MultiRetrievalService.RetrievalResult> rerankedResults = rerankDocuments(query, retrievalResults);
+            QualityFilterService.FilterResult filterResult = qualityFilterService.filter(retrievalResults);
+            List<MultiRetrievalService.RetrievalResult> filteredResults = filterResult.getPassed();
 
-            // 3. 构建带来源的上下文
+            QualityFilterService.ContradictionResult contradiction =
+                    qualityFilterService.detectContradictions(filteredResults, query);
+            if (contradiction.isHasContradiction()) {
+                QaResponse cr = buildContradictionResponse(query, contradiction, startTime, intent);
+                return new QaResponseWithSources(
+                        cr.getQuery(), cr.getAnswer(), cr.getRetrievedContext(),
+                        cr.getConfidence(), cr.getProcessingTime(), cr.getModelUsed(),
+                        Collections.emptyList(), cr.getIntentType(), cr.getQuestionnaireSuggestion());
+            }
+
+            List<MultiRetrievalService.RetrievalResult> rerankedResults =
+                    rerankDocuments(processedQuery, filteredResults);
+
+            ConfidenceDecision confidenceDecision = safetyGuardService.assessConfidence(rerankedResults);
+            if (confidenceDecision.isBlocked()) {
+                QaResponse lr = buildLowConfidenceResponse(query, confidenceDecision, startTime, intent);
+                return new QaResponseWithSources(
+                        lr.getQuery(), lr.getAnswer(), lr.getRetrievedContext(),
+                        lr.getConfidence(), lr.getProcessingTime(), lr.getModelUsed(),
+                        Collections.emptyList(), lr.getIntentType(), lr.getQuestionnaireSuggestion());
+            }
+
             List<LlmService.ContextWithSource> contextWithSources = buildContextWithSources(rerankedResults);
-
-            // 4. 生成带引用的回答
             LlmService.AnswerWithCitations answerWithCitations =
                     llmService.generateAnswerWithCitations(query, contextWithSources);
-
-            // 5. 构建来源引用信息
             List<SourceCitation> citations = buildSourceCitations(
                     rerankedResults, answerWithCitations.getCitations());
 
-            // 6. 计算置信度
             double confidence = calculateConfidence(rerankedResults, answerWithCitations.getAnswer());
+            String sanitizedAnswer = safetyGuardService.sanitizeAnswer(answerWithCitations.getAnswer(), confidence);
 
-            // 7. 构建响应
+            // MIXED：末尾附加问卷推荐
+            if (intent == IntentType.MIXED && suggestion != null && suggestion.isMatched()) {
+                sanitizedAnswer = sanitizedAnswer + "\n\n---\n\n" + suggestion.getSuggestionText();
+            }
+
             long processingTime = System.currentTimeMillis() - startTime;
             totalProcessingTime.addAndGet(processingTime);
             successfulQueries.incrementAndGet();
@@ -168,17 +376,12 @@ public class QaServiceImpl implements QaService {
                     .collect(Collectors.toList());
 
             QaResponseWithSources response = new QaResponseWithSources(
-                    query,
-                    answerWithCitations.getAnswer(),
-                    contextSummary,
-                    confidence,
-                    processingTime,
-                    llmService.getModelInfo().getName(),
-                    citations
-            );
+                    query, sanitizedAnswer, contextSummary,
+                    confidence, processingTime, llmService.getModelInfo().getName(),
+                    citations, intent.name(), suggestion);
 
-            log.info("带来源问答完成: query={}, sources={}, answerLength={}, confidence={}, time={}ms",
-                    query, citations.size(), answerWithCitations.getAnswer().length(),
+            log.info("带来源问答完成: query={}, intent={}, sources={}, answerLength={}, confidence={}, time={}ms",
+                    query, intent, citations.size(), answerWithCitations.getAnswer().length(),
                     confidence, processingTime);
 
             return response;
@@ -187,17 +390,11 @@ public class QaServiceImpl implements QaService {
             log.error("带来源问答异常: query={}, userId={}, conversationId={}",
                     query, userId, conversationId, e);
             failedQueries.incrementAndGet();
-            // 降级为普通问答
             QaResponse fallback = getFallbackResponse(query, startTime);
             return new QaResponseWithSources(
-                    fallback.getQuery(),
-                    fallback.getAnswer(),
-                    fallback.getRetrievedContext(),
-                    fallback.getConfidence(),
-                    fallback.getProcessingTime(),
-                    fallback.getModelUsed(),
-                    Collections.emptyList()
-            );
+                    fallback.getQuery(), fallback.getAnswer(), fallback.getRetrievedContext(),
+                    fallback.getConfidence(), fallback.getProcessingTime(), fallback.getModelUsed(),
+                    Collections.emptyList(), fallback.getIntentType(), fallback.getQuestionnaireSuggestion());
         }
     }
 
@@ -217,10 +414,9 @@ public class QaServiceImpl implements QaService {
 
     @Override
     public boolean isAvailable() {
-        return multiRetrievalService != null && rerankService != null && llmService != null &&
-                multiRetrievalService.getCurrentMode() != null &&
-                rerankService.isAvailable() &&
-                llmService.isAvailable();
+        return multiRetrievalService != null && multiFactorRerankService != null
+                && llmService != null && llmService.isAvailable()
+                && semanticCacheService != null && semanticCacheService.isAvailable();
     }
 
     // ========== 私有辅助方法 ==========
@@ -254,22 +450,22 @@ public class QaServiceImpl implements QaService {
     }
 
     /**
-     * 重排序文档
+     * 多因子重排序（权威性 + 时效性 + 语义相似度）
      */
     private List<MultiRetrievalService.RetrievalResult> rerankDocuments(
             String query,
             List<MultiRetrievalService.RetrievalResult> results
     ) {
-        if (results.isEmpty() || !rerankService.isAvailable()) {
+        if (results.isEmpty()) {
             return results;
         }
 
-        // 使用重排序服务
+        int rerankTopK = ragConfig.getRetrieval().getRerankTopK();
         List<MultiRetrievalService.RetrievalResult> rerankedResults =
-                rerankService.rerank(query, results, ragConfig.getRetrieval().getRerankTopK());
+                multiFactorRerankService.rerank(query, results, rerankTopK);
 
-        log.debug("重排序完成: query={}, input={}, output={}",
-                query, results.size(), rerankedResults.size());
+        log.debug("多因子重排序完成: query={}, input={}, output={}",
+                truncate(query, 50), results.size(), rerankedResults.size());
         return rerankedResults != null ? rerankedResults : results;
     }
 
@@ -382,10 +578,11 @@ public class QaServiceImpl implements QaService {
             // 查找最匹配的检索结果
             for (MultiRetrievalService.RetrievalResult result : results) {
                 if (result.getContent().contains(llmCitation.getQuote())) {
+                    String title = getDocumentTitle(result.getDocumentId());
                     citations.add(new SourceCitation(
                             String.valueOf(result.getDocumentId()),
                             String.valueOf(result.getChunkId()),
-                            "文档片段",
+                            title,
                             llmCitation.getQuote(),
                             result.getScore() != null ? result.getScore() : 0.0,
                             llmCitation.getPosition()
@@ -396,6 +593,34 @@ public class QaServiceImpl implements QaService {
         }
 
         return citations;
+    }
+
+    /**
+     * 获取文档标题（带缓存）
+     */
+    private String getDocumentTitle(Long documentId) {
+        if (documentId == null) {
+            return "文档片段";
+        }
+        // 先从缓存查找
+        String cached = documentTitleCache.get(documentId);
+        if (cached != null) {
+            return cached;
+        }
+        // 从数据库查询
+        try {
+            Document document = documentService.getById(documentId);
+            if (document != null && document.getTitle() != null && !document.getTitle().trim().isEmpty()) {
+                documentTitleCache.put(documentId, document.getTitle());
+                return document.getTitle();
+            }
+        } catch (Exception e) {
+            log.warn("获取文档标题失败: documentId={}", documentId, e);
+        }
+        // 降级：使用默认标题
+        String fallback = "文档-" + documentId;
+        documentTitleCache.put(documentId, fallback);
+        return fallback;
     }
 
     /**
@@ -420,14 +645,57 @@ public class QaServiceImpl implements QaService {
     }
 
     /**
-     * 生成缓存键
+     * 提取排序后的知识片段ID列表（用于语义缓存键生成）
+     * 排序确保缓存键不受检索结果顺序影响
      */
-    private String generateCacheKey(String query, Long userId, Long conversationId) {
-        String keyContent = String.format("%s:%s:%s", query, userId, conversationId);
-        // 使用MD5哈希作为缓存键
-        byte[] bytes = keyContent.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        String hash = org.springframework.util.DigestUtils.md5DigestAsHex(bytes);
-        return String.format("qa:response:%s", hash);
+    private List<Long> extractSortedFragmentIds(List<MultiRetrievalService.RetrievalResult> results) {
+        List<Long> ids = new ArrayList<>();
+        for (MultiRetrievalService.RetrievalResult result : results) {
+            if (result.getChunkId() != null) {
+                ids.add(result.getChunkId());
+            }
+        }
+        Collections.sort(ids);
+        return ids;
+    }
+
+    /**
+     * 构建急症阻断响应
+     */
+    private QaResponse buildEmergencyResponse(String query, SafetyDecision decision, long startTime,
+                                               IntentType intent) {
+        long processingTime = System.currentTimeMillis() - startTime;
+        return new QaResponse(query, decision.getAdviceMessage(), Collections.emptyList(),
+                0.0, processingTime, "safety-guard",
+                intent != null ? intent.name() : null, null);
+    }
+
+    /**
+     * 构建低置信度阻断响应
+     */
+    private QaResponse buildLowConfidenceResponse(String query, ConfidenceDecision decision, long startTime,
+                                                    IntentType intent) {
+        long processingTime = System.currentTimeMillis() - startTime;
+        return new QaResponse(query, decision.getMessage(), Collections.emptyList(),
+                decision.getMaxScore(), processingTime, "safety-guard",
+                intent != null ? intent.name() : null, null);
+    }
+
+    /**
+     * 构建矛盾信息响应（不送入LLM）
+     */
+    private QaResponse buildContradictionResponse(String query,
+                                                   QualityFilterService.ContradictionResult contradiction,
+                                                   long startTime, IntentType intent) {
+        long processingTime = System.currentTimeMillis() - startTime;
+        String message = String.format(
+                "关于 %s 的信息存在冲突，不同权威来源给出了相反的结论。"
+                        + "建议您咨询专业医生，结合具体病情做出判断。",
+                contradiction.getDrugPopulationPair());
+
+        return new QaResponse(query, message, Collections.emptyList(),
+                0.5, processingTime, "safety-guard",
+                intent != null ? intent.name() : null, null);
     }
 
     /**
@@ -436,14 +704,11 @@ public class QaServiceImpl implements QaService {
     private QaResponse getFallbackResponse(String query, long startTime) {
         long processingTime = System.currentTimeMillis() - startTime;
         String fallbackAnswer = "抱歉，当前无法处理您的查询。请检查网络连接或稍后重试。";
+        return new QaResponse(query, fallbackAnswer, Collections.emptyList(),
+                0.1, processingTime, "fallback", null, null);
+    }
 
-        return new QaResponse(
-                query,
-                fallbackAnswer,
-                Collections.emptyList(),
-                0.1, // 低置信度
-                processingTime,
-                "fallback"
-        );
+    private static String truncate(String s, int maxLen) {
+        return s != null && s.length() > maxLen ? s.substring(0, maxLen) + "..." : s;
     }
 }

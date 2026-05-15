@@ -239,6 +239,45 @@ class DocumentService {
     }
   }
 
+  // 获取文档预览URL
+  getPreviewUrl(id: string): string {
+    return `${this.baseURL}/documents/${id}/preview`
+  }
+
+  // 获取文档预览文件内容（用于PDF等二进制格式）
+  async getPreviewBlob(id: string): Promise<Blob | null> {
+    try {
+      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
+      const response = await axios.get(`${this.baseURL}/documents/${id}/preview`, {
+        responseType: 'blob',
+        headers: {
+          Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
+        }
+      })
+      return response.data
+    } catch (error: any) {
+      console.error(`获取文档预览失败 (ID: ${id}):`, error)
+      return null
+    }
+  }
+
+  // 获取文档文本预览内容（用于非PDF格式的文本展示）
+  async getPreviewText(id: string): Promise<string | null> {
+    try {
+      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
+      const response = await axios.get(`${this.baseURL}/documents/${id}/preview/text`, {
+        responseType: 'text',
+        headers: {
+          Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
+        }
+      })
+      return response.data
+    } catch (error: any) {
+      console.error(`获取文档文本预览失败 (ID: ${id}):`, error)
+      return null
+    }
+  }
+
   // 重新处理文档（触发分块处理）
   async reprocessDocument(documentId: string): Promise<DocumentProcessApiResponse> {
     try {
