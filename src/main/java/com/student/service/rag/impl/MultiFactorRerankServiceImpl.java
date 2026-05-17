@@ -12,12 +12,13 @@ import java.util.stream.Collectors;
 
 /**
  * 多因子重排序服务实现
- * 综合三个维度进行精确重排序：
+ * 综合四个维度进行精确重排序：
  * 1. 权威性（来源类型 → 证据金字塔系数）
  * 2. 时效性（指数衰减，按知识类型设定半衰期）
  * 3. 语义相似度（交叉编码器分数）
+ * 4. 意图匹配度（查询意图与文档内容的关键词匹配）
  * <p>
- * 公式：final = wa * authority + wt * timeliness + ws * semantic
+ * 公式：final = wa * authority + wt * timeliness + ws * semantic + wi * intent
  *
  * @author 系统
  * @version 1.0
@@ -26,13 +27,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
 
-    /** 默认各维度权重 */
-    private static final double DEFAULT_WEIGHT_AUTHORITY = 0.4;
-    private static final double DEFAULT_WEIGHT_TIMELINESS = 0.2;
-    private static final double DEFAULT_WEIGHT_SEMANTIC = 0.4;
-
-    /** 时效性衰减率 λ */
-    private static final double DECAY_RATE = 0.3;
+    /** 默认各维度权重（总和为1.0） */
+    private static final double DEFAULT_WEIGHT_AUTHORITY = 0.3;
+    private static final double DEFAULT_WEIGHT_TIMELINESS = 0.15;
+    private static final double DEFAULT_WEIGHT_SEMANTIC = 0.35;
+    private static final double DEFAULT_WEIGHT_INTENT = 0.2;
 
     /** 各知识类型的半衰期（年） */
     private static final Map<KnowledgeType, Double> HALF_LIVES = Map.of(
@@ -43,6 +42,45 @@ public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
             KnowledgeType.PUBLIC_HEALTH, 4.0,
             KnowledgeType.CLASSIC_RESEARCH, 100.0,  // 几乎不衰减
             KnowledgeType.UNKNOWN, 5.0
+    );
+
+    /** 查询意图类型 */
+    enum QueryIntent {
+        DISEASE, DRUG, SYMPTOM, TREATMENT, PREVENTION,
+        EXAMINATION, EMERGENCY, DEPARTMENT, GENERAL_HEALTH, UNKNOWN
+    }
+
+    /** 意图关键词映射（用于查询分类和文档匹配） */
+    private static final Map<QueryIntent, Set<String>> INTENT_KEYWORDS = Map.of(
+            QueryIntent.DISEASE, Set.of(
+                    "病", "疾病", "症", "炎症", "感染", "肿瘤", "癌", "瘤",
+                    "溃疡", "结石", "硬化", "糖尿病", "高血压", "心脏病", "肺炎"),
+            QueryIntent.DRUG, Set.of(
+                    "药", "药物", "胶囊", "片", "丸", "颗粒", "注射液", "口服液",
+                    "膏", "贴", "喷雾", "用法", "用量", "副作用", "剂量"),
+            QueryIntent.SYMPTOM, Set.of(
+                    "疼", "痛", "痒", "肿", "胀", "红", "热", "晕", "吐",
+                    "恶心", "呕吐", "咳", "喘", "乏力", "疲劳", "虚弱",
+                    "失眠", "多梦", "焦虑", "抑郁", "发烧", "发热", "头痛"),
+            QueryIntent.TREATMENT, Set.of(
+                    "治疗", "治愈", "疗法", "手术", "开刀", "吃药", "打针",
+                    "输液", "康复", "理疗", "针灸", "推拿", "按摩"),
+            QueryIntent.PREVENTION, Set.of(
+                    "预防", "防范", "避免", "防止", "保健", "养生", "锻炼",
+                    "运动", "饮食", "营养", "疫苗", "筛查"),
+            QueryIntent.EXAMINATION, Set.of(
+                    "检查", "化验", "检测", "体检", "B超", "CT", "X光",
+                    "核磁", "血常规", "尿常规", "心电图", "筛查"),
+            QueryIntent.EMERGENCY, Set.of(
+                    "急诊", "紧急", "急救", "救命", "危险", "严重",
+                    "马上", "立刻", "赶快", "快点", "突发", "突然"),
+            QueryIntent.DEPARTMENT, Set.of(
+                    "科", "科室", "门诊", "急诊", "外科", "内科", "儿科",
+                    "妇产科", "眼科", "耳鼻喉科", "皮肤科", "口腔科",
+                    "神经科", "心血管科", "消化科", "呼吸科"),
+            QueryIntent.GENERAL_HEALTH, Set.of(
+                    "健康", "身体", "体质", "免疫力", "抵抗力",
+                    "生活习惯", "作息", "睡眠", "心理", "情绪")
     );
 
     private final CrossEncoderRerankService crossEncoderRerankService;
@@ -117,12 +155,84 @@ public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
         double authority = calculateAuthority(result);
         double timeliness = calculateTimeliness(result);
         double semantic = clamp(semanticScore, 0.0, 1.0);
+        double intent = calculateIntentRelevance(query, result);
 
         double finalScore = DEFAULT_WEIGHT_AUTHORITY * authority
                 + DEFAULT_WEIGHT_TIMELINESS * timeliness
-                + DEFAULT_WEIGHT_SEMANTIC * semantic;
+                + DEFAULT_WEIGHT_SEMANTIC * semantic
+                + DEFAULT_WEIGHT_INTENT * intent;
 
         return clamp(finalScore, 0.0, 1.0);
+    }
+
+    // ========== 意图匹配度评分 ==========
+
+    /**
+     * 计算查询意图与文档内容的匹配度
+     * 先对查询做意图分类，再与文档内容做同组关键词匹配
+     */
+    double calculateIntentRelevance(String query, MultiRetrievalService.RetrievalResult result) {
+        QueryIntent intent = classifyQueryIntent(query);
+        return calculateIntentRelevance(intent, result);
+    }
+
+    /**
+     * 基于关键词匹配的查询意图分类
+     */
+    QueryIntent classifyQueryIntent(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return QueryIntent.UNKNOWN;
+        }
+
+        QueryIntent bestIntent = QueryIntent.UNKNOWN;
+        double bestRate = 0.0;
+
+        for (Map.Entry<QueryIntent, Set<String>> entry : INTENT_KEYWORDS.entrySet()) {
+            Set<String> keywords = entry.getValue();
+            int hitCount = 0;
+            for (String kw : keywords) {
+                if (query.contains(kw)) {
+                    hitCount++;
+                }
+            }
+            double rate = (double) hitCount / keywords.size();
+            if (rate > bestRate) {
+                bestRate = rate;
+                bestIntent = entry.getKey();
+            }
+        }
+
+        return bestIntent;
+    }
+
+    /**
+     * 计算文档片段与指定意图的匹配度
+     */
+    private double calculateIntentRelevance(QueryIntent intent,
+                                            MultiRetrievalService.RetrievalResult result) {
+        if (intent == QueryIntent.UNKNOWN) {
+            return 0.5;
+        }
+
+        Set<String> keywords = INTENT_KEYWORDS.get(intent);
+        if (keywords == null || keywords.isEmpty()) {
+            return 0.5;
+        }
+
+        String content = result.getContent();
+        if (content == null) {
+            return 0.3;
+        }
+
+        int hitCount = 0;
+        for (String kw : keywords) {
+            if (content.contains(kw)) {
+                hitCount++;
+            }
+        }
+
+        // 按命中数计分，命中5个以上即满分
+        return clamp(hitCount * 0.2, 0.0, 1.0);
     }
 
     // ========== 权威性评分 ==========

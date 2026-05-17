@@ -5,9 +5,9 @@ import java.util.Map;
 
 /**
  * 多因子重排序服务接口
- * 综合权威性、时效性、语义相似度三个维度进行精确重排序
+ * 综合权威性、时效性、语义相似度、意图匹配度四个维度进行精确重排序
  * <p>
- * 公式：final = wa * authority + wt * timeliness + ws * semantic
+ * 公式：final = wa * authority + wt * timeliness + ws * semantic + wi * intent
  *
  * @author 系统
  * @version 1.0
