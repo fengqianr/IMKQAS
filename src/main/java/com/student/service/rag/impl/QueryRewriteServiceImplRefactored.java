@@ -28,18 +28,16 @@ import java.util.stream.Collectors;
 
 /**
  * 查询改写服务实现类（重构版）
- * 基于规则和关键词的医疗查询改写与意图识别
+ * 基于规则和医学词库的查询预处理
  * 改进点：
  * 1. THUOCL医学词库集成：从THUOCL官网加载医学术语，支持热加载
  * 2. 拼写纠正升级：集成symspell-java进行智能拼写纠正
  * 3. 简化改进：保留否定副词，避免错误移除
- * 4. 扩展优化：条件性追加相关术语
- * 5. 意图识别增强：THUOCL术语匹配 + 否定词检测 + 权重优化
- * 6. 归一化接口：提供完整的查询归一化流程
- * 7. 配置化：同义词、停用词从配置文件或Redis加载
- * 8. SNOMED CT集成：支持医学术语标准化
- * 9. 医学实体识别：HanLP + THUOCL 分词与实体抽取
- * 10. 同义词扩展：本地映射表 → SNOMED CT → LLM兜底 + 人工审核队列
+ * 4. 归一化接口：提供完整的查询归一化流程
+ * 5. 配置化：同义词、停用词从配置文件或Redis加载
+ * 6. SNOMED CT集成：支持医学术语标准化
+ * 7. 医学实体识别：HanLP + THUOCL 分词与实体抽取
+ * 8. 医疗术语化：本地映射表 → SNOMED CT → LLM兜底 + 人工审核队列
  *
  * @author 系统
  * @version 3.0
@@ -78,14 +76,10 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
     // 停用词集合（可热加载）
     private Set<String> stopWords = ConcurrentHashMap.newKeySet();
 
-    // 否定词集合（用于意图识别）
+    // 否定词集合（用于停用词简化时保留）
     private static final Set<String> NEGATION_WORDS = Set.of(
             "不", "没", "没有", "无", "未", "非", "否", "不是", "不会", "不能", "不要", "不用"
     );
-
-    // 拼写纠正器（symspell-java）
-    // 暂时注释，待添加依赖后启用
-    // private SymSpell symSpell;
 
     // 统计信息
     private final AtomicInteger totalQueries = new AtomicInteger(0);
@@ -96,25 +90,7 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
     private final AtomicInteger normalizedQueries = new AtomicInteger(0);
     private final AtomicLong totalProcessingTime = new AtomicLong(0);
 
-    // 意图关键词权重映射（长词权重更高）
-    private static final Map<String, Double> KEYWORD_WEIGHTS = Map.ofEntries(
-            // 疾病相关（长词权重高）
-            Map.entry("糖尿病", 2.0),
-            Map.entry("高血压", 2.0),
-            Map.entry("心脏病", 2.0),
-            Map.entry("肺炎", 1.5),
-            Map.entry("感冒", 1.0),
-            // 症状相关
-            Map.entry("头痛", 1.5),
-            Map.entry("发烧", 1.5),
-            Map.entry("咳嗽", 1.5),
-            Map.entry("腹泻", 1.5),
-            // 通用关键词（权重较低）
-            Map.entry("病", 0.5),
-            Map.entry("症", 0.5),
-            Map.entry("药", 0.5),
-            Map.entry("疼", 0.5)
-    );
+    // 统计信息
 
     /**
      * 初始化方法：加载THUOCL词库、同义词、停用词
@@ -368,21 +344,16 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
                     entities.stream().map(MedicalEntityRecognitionService.MedicalEntity::toString)
                             .collect(Collectors.joining(", ")));
 
-            // 4. 同义词扩展（本地映射表 → SNOMED CT → LLM兜底）
-            SynonymExpansionService.ExpansionResult expansionResult =
+            // 4. 同义词扩展-医疗术语化（本地映射表 → SNOMED CT → LLM兜底）
+            SynonymExpansionService.ExpansionResult medicalizedQuery =
                     synonymExpansionService.expand(simplifiedQuery, entities);
-            String expandedQuery = expansionResult.getExpandedQuery();
+            String expandedQuery = medicalizedQuery.getExpandedQuery();
             if (!expandedQuery.equals(simplifiedQuery)) {
                 expandedQueries.incrementAndGet();
                 log.debug("同义词扩展: mappings={}, unmapped={}",
-                        expansionResult.getMappings().size(), expansionResult.getUnmappedTerms().size());
+                        medicalizedQuery.getMappings().size(), medicalizedQuery.getUnmappedTerms().size());
             }
 
-            // 5. 查询扩展（基于意图添加相关术语）
-            String intentExpanded = expand(expandedQuery);
-
-            // 6. 医疗术语化（SNOMED CT标准化）
-            String medicalizedQuery = medicalize(intentExpanded);
 
             // 记录改写
             if (medicalizedQuery != null && !medicalizedQuery.equals(originalQuery)) {
@@ -395,7 +366,7 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
             log.debug("查询改写完成: original={}, rewritten={}, entities={}, time={}ms",
                     originalQuery, medicalizedQuery, entities.size(), processingTime);
 
-            return medicalizedQuery;
+            return medicalizedQuery.toString();
 
         } catch (Exception e) {
             log.error("查询改写异常: query={}", originalQuery, e);
@@ -444,67 +415,6 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
         }
 
         return rewrittenQueries;
-    }
-
-    @Override
-    public String expand(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return query;
-        }
-
-        StringBuilder expandedQuery = new StringBuilder(query);
-        Set<String> alreadyAdded = new HashSet<>();
-
-        // 1. 添加同义词（仅当同义词不在原查询中时）
-        for (Map.Entry<String, List<String>> entry : synonymsMap.entrySet()) {
-            String term = entry.getKey();
-            if (query.contains(term)) {
-                List<String> synonyms = entry.getValue();
-                for (String synonym : synonyms) {
-                    if (!query.contains(synonym) && !alreadyAdded.contains(synonym)) {
-                        expandedQuery.append(" ").append(synonym);
-                        alreadyAdded.add(synonym);
-                        break; // 只添加第一个不在查询中的同义词
-                    }
-                }
-            }
-        }
-
-        // 2. 添加相关术语（基于意图，条件性追加）
-        IntentClassification intent = classifyIntent(query);
-        List<String> relatedTerms = getRelatedTermsByIntent(intent.getPrimaryIntent());
-
-        for (String term : relatedTerms) {
-            if (!query.contains(term) && !alreadyAdded.contains(term)) {
-                expandedQuery.append(" ").append(term);
-                alreadyAdded.add(term);
-                break; // 只添加一个最相关的术语
-            }
-        }
-
-        return expandedQuery.toString().trim();
-    }
-
-    /**
-     * 根据意图获取相关术语
-     */
-    private List<String> getRelatedTermsByIntent(IntentType intent) {
-        switch (intent) {
-            case DISEASE_QUERY:
-                return Arrays.asList("症状", "治疗", "预防");
-            case DRUG_QUERY:
-                return Arrays.asList("用法", "用量", "副作用");
-            case SYMPTOM_QUERY:
-                return Arrays.asList("可能疾病", "诊断", "检查");
-            case TREATMENT_QUERY:
-                return Arrays.asList("手术", "康复", "理疗");
-            case PREVENTION_QUERY:
-                return Arrays.asList("健康", "保健", "锻炼");
-            case EXAMINATION_QUERY:
-                return Arrays.asList("化验", "检测", "筛查");
-            default:
-                return Collections.emptyList();
-        }
     }
 
     @Override
@@ -647,215 +557,6 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
         }
 
         return medicalizedQuery;
-    }
-
-    @Override
-    public IntentClassification classifyIntent(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return new IntentClassification(
-                    query,
-                    IntentType.OTHER,
-                    Collections.emptyList(),
-                    0.0
-            );
-        }
-
-        // 检查是否包含否定词 + 医学实体
-        boolean hasNegation = false;
-        for (String negation : NEGATION_WORDS) {
-            if (query.contains(negation)) {
-                hasNegation = true;
-                break;
-            }
-        }
-
-        // 计算各意图的分数（增强版）
-        Map<IntentType, Double> intentScores = new HashMap<>();
-
-        // 疾病查询分数（使用THUOCL术语匹配）
-        double diseaseScore = calculateEnhancedScore(query, IntentType.DISEASE_QUERY, hasNegation);
-        intentScores.put(IntentType.DISEASE_QUERY, diseaseScore);
-
-        // 症状查询分数
-        double symptomScore = calculateEnhancedScore(query, IntentType.SYMPTOM_QUERY, hasNegation);
-        intentScores.put(IntentType.SYMPTOM_QUERY, symptomScore);
-
-        // 药物查询分数
-        double drugScore = calculateEnhancedScore(query, IntentType.DRUG_QUERY, hasNegation);
-        intentScores.put(IntentType.DRUG_QUERY, drugScore);
-
-        // 其他意图分数
-        intentScores.put(IntentType.DEPARTMENT_GUIDANCE, calculateDepartmentScore(query));
-        intentScores.put(IntentType.TREATMENT_QUERY, calculateTreatmentIntentScore(query));
-        intentScores.put(IntentType.PREVENTION_QUERY, calculatePreventionIntentScore(query));
-        intentScores.put(IntentType.EXAMINATION_QUERY, calculateExaminationIntentScore(query));
-        intentScores.put(IntentType.EMERGENCY_QUERY, calculateEmergencyIntentScore(query));
-        intentScores.put(IntentType.GENERAL_HEALTH, calculateGeneralHealthIntentScore(query));
-
-        // 找出主要意图
-        IntentType primaryIntent = IntentType.OTHER;
-        double maxScore = 0.0;
-
-        for (Map.Entry<IntentType, Double> entry : intentScores.entrySet()) {
-            if (entry.getValue() > maxScore) {
-                maxScore = entry.getValue();
-                primaryIntent = entry.getKey();
-            }
-        }
-
-        // 找出次要意图（分数大于阈值）
-        List<IntentType> secondaryIntents = new ArrayList<>();
-        double threshold = 0.3;
-
-        for (Map.Entry<IntentType, Double> entry : intentScores.entrySet()) {
-            if (entry.getKey() != primaryIntent && entry.getValue() > threshold) {
-                secondaryIntents.add(entry.getKey());
-            }
-        }
-
-        // 计算置信度
-        double confidence = Math.min(maxScore, 1.0);
-
-        log.debug("意图识别: query={}, primary={}, confidence={}, secondary={}, hasNegation={}",
-                query, primaryIntent, confidence, secondaryIntents, hasNegation);
-
-        return new IntentClassification(query, primaryIntent, secondaryIntents, confidence);
-    }
-
-    /**
-     * 计算增强版意图分数（考虑THUOCL术语和否定词）
-     */
-    private double calculateEnhancedScore(String query, IntentType intentType, boolean hasNegation) {
-        Set<String> keywords = getKeywordsByIntent(intentType);
-        double baseScore = calculateWeightedKeywordScore(query, keywords);
-
-        // 如果查询包含THUOCL医学术语，增加分数
-        double medicalTermBonus = calculateMedicalTermBonus(query);
-        baseScore += medicalTermBonus * 0.3; // 医学术语加成
-
-        // 如果包含否定词，降低疾病/症状相关意图的分数
-        if (hasNegation && (intentType == IntentType.DISEASE_QUERY || intentType == IntentType.SYMPTOM_QUERY)) {
-            baseScore *= 0.5; // 减半
-        }
-
-        return Math.min(baseScore, 1.0);
-    }
-
-    /**
-     * 计算加权关键词分数（考虑关键词权重）
-     */
-    private double calculateWeightedKeywordScore(String query, Set<String> keywords) {
-        if (query == null || keywords == null || keywords.isEmpty()) {
-            return 0.0;
-        }
-
-        double totalScore = 0.0;
-        for (String keyword : keywords) {
-            if (query.contains(keyword)) {
-                // 使用权重映射，默认为1.0
-                double weight = KEYWORD_WEIGHTS.getOrDefault(keyword, 1.0);
-                totalScore += weight * 0.2; // 基础分数
-            }
-        }
-
-        return Math.min(totalScore, 1.0);
-    }
-
-    /**
-     * 计算医学术语加成（THUOCL词库匹配）
-     */
-    private double calculateMedicalTermBonus(String query) {
-        int matches = 0;
-        for (String term : medicalTerms) {
-            if (query.contains(term)) {
-                matches++;
-                if (matches >= 3) break; // 最多匹配3个
-            }
-        }
-        return matches * 0.2; // 每个匹配加0.2分
-    }
-
-    /**
-     * 根据意图获取关键词集合
-     */
-    private Set<String> getKeywordsByIntent(IntentType intentType) {
-        switch (intentType) {
-            case DISEASE_QUERY:
-                return Set.of("病", "疾病", "症", "炎症", "感染", "肿瘤", "癌", "瘤", "溃疡", "结石", "硬化");
-            case DRUG_QUERY:
-                return Set.of("药", "药物", "胶囊", "片", "丸", "颗粒", "注射液", "口服液", "膏", "贴", "喷雾");
-            case SYMPTOM_QUERY:
-                return Set.of("疼", "痛", "痒", "肿", "胀", "红", "热", "晕", "吐", "恶心", "呕吐", "咳", "喘",
-                        "乏力", "疲劳", "虚弱", "失眠", "多梦", "焦虑", "抑郁");
-            default:
-                return Collections.emptySet();
-        }
-    }
-
-    /**
-     * 计算科室导诊分数
-     */
-    private double calculateDepartmentScore(String query) {
-        Set<String> departmentKeywords = Set.of(
-                "科", "科室", "门诊", "急诊", "外科", "内科", "儿科", "妇产科", "眼科", "耳鼻喉科",
-                "皮肤科", "口腔科", "神经科", "心血管科", "消化科", "呼吸科"
-        );
-        return calculateWeightedKeywordScore(query, departmentKeywords);
-    }
-
-    /**
-     * 计算治疗意图分数
-     */
-    private double calculateTreatmentIntentScore(String query) {
-        Set<String> treatmentKeywords = Set.of(
-                "治疗", "治愈", "疗法", "手术", "开刀", "吃药", "打针", "输液",
-                "康复", "理疗", "针灸", "推拿", "按摩"
-        );
-        return calculateWeightedKeywordScore(query, treatmentKeywords);
-    }
-
-    /**
-     * 计算预防意图分数
-     */
-    private double calculatePreventionIntentScore(String query) {
-        Set<String> preventionKeywords = Set.of(
-                "预防", "防范", "避免", "防止", "预防措施", "健康", "保健",
-                "养生", "锻炼", "运动", "饮食", "营养"
-        );
-        return calculateWeightedKeywordScore(query, preventionKeywords);
-    }
-
-    /**
-     * 计算检查意图分数
-     */
-    private double calculateExaminationIntentScore(String query) {
-        Set<String> examinationKeywords = Set.of(
-                "检查", "化验", "检测", "筛查", "体检", "B超", "CT", "X光",
-                "核磁", "血常规", "尿常规", "心电图"
-        );
-        return calculateWeightedKeywordScore(query, examinationKeywords);
-    }
-
-    /**
-     * 计算急诊意图分数
-     */
-    private double calculateEmergencyIntentScore(String query) {
-        Set<String> emergencyKeywords = Set.of(
-                "急诊", "紧急", "急救", "救命", "危险", "严重", "马上", "立刻",
-                "赶快", "快点", "突发", "突然"
-        );
-        return calculateWeightedKeywordScore(query, emergencyKeywords);
-    }
-
-    /**
-     * 计算一般健康意图分数
-     */
-    private double calculateGeneralHealthIntentScore(String query) {
-        Set<String> generalKeywords = Set.of(
-                "健康", "身体", "体质", "免疫力", "抵抗力", "生活习惯",
-                "作息", "睡眠", "饮食", "运动", "心理", "情绪"
-        );
-        return calculateWeightedKeywordScore(query, generalKeywords);
     }
 
     @Override

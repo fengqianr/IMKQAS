@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * 查询改写服务接口
- * 优化用户查询以提高检索效果，包括查询扩展、同义词替换、意图澄清等
+ * 优化用户查询以提高检索效果，包括拼写纠正、停用词简化、实体识别、同义词扩展、医学术语化
  *
  * @author 系统
  * @version 1.0
@@ -32,14 +32,6 @@ public interface QueryRewriteService {
     List<String> rewriteBatch(List<String> queries, Long userId, Long conversationId);
 
     /**
-     * 查询扩展（添加同义词、相关术语）
-     *
-     * @param query 原始查询
-     * @return 扩展后的查询
-     */
-    String expand(String query);
-
-    /**
      * 查询简化（移除停用词、标准化术语）
      *
      * @param query 原始查询
@@ -62,14 +54,6 @@ public interface QueryRewriteService {
      * @return 专业术语化的查询
      */
     String medicalize(String query);
-
-    /**
-     * 获取查询的意图分类
-     *
-     * @param query 查询
-     * @return 意图分类结果
-     */
-    IntentClassification classifyIntent(String query);
 
     /**
      * 检查服务是否可用
@@ -111,66 +95,6 @@ public interface QueryRewriteService {
     }
 
     // ========== 内部数据类型 ==========
-
-    /**
-     * 意图分类结果
-     */
-    class IntentClassification {
-        private final String query;
-        private final IntentType primaryIntent;
-        private final List<IntentType> secondaryIntents;
-        private final double confidence;
-
-        public IntentClassification(String query, IntentType primaryIntent,
-                                   List<IntentType> secondaryIntents, double confidence) {
-            this.query = query;
-            this.primaryIntent = primaryIntent;
-            this.secondaryIntents = secondaryIntents;
-            this.confidence = confidence;
-        }
-
-        public String getQuery() {
-            return query;
-        }
-
-        public IntentType getPrimaryIntent() {
-            return primaryIntent;
-        }
-
-        public List<IntentType> getSecondaryIntents() {
-            return secondaryIntents;
-        }
-
-        public double getConfidence() {
-            return confidence;
-        }
-    }
-
-    /**
-     * 医疗查询意图类型
-     */
-    enum IntentType {
-        DISEASE_QUERY("疾病查询"),           // 疾病信息、症状、诊断
-        DRUG_QUERY("药物查询"),             // 药物信息、用法、副作用
-        SYMPTOM_QUERY("症状查询"),          // 症状分析、可能疾病
-        DEPARTMENT_GUIDANCE("科室导诊"),    // 推荐就诊科室
-        TREATMENT_QUERY("治疗查询"),        // 治疗方法、手术、康复
-        PREVENTION_QUERY("预防查询"),       // 疾病预防、健康建议
-        EXAMINATION_QUERY("检查查询"),      // 医学检查、化验
-        EMERGENCY_QUERY("急诊查询"),        // 紧急情况处理
-        GENERAL_HEALTH("一般健康"),         // 健康咨询、生活习惯
-        OTHER("其他");                     // 其他类型
-
-        private final String description;
-
-        IntentType(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-    }
 
     /**
      * 查询改写统计信息
