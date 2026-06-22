@@ -256,26 +256,28 @@ class DocumentProcessorServiceImplTest {
         // 验证原始异常是RuntimeException且包含预期消息
         Throwable cause = exception.getCause();
         assertTrue(cause instanceof RuntimeException);
-        assertTrue(cause.getMessage().contains("不支持的文件类型"));
+        assertTrue(cause.getMessage().contains("仅支持 PDF 文件"), "实际消息: " + cause.getMessage());
     }
 
     @Test
-    void testExtractText_WithTxtFile_ShouldReadText() throws Exception {
+    void testExtractText_WithTxtFile_ShouldBeRejected() throws Exception {
         // 创建临时文本文件
         java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("test", ".txt");
         java.nio.file.Files.write(tempFile, "测试文本内容".getBytes());
 
         try {
-            // 使用反射调用私有方法
             java.lang.reflect.Method extractTextMethod = DocumentProcessorServiceImpl.class
                     .getDeclaredMethod("extractText", String.class, String.class);
             extractTextMethod.setAccessible(true);
 
-            String result = (String) extractTextMethod.invoke(documentProcessorService,
-                    tempFile.toString(), "txt");
+            // TXT 格式不再支持，应抛出异常
+            Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class,
+                    () -> extractTextMethod.invoke(documentProcessorService,
+                            tempFile.toString(), "txt"));
 
-            assertNotNull(result);
-            assertEquals("测试文本内容", result.trim());
+            Throwable cause = exception.getCause();
+            assertTrue(cause instanceof RuntimeException);
+            assertTrue(cause.getMessage().contains("仅支持 PDF 文件"));
         } finally {
             java.nio.file.Files.deleteIfExists(tempFile);
         }

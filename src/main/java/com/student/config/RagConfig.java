@@ -206,9 +206,22 @@ public class RagConfig {
      */
     @Data
     public static class DocumentConfig {
-        /** 支持的文件类型 */
+        /** 支持的文件类型（仅 PDF） */
         @NotBlank
-        private String supportedFormats = "pdf,docx,doc,txt";
+        private String supportedFormats = "pdf";
+
+        /** MinerU PDF 转换配置 */
+        @Data
+        public static class MinerUConfig {
+            /** 是否启用 MinerU（禁用则回退到 PDFBox） */
+            private boolean enabled = true;
+            /** MinerU 云端 API 端点 */
+            private String apiEndpoint = "https://mineru.net/api/v1/agent/parse/file";
+            /** API 密钥（可选，轻量 API 无需认证） */
+            private String apiKey = "";
+            /** HTTP 请求超时时间（秒） */
+            private int timeout = 300;
+        }
 
         /** 分块配置 */
         @Data
@@ -224,10 +237,43 @@ public class RagConfig {
             private int overlap = 50;
 
             /**
-             * 分块策略: fixed(固定大小), semantic(语义分割)
+             * 分块策略: fixed(固定大小), recursive(递归语义分割), semantic(同 recursive),
+             * medical(医学文档结构感知，带层级元数据)
              */
             @NotBlank
             private String strategy = "semantic";
+
+            /** 最小 chunk 长度（字符数，低于此值丢弃） */
+            @Min(10)
+            @Max(200)
+            private int minChunkSize = 20;
+
+            /** 分隔符优先级列表（逗号分隔，最后的空串表示字符级兜底） */
+            private String separators = "\n\n,\n,。,；,，, ,";
+
+            /** 医学文档分块专用配置（仅 strategy=medical 时生效） */
+            private MedicalChunkConfig medical = new MedicalChunkConfig();
+
+            /** 医学文档分块专用配置 */
+            @Data
+            public static class MedicalChunkConfig {
+                /** 是否启用章节层级解析 */
+                private boolean sectionHierarchy = true;
+                /** 是否保护表格不被切分 */
+                private boolean tableProtection = true;
+                /** 是否提取 ICD 编码到元数据 */
+                private boolean icdDetection = true;
+                /** 是否注入兄弟章节信息（prevSibling/nextSibling） */
+                private boolean siblingContext = true;
+                /** 最小标题长度（字符，低于此值的短文本不会被识别为标题） */
+                private int minSectionHeaderLength = 2;
+                /** 表格最少数据行数（低于此行数不视为表格） */
+                private int minTableRows = 2;
+                /** 同级小 chunk 合并阈值（字符，相邻的低于此值的兄弟 chunk 尝试合并） */
+                private int siblingMergeThreshold = 150;
+                /** 最大层级深度（超过此深度的标题不再拆分新节点） */
+                private int maxDepth = 5;
+            }
         }
 
         /** 文本提取配置 */
@@ -256,8 +302,73 @@ public class RagConfig {
             private DocxConfig docx = new DocxConfig();
         }
 
+        /** Tesseract OCR 降级配置（MinerU / PDFBox 提取质量不足时使用） */
+        @Data
+        public static class OcrConfig {
+            /** 是否启用 Tesseract OCR 降级 */
+            private boolean enabled = true;
+            /** OCR 语言（如 chi_sim+eng） */
+            private String language = "chi_sim+eng";
+            /** 触发 OCR 的最小文本长度（提取文本短于此值则认为质量不足） */
+            private int minTextLength = 50;
+            /** PDF 渲染 DPI（越高越清晰，越慢） */
+            private int renderDpi = 300;
+        }
+
+        /** PDF 预检查配置：在 MinerU 前快速判定 PDF 类型，让数字原生 PDF 跳过 MinerU */
+        @Data
+        public static class PdfPreCheckConfig {
+            /** 是否启用预检查 */
+            private boolean enabled = true;
+            /** 判定为 DIGITAL_NATIVE 的最小采样文本长度 */
+            private int digitalNativeMinTextLength = 500;
+            /** 判定为 SCANNED 的最大采样文本长度 */
+            private int scannedMaxTextLength = 200;
+            /** 判定为 DIGITAL_NATIVE 所需的最小有文本页数 */
+            private int minPagesWithText = 2;
+            /** 目录行模式重复次数阈值 */
+            private int tocPatternRepeatThreshold = 5;
+        }
+
+        /** 页面级处理决策配置 */
+        @Data
+        public static class PageLevelConfig {
+            /** 是否启用页面级分类处理 */
+            private boolean enabled = true;
+            /** 每页文本层最小字符数（低于此值视为无文本层） */
+            private int minTextLayerLength = 10;
+            /** 无文本层非关键页是否跳过（false 时降级为 OCR） */
+            private boolean skipNonKeyPages = true;
+            /** 自定义医学关键词（逗号分隔，空字符串使用默认值） */
+            private String medicalKeywords = "";
+        }
+
+        /** 文本后处理/清洗配置 */
+        @Data
+        public static class TextCleanerConfig {
+            /** 是否启用文本清洗 */
+            private boolean enabled = true;
+            /** 是否去除页眉页脚 */
+            private boolean removeHeadersFooters = true;
+            /** 页眉页脚重复次数阈值 */
+            private int headerFooterRepeatThreshold = 3;
+            /** 是否去除引用标记 */
+            private boolean removeCitations = true;
+            /** 是否规范化空白字符 */
+            private boolean normalizeWhitespace = true;
+            /** 是否修复中文断行 */
+            private boolean fixBrokenLines = true;
+            /** 是否去除馆藏元数据 */
+            private boolean removeMetadata = true;
+        }
+
         private ChunkConfig chunk = new ChunkConfig();
         private ExtractionConfig extraction = new ExtractionConfig();
+        private MinerUConfig mineru = new MinerUConfig();
+        private OcrConfig ocr = new OcrConfig();
+        private PdfPreCheckConfig pdfPreCheck = new PdfPreCheckConfig();
+        private PageLevelConfig pageLevel = new PageLevelConfig();
+        private TextCleanerConfig textCleaner = new TextCleanerConfig();
     }
 
     // ========== 缓存配置 ==========
@@ -455,5 +566,8 @@ public class RagConfig {
                 multiFactorRerank.getWeights().getSemantic());
         log.info("语义缓存链: 启用={}, TTL={}s, 版本={}",
                 semanticCache.isEnabled(), semanticCache.getTtl(), semanticCache.getKnowledgeVersion());
+        log.info("MinerU PDF转换: 启用={}, API端点={}, 超时={}s",
+                document.getMineru().isEnabled(), document.getMineru().getApiEndpoint(),
+                document.getMineru().getTimeout());
     }
 }

@@ -94,19 +94,19 @@ curl http://localhost:9000/minio/health/live
 ```bash
 # 启动
 cd ~
-docker-compose -f milvus-standalone-docker-compose.yml up -d
+docker compose -f milvus-standalone-docker-compose.yml up -d
 
 # 停止
-docker-compose -f milvus-standalone-docker-compose.yml down
+docker compose -f milvus-standalone-docker-compose.yml down
 
 # 重启
-docker-compose -f milvus-standalone-docker-compose.yml restart
+docker compose -f milvus-standalone-docker-compose.yml restart
 
 # 状态
-docker-compose -f milvus-standalone-docker-compose.yml ps
+docker compose -f milvus-standalone-docker-compose.yml ps
 
 # 日志
-docker-compose -f milvus-standalone-docker-compose.yml logs -f
+docker compose -f milvus-standalone-docker-compose.yml logs -f
 
 # 测试
 curl http://localhost:9091/healthz
@@ -116,22 +116,22 @@ curl http://localhost:9091/healthz
 # 首次构建并启动
 cd ~/IMKQAS
 export DOCKER_BUILDKIT=0
-docker-compose up --build -d
+docker compose up --build -d
 
 # 启动（已构建过）
-docker-compose up -d
+docker compose up -d
 
 # 停止
-docker-compose down
+docker compose down
 
 # 重启
-docker-compose restart app
+docker compose restart app
 
 # 状态
-docker-compose ps
+docker compose ps
 
 # 日志
-docker-compose logs -f app
+docker compose logs -f app
 
 # 测试
 curl http://localhost:8080/api/actuator/health

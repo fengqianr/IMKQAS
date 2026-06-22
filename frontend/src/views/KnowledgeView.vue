@@ -98,7 +98,7 @@
             </div>
             <h4 class="font-headline font-bold text-on-surface custom-mb-2">上传医学文档</h4>
             <p class="text-xs text-on-surface-variant custom-mb-6 leading-relaxed">
-              支持 PDF, Word, TXT 格式<br />单个文件最大支持 50MB
+              仅支持 PDF 格式<br />单个文件最大支持 50MB
             </p>
             <button
               class="custom-w-full custom-py-3 custom-px-4 border border-outline-variant rounded-full text-sm font-semibold hover-bg-surface-container-low custom-transition-colors"
@@ -110,7 +110,7 @@
               ref="fileInput"
               type="file"
               class="custom-hidden"
-              accept=".pdf,.doc,.docx,.txt"
+              accept=".pdf"
               multiple
               @change="handleFileSelect"
             />
@@ -407,7 +407,10 @@
                       ID: {{ chunk.id }}
                     </span>
                     <span class="font-body text-10px font-medium custom-px-2 custom-py-0.5 rounded-xl bg-subtle text-secondary">
-                      相似度: {{ chunk.similarity.toFixed(3) }}
+                      分块 #{{ chunk.chunkIndex + 1 }}
+                      <template v-if="chunk.similarity != null">
+                        · 相似度: {{ chunk.similarity.toFixed(3) }}
+                      </template>
                     </span>
                   </div>
                   <p class="font-body text-sm leading-relaxed text-secondary">
@@ -432,7 +435,10 @@
               <div class="custom-p-4 bg-surface custom-flex custom-justify-between custom-items-center">
                 <span class="font-body text-xs text-secondary">
                   <template v-if="displayChunks.length > 0 && selectedChunkIndex < displayChunks.length">
-                    当前选中: {{ displayChunks[selectedChunkIndex].id }} (相似度: {{ displayChunks[selectedChunkIndex].similarity.toFixed(3) }})
+                    当前选中: {{ displayChunks[selectedChunkIndex].id }}
+                    <template v-if="displayChunks[selectedChunkIndex].similarity != null">
+                      (相似度: {{ displayChunks[selectedChunkIndex].similarity!.toFixed(3) }})
+                    </template>
                   </template>
                   <template v-else>
                     当前选中: 无
@@ -498,7 +504,8 @@ interface UiChunk extends DocumentChunk {
 // 用于显示的分块数据接口
 interface DisplayChunk {
   id: string
-  similarity: number
+  similarity?: number  // 相似度仅向量搜索时有值
+  chunkIndex: number   // 分块序号
   content: string
   tags?: string[]
 }
@@ -573,10 +580,7 @@ const documents = computed<UiDocument[]>(() => {
 
 // 转换文档分块为显示格式
 const convertToDisplayChunks = (chunks: UiChunk[]): DisplayChunk[] => {
-  return chunks.map((chunk, index) => {
-    // 计算模拟相似度（如果没有实际相似度数据）
-    const similarity = chunk.similarity || (1.0 - index * 0.1)
-
+  return chunks.map((chunk) => {
     // 从内容中提取可能的标签
     const tags = extractTagsFromContent(chunk.content)
 
@@ -587,7 +591,8 @@ const convertToDisplayChunks = (chunks: UiChunk[]): DisplayChunk[] => {
 
     return {
       id: `chunk-${chunk.id}`,
-      similarity,
+      similarity: chunk.similarity,  // 仅向量搜索时才有值，按文档浏览时为 undefined
+      chunkIndex: chunk.chunkIndex,
       content: displayContent,
       tags
     }
@@ -792,7 +797,7 @@ const onDrop = (event: DragEvent) => {
 const uploadFiles = async (files: FileList) => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    const validTypes = ['.pdf', '.doc', '.docx', '.txt']
+    const validTypes = ['.pdf']
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase()
 
     if (!validTypes.includes(fileExtension)) {

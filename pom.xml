@@ -163,6 +163,13 @@
         </dependency>
 
 
+        <!-- OCR 文字识别: Tesseract（扫描件PDF降级提取） -->
+        <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <version>5.9.0</version>
+        </dependency>
+
         <!-- Word文档解析: Apache POI -->
         <dependency>
             <groupId>org.apache.poi</groupId>

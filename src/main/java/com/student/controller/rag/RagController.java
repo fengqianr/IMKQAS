@@ -58,6 +58,13 @@ public class RagController {
                         .body(DocumentProcessResponse.error("文件不能为空"));
             }
 
+            // 仅允许 PDF 格式
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
+                return ResponseEntity.badRequest()
+                        .body(DocumentProcessResponse.error("仅支持 PDF 文件格式"));
+            }
+
             // 获取当前用户ID
             Long currentUserId = getCurrentUserId();
             log.info("文档上传用户ID: currentUserId={}", currentUserId);
@@ -68,7 +75,6 @@ public class RagController {
 
             // 2. 保存文件到MinIO
             // 生成对象名称: documents/timestamp/originalFilename
-            String originalFilename = file.getOriginalFilename();
             String timestamp = String.valueOf(System.currentTimeMillis());
             String objectName = String.format("documents/%s/%s", timestamp, originalFilename);
             String filePath = minioService.uploadFile(file, objectName);

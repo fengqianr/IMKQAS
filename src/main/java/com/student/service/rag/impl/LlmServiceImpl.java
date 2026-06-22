@@ -166,6 +166,11 @@ public class LlmServiceImpl implements LlmService {
             // 3. 构建Prompt（控制长度）
             String prompt = buildMedicalPrompt(query, context);
 
+            // DEBUG: 打印完整prompt到终端
+            System.out.println("\n========== LLM PROMPT (BEGIN) [" + query.substring(0, Math.min(query.length(), 40)) + "] ==========");
+            System.out.println(prompt);
+            System.out.println("========== LLM PROMPT (END) ==========\n");
+
             // 4. 调用LLM API
             LlmApiResponse response = callLlmApi(prompt);
 
@@ -414,6 +419,28 @@ public class LlmServiceImpl implements LlmService {
                 config.getMaxTokens(),
                 false // 暂不支持流式
         );
+    }
+
+    @Override
+    public String generateAnswerDirect(String prompt) {
+        long startTime = System.currentTimeMillis();
+        totalCalls.incrementAndGet();
+
+        try {
+            System.out.println("\n========== LLM DIRECT PROMPT (BEGIN) ==========");
+            System.out.println(prompt);
+            System.out.println("========== LLM DIRECT PROMPT (END) ==========\n");
+
+            LlmApiResponse response = callLlmApi(prompt);
+            String answer = extractAnswerFromResponse(response);
+            updateStats(true, startTime, response.getTokensGenerated(), response.getTokensConsumed());
+            return answer;
+        } catch (Exception e) {
+            log.error("LLM直接调用异常", e);
+            updateErrorStats(e);
+            updateStats(false, startTime, 0, 0);
+            return getFallbackAnswer("", e);
+        }
     }
 
     @Override

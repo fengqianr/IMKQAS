@@ -65,6 +65,14 @@ public interface LlmService {
     ModelInfo getModelInfo();
 
     /**
+     * 直接调用LLM（绕过查询归一化和缓存，用于内部组件间的LLM调用）
+     *
+     * @param prompt 完整的Prompt文本
+     * @return 生成的回答
+     */
+    String generateAnswerDirect(String prompt);
+
+    /**
      * 检查服务是否可用
      *
      * @return 服务状态

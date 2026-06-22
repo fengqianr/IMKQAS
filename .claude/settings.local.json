@@ -18,7 +18,8 @@
       "Bash(mkdir -p src/test/java/com/student/medical)",
       "Bash(mkdir -p src/test/resources/medical)",
       "Bash(git commit *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git stash *)"
     ]
   }
 }

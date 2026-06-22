@@ -11,9 +11,9 @@ import com.student.service.rag.MedicalEntityRecognitionService;
 import com.student.service.rag.SynonymExpansionService;
 import com.student.service.snomed.SnomedTerminologyService;
 import com.student.service.snomed.dto.SnomedTermResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @version 1.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class SynonymExpansionServiceImpl implements SynonymExpansionService {
 
@@ -41,6 +40,17 @@ public class SynonymExpansionServiceImpl implements SynonymExpansionService {
     private final UnmappedTermRecordMapper unmappedTermMapper;
     private final SnomedTerminologyService snomedTerminologyService;
     private final LlmService llmService;
+
+    public SynonymExpansionServiceImpl(
+            MedicalSynonymMappingMapper synonymMappingMapper,
+            UnmappedTermRecordMapper unmappedTermMapper,
+            SnomedTerminologyService snomedTerminologyService,
+            @Lazy LlmService llmService) {
+        this.synonymMappingMapper = synonymMappingMapper;
+        this.unmappedTermMapper = unmappedTermMapper;
+        this.snomedTerminologyService = snomedTerminologyService;
+        this.llmService = llmService;
+    }
 
     /** 未映射率告警阈值（默认5%） */
     @Value("${imkqas.query-rewrite.synonym-expansion.unmapped-alert-threshold:5.0}")
@@ -216,8 +226,7 @@ public class SynonymExpansionServiceImpl implements SynonymExpansionService {
     private TermMapping tryLlmInference(String term, String contextQuery) {
         try {
             String prompt = buildInferencePrompt(term, contextQuery);
-            List<String> context = Collections.singletonList(prompt);
-            String llmResponse = llmService.generateAnswer("请将以下口语表达转为标准医学术语", context);
+            String llmResponse = llmService.generateAnswerDirect(prompt);
 
             return parseLlmInferenceResponse(term, llmResponse);
         } catch (Exception e) {

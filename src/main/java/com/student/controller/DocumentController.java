@@ -16,6 +16,7 @@ import org.springframework.util.StreamUtils;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -158,7 +159,11 @@ public class DocumentController {
             String fileExtension = getFileExtension(filePath);
             String contentType = getContentType(fileExtension);
             response.setContentType(contentType);
-            response.setHeader("Content-Disposition", "inline; filename=\"" + document.getTitle() + "\"");
+            String filename = document.getTitle();
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8)
+                    .replace("+", "%20");
+            response.setHeader("Content-Disposition",
+                    "inline; filename*=UTF-8''" + encodedFilename);
 
             // 从MinIO下载并流式返回
             try (InputStream inputStream = minioService.downloadFile(objectName)) {
@@ -199,7 +204,7 @@ public class DocumentController {
     // ========== 预览辅助方法 ==========
 
     /**
-     * 提取预览文本（支持PDF、DOCX、TXT）
+     * 提取预览文本（仅支持 PDF）
      */
     private String extractPreviewText(Document document) throws Exception {
         String filePath = document.getFilePath();
@@ -210,6 +215,10 @@ public class DocumentController {
             throw new RuntimeException("无法提取对象名称");
         }
 
+        if (!"pdf".equalsIgnoreCase(fileExtension)) {
+            throw new UnsupportedOperationException("仅支持 PDF 文件预览，不支持的类型: " + fileExtension);
+        }
+
         // 下载文件到临时文件
         java.io.File tempFile = null;
         try (InputStream inputStream = minioService.downloadFile(objectName)) {
@@ -218,12 +227,7 @@ public class DocumentController {
             tempFile = new java.io.File(tempDir, tempFileName);
             java.nio.file.Files.copy(inputStream, tempFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-            return switch (fileExtension.toLowerCase()) {
-                case "pdf" -> extractTextFromPdf(tempFile);
-                case "docx", "doc" -> extractTextFromDocx(tempFile);
-                case "txt" -> java.nio.file.Files.readString(tempFile.toPath(), StandardCharsets.UTF_8);
-                default -> throw new UnsupportedOperationException("不支持的文件类型: " + fileExtension);
-            };
+            return extractTextFromPdf(tempFile);
         } finally {
             if (tempFile != null && tempFile.exists()) {
                 tempFile.delete();
@@ -239,20 +243,6 @@ public class DocumentController {
             org.apache.pdfbox.text.PDFTextStripper stripper = new org.apache.pdfbox.text.PDFTextStripper();
             return stripper.getText(document);
         }
-    }
-
-    /**
-     * 从DOCX文件提取文本
-     */
-    private String extractTextFromDocx(java.io.File file) throws Exception {
-        StringBuilder text = new StringBuilder();
-        try (java.io.FileInputStream fis = new java.io.FileInputStream(file);
-             org.apache.poi.xwpf.usermodel.XWPFDocument document = new org.apache.poi.xwpf.usermodel.XWPFDocument(fis)) {
-            for (org.apache.poi.xwpf.usermodel.XWPFParagraph paragraph : document.getParagraphs()) {
-                text.append(paragraph.getText()).append("\n");
-            }
-        }
-        return text.toString();
     }
 
     /**

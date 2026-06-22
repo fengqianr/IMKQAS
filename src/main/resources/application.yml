@@ -138,8 +138,8 @@ imkqas:
         keyword: 0.4
       # 双路召回各取 K=30，RRF融合后输出候选集
       initial-top-k: 30
-      # 精排输出 top5 送入 LLM 生成
-      rerank-top-k: 5
+      # 精排输出 top10 送入 LLM 生成
+      rerank-top-k: 10
       # RRF融合参数
       rrf-k: 60
       # 超时配置 (毫秒)
@@ -162,13 +162,63 @@ imkqas:
     # 文档处理配置
     document:
       # 支持的文件类型
-      supported-formats: pdf,docx,doc,txt
+      supported-formats: pdf
+      # MinerU PDF 转换配置（云端 API，服务端零部署）
+      mineru:
+        enabled: true
+        api-endpoint: https://mineru.net/api/v1/agent/parse/file
+        api-key: ""
+        timeout: 300
+      # Tesseract OCR 降级配置（扫描件PDF提取质量不足时自动触发）
+      ocr:
+        enabled: true
+        language: "chi_sim+eng"
+        min-text-length: 50
+        render-dpi: 300
+      # PDF 预检查配置（MinerU 前的快速分类，让数字原生 PDF 跳过 MinerU）
+      pdf-pre-check:
+        enabled: true
+        digital-native-min-text-length: 500
+        scanned-max-text-length: 200
+        min-pages-with-text: 2
+        toc-pattern-repeat-threshold: 5
+
+      # 页面级处理决策配置
+      page-level:
+        enabled: true
+        min-text-layer-length: 10
+        skip-non-key-pages: true
+        medical-keywords: ""
+
+      # 文本后处理配置
+      text-cleaner:
+        enabled: true
+        remove-headers-footers: true
+        header-footer-repeat-threshold: 3
+        remove-citations: true
+        normalize-whitespace: true
+        fix-broken-lines: true
+        remove-metadata: true
+
       # 分块配置
       chunk:
         size: 500
         overlap: 50
-        # 分块策略: fixed(固定大小), semantic(语义分割)
+        # 分块策略: fixed(固定大小), recursive(递归语义分割), semantic(同 recursive), medical(医学文档结构感知)
         strategy: semantic
+        min-chunk-size: 20
+        # 分隔符优先级列表（逗号分隔）
+        separators: "\n\n,\n,。,；,，, ,"
+        # 医学文档分块专用配置（仅 strategy=medical 时生效）
+        medical:
+          section-hierarchy: true
+          table-protection: true
+          icd-detection: true
+          sibling-context: true
+          min-section-header-length: 2
+          min-table-rows: 2
+          sibling-merge-threshold: 150
+          max-depth: 5
       # 文本提取配置
       extraction:
         pdf:
@@ -399,9 +449,9 @@ imkqas:
     type: minio
     minio:
       endpoint: http://8.138.40.200:9000
-      access-key: IVL8IthgH8OjCEDLhFKT
-      secret-key: MaJEjDYQYSKfWVadxSPM2knEIKkVrXLgWvvxB8M8
-      bucket: medical-documents
+      access-key: minioadmin
+      secret-key: minioadmin
+      bucket: imkqas
 
   # 向量数据库配置
   vector-db:

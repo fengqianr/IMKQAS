@@ -11,16 +11,25 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import com.student.utils.PdfClassification;
+import com.student.utils.PdfPreCheckResult;
+import com.student.utils.PdfPreChecker;
+import com.student.utils.PdfToMarkdownConverter;
+import com.student.utils.MinerUException;
+import com.student.utils.RecursiveTextSplitter;
+import com.student.utils.MedicalDocumentSplitter;
+import com.student.utils.PageType;
+import com.student.utils.PageLevelResult;
+import com.student.utils.PageLevelClassifier;
+import com.student.utils.TextCleaner;
+
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -396,14 +405,9 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
             switch (fileExtension.toLowerCase()) {
                 case "pdf":
                     return extractTextFromPdf(resolvedFilePath);
-                case "docx":
-                case "doc":
-                    return extractTextFromDocx(resolvedFilePath);
-                case "txt":
-                    return extractTextFromTxt(resolvedFilePath);
                 default:
                     log.warn("不支持的文件类型: {}", fileExtension);
-                    throw new UnsupportedOperationException("不支持的文件类型: " + fileExtension);
+                    throw new UnsupportedOperationException("仅支持 PDF 文件，不支持的类型: " + fileExtension);
             }
         } catch (Exception e) {
             log.error("文本提取失败: filePath={}, resolvedFilePath={}", filePath, resolvedFilePath, e);
@@ -426,13 +430,295 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     }
 
     /**
-     * 从PDF文件提取文本
+     * 从PDF文件提取文本：MinerU → PDFBox → Tesseract OCR 三级降级管道
      */
     private String extractTextFromPdf(String filePath) {
+        RagConfig.DocumentConfig.MinerUConfig mineruConfig = ragConfig.getDocument().getMineru();
+        RagConfig.DocumentConfig.OcrConfig ocrConfig = ragConfig.getDocument().getOcr();
+        RagConfig.DocumentConfig.PdfPreCheckConfig preCheckConfig = ragConfig.getDocument().getPdfPreCheck();
+        RagConfig.DocumentConfig.PageLevelConfig pageLevelConfig = ragConfig.getDocument().getPageLevel();
+        RagConfig.DocumentConfig.TextCleanerConfig textCleanerConfig = ragConfig.getDocument().getTextCleaner();
+
+        // PDF 预检查：快速判定 PDF 类型，决定提取路径
+        PdfClassification classification = PdfClassification.UNCERTAIN;
+        if (preCheckConfig.isEnabled()) {
+            try {
+                PdfPreChecker checker = new PdfPreChecker(
+                        preCheckConfig.getDigitalNativeMinTextLength(),
+                        preCheckConfig.getScannedMaxTextLength(),
+                        preCheckConfig.getMinPagesWithText(),
+                        preCheckConfig.getTocPatternRepeatThreshold());
+                PdfPreCheckResult preCheckResult = checker.preCheck(new File(filePath));
+                classification = preCheckResult.getClassification();
+                log.info("PDF 预检查完成: classification={}, reason={}, totalPages={}, sampledTextLength={}",
+                        classification, preCheckResult.getReason(),
+                        preCheckResult.getTotalPages(), preCheckResult.getSampledText().length());
+            } catch (Exception e) {
+                log.warn("PDF 预检查异常，回退到 UNCERTAIN 流程: {}", e.getMessage());
+                classification = PdfClassification.UNCERTAIN;
+            }
+        }
+
+        String text;
+
+        // 提取文本：根据预检结果和配置选择路径
+        if (classification == PdfClassification.SCANNED) {
+            text = extractTextWithLegacyPipeline(filePath, mineruConfig, ocrConfig, classification);
+        } else if (pageLevelConfig.isEnabled()) {
+            log.info("启用页面级处理管道: classification={}", classification);
+            text = extractTextWithPageLevelPipeline(filePath, pageLevelConfig, ocrConfig);
+            // 页面级处理不足时回退到传统管道
+            if (text == null || text.length() < ocrConfig.getMinTextLength()) {
+                log.warn("页面级处理文本不足({})，回退到传统管道",
+                        text != null ? text.length() : 0);
+                String legacyText = extractTextWithLegacyPipeline(
+                        filePath, mineruConfig, ocrConfig, classification);
+                if (legacyText != null && (text == null || legacyText.length() > text.length())) {
+                    text = legacyText;
+                }
+            }
+        } else {
+            text = extractTextWithLegacyPipeline(filePath, mineruConfig, ocrConfig, classification);
+        }
+
+        // 文本后处理
+        if (textCleanerConfig.isEnabled() && text != null && !text.isBlank()) {
+            text = applyTextCleaning(text, textCleanerConfig);
+        }
+
+        if (text != null && !text.isBlank()) {
+            return text;
+        }
+
+        String detail = switch (classification) {
+            case SCANNED -> "该 PDF 被判定为扫描件/纯图片，MinerU 云端 API、PDFBox 和 Tesseract OCR 均未提取到有效文本。"
+                    + "请检查网络连通性（mineru.net）及 Tesseract OCR 是否正确安装。";
+            case DIGITAL_NATIVE -> "该 PDF 被判定为数字原生，但 PDFBox 未提取到有效文本。"
+                    + "文件可能为空白页或使用了不支持的字体编码。";
+            case UNCERTAIN -> "该 PDF 类型不确定，所有提取管道均未获得有效文本。"
+                    + "文件可能为纯图片扫描件，请确认 MinerU API 可正常访问或 OCR 已启用。";
+        };
+        throw new RuntimeException("PDF 文本提取失败: " + detail);
+    }
+
+    /**
+     * 传统 3 级降级管道：MinerU → PDFBox → Tesseract OCR
+     */
+    private String extractTextWithLegacyPipeline(String filePath,
+                                                  RagConfig.DocumentConfig.MinerUConfig mineruConfig,
+                                                  RagConfig.DocumentConfig.OcrConfig ocrConfig,
+                                                  PdfClassification classification) {
+        String text = null;
+
+        if (mineruConfig.isEnabled() && classification != PdfClassification.DIGITAL_NATIVE) {
+            try {
+                PdfToMarkdownConverter converter = new PdfToMarkdownConverter(
+                        mineruConfig.getApiEndpoint(), mineruConfig.getTimeout());
+                text = converter.convert(new File(filePath));
+                if (text != null && text.length() >= ocrConfig.getMinTextLength()) {
+                    log.info("MinerU 提取成功: {} 字符", text.length());
+                    return text;
+                }
+                log.warn("MinerU 提取文本过短 ({} 字符)，回退到 PDFBox", text != null ? text.length() : 0);
+            } catch (MinerUException e) {
+                log.error("MinerU API 转换失败，回退到 PDFBox: {}", e.getMessage());
+                log.debug("MinerU API 异常详情", e);
+            }
+        }
+
+        String pdfboxText = extractTextFromPdfWithPdfbox(filePath);
+        if (pdfboxText != null && pdfboxText.length() >= ocrConfig.getMinTextLength()) {
+            log.info("PDFBox 提取成功: {} 字符", pdfboxText.length());
+            return pdfboxText;
+        }
+        log.warn("PDFBox 提取文本过短 ({} 字符)", pdfboxText != null ? pdfboxText.length() : 0);
+
+        if (text == null || (pdfboxText != null && pdfboxText.length() > text.length())) {
+            text = pdfboxText;
+        }
+
+        if (ocrConfig.isEnabled() && (text == null || text.length() < ocrConfig.getMinTextLength())) {
+            try {
+                String ocrText = extractTextFromPdfWithOcr(filePath, ocrConfig);
+                if (ocrText != null && ocrText.length() >= ocrConfig.getMinTextLength()) {
+                    log.info("Tesseract OCR 提取成功: {} 字符", ocrText.length());
+                    return ocrText;
+                }
+                log.warn("Tesseract OCR 提取文本仍不足: {} 字符", ocrText != null ? ocrText.length() : 0);
+            } catch (Exception e) {
+                log.error("Tesseract OCR 提取失败", e);
+            }
+        }
+
+        return text;
+    }
+
+    /**
+     * 页面级处理管道：逐页分类，按类型选择 PDFBox 或 OCR
+     */
+    private String extractTextWithPageLevelPipeline(String filePath,
+                                                     RagConfig.DocumentConfig.PageLevelConfig pageLevelConfig,
+                                                     RagConfig.DocumentConfig.OcrConfig ocrConfig) {
+        try (org.apache.pdfbox.pdmodel.PDDocument document =
+                     org.apache.pdfbox.Loader.loadPDF(new File(filePath))) {
+            int totalPages = document.getNumberOfPages();
+            if (totalPages == 0) {
+                return "";
+            }
+
+            PageLevelClassifier classifier = buildPageLevelClassifier(pageLevelConfig);
+            StringBuilder result = new StringBuilder();
+            int pdfboxPages = 0;
+            int ocrPages = 0;
+            int skippedPages = 0;
+
+            for (int pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+                PageLevelResult pageResult = classifier.classify(document, pageIndex, totalPages);
+                log.debug("第 {} 页分类: type={}, isKey={}, hasText={}, hasImages={}, textLen={}",
+                        pageIndex + 1, pageResult.getPageType(), pageResult.isKeyPage(),
+                        pageResult.isHasTextLayer(), pageResult.isHasImages(), pageResult.getTextLength());
+
+                String pageText = null;
+                switch (pageResult.getPageType()) {
+                    case HAS_TEXT_LAYER:
+                    case COMPLEX_TABLE_NON_KEY:
+                        pageText = pageResult.getPageText();
+                        pdfboxPages++;
+                        break;
+                    case NO_TEXT_KEY_PAGE:
+                    case COMPLEX_TABLE_KEY:
+                    case UNCERTAIN:
+                        pageText = extractSinglePageTextWithOcr(document, pageIndex, ocrConfig);
+                        ocrPages++;
+                        break;
+                    case NO_TEXT_NON_KEY:
+                        if (!pageLevelConfig.isSkipNonKeyPages()) {
+                            pageText = extractSinglePageTextWithOcr(document, pageIndex, ocrConfig);
+                            ocrPages++;
+                        } else {
+                            skippedPages++;
+                        }
+                        break;
+                }
+
+                if (pageText != null && !pageText.isBlank()) {
+                    if (!result.isEmpty()) {
+                        result.append("\n\n");
+                    }
+                    result.append(pageText.trim());
+                }
+            }
+
+            log.info("页面级处理完成: totalPages={}, pdfbox={}, ocr={}, skipped={}, textLength={}",
+                    totalPages, pdfboxPages, ocrPages, skippedPages, result.length());
+            return result.toString().trim();
+        } catch (IOException e) {
+            log.error("页面级处理失败: {}", e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * 构建页面级分类器（处理自定义关键词）
+     */
+    private PageLevelClassifier buildPageLevelClassifier(
+            RagConfig.DocumentConfig.PageLevelConfig config) {
+        String customKeywords = config.getMedicalKeywords();
+        if (customKeywords != null && !customKeywords.isBlank()) {
+            java.util.Set<String> keywords = new java.util.HashSet<>();
+            for (String kw : customKeywords.split(",")) {
+                String trimmed = kw.trim();
+                if (!trimmed.isEmpty()) {
+                    keywords.add(trimmed);
+                }
+            }
+            if (!keywords.isEmpty()) {
+                return new PageLevelClassifier(config.getMinTextLayerLength(), keywords);
+            }
+        }
+        return new PageLevelClassifier(config.getMinTextLayerLength(),
+                java.util.Set.of("诊断", "结论", "用法用量", "禁忌", "检查结果",
+                        "临床表现", "治疗", "手术", "药物", "剂量"));
+    }
+
+    /**
+     * 单页 PDFBox 文本提取
+     */
+    private String extractSinglePageTextWithPdfbox(
+            org.apache.pdfbox.pdmodel.PDDocument document, int pageIndex) {
         try {
-            // PDFBox 3.x使用Loader.loadPDF()方法
-            PDDocument document = Loader.loadPDF(new File(filePath));
-            PDFTextStripper stripper = new PDFTextStripper();
+            org.apache.pdfbox.text.PDFTextStripper stripper =
+                    new org.apache.pdfbox.text.PDFTextStripper();
+            stripper.setStartPage(pageIndex + 1);
+            stripper.setEndPage(pageIndex + 1);
+            stripper.setSortByPosition(true);
+            return stripper.getText(document);
+        } catch (IOException e) {
+            log.warn("PDFBox 第 {} 页提取失败: {}", pageIndex + 1, e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * 单页 Tesseract OCR 提取
+     */
+    private String extractSinglePageTextWithOcr(
+            org.apache.pdfbox.pdmodel.PDDocument document, int pageIndex,
+            RagConfig.DocumentConfig.OcrConfig ocrConfig) {
+        try {
+            net.sourceforge.tess4j.Tesseract tesseract = new net.sourceforge.tess4j.Tesseract();
+            String tessdataPath = resolveTessdataPath();
+            if (tessdataPath != null) {
+                tesseract.setDatapath(tessdataPath);
+            }
+            tesseract.setLanguage(ocrConfig.getLanguage());
+
+            org.apache.pdfbox.rendering.PDFRenderer renderer =
+                    new org.apache.pdfbox.rendering.PDFRenderer(document);
+            java.awt.image.BufferedImage image = renderer.renderImageWithDPI(pageIndex, ocrConfig.getRenderDpi());
+            return tesseract.doOCR(image);
+        } catch (Exception e) {
+            log.warn("OCR 第 {} 页失败: {}", pageIndex + 1, e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * 执行文本后处理清洗
+     */
+    private String applyTextCleaning(String text,
+                                      RagConfig.DocumentConfig.TextCleanerConfig config) {
+        TextCleaner cleaner = new TextCleaner(config.getHeaderFooterRepeatThreshold());
+
+        if (config.isRemoveMetadata()) {
+            text = cleaner.removeMetadata(text);
+        }
+        if (config.isRemoveHeadersFooters()) {
+            text = cleaner.removeHeadersFooters(text);
+        }
+        if (config.isRemoveCitations()) {
+            text = cleaner.removeCitationMarkers(text);
+        }
+        if (config.isNormalizeWhitespace()) {
+            text = cleaner.normalizeWhitespace(text);
+        }
+        if (config.isFixBrokenLines()) {
+            text = cleaner.fixBrokenLines(text);
+        }
+
+        log.info("文本后处理完成: {} 字符", text != null ? text.length() : 0);
+        return text;
+    }
+
+    /**
+     * PDFBox 兜底提取（MinerU 禁用或失败时使用）
+     */
+    private String extractTextFromPdfWithPdfbox(String filePath) {
+        try {
+            org.apache.pdfbox.pdmodel.PDDocument document =
+                    org.apache.pdfbox.Loader.loadPDF(new File(filePath));
+            org.apache.pdfbox.text.PDFTextStripper stripper =
+                    new org.apache.pdfbox.text.PDFTextStripper();
             String text = stripper.getText(document);
             document.close();
             return text;
@@ -442,69 +728,295 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     }
 
     /**
-     * 从DOCX/DOC文件提取文本
+     * Tesseract OCR 降级提取（扫描件 PDF 专用）
+     * 将 PDF 每页渲染为图片后逐页 OCR
      */
-    private String extractTextFromDocx(String filePath) {
-        try (FileInputStream fis = new FileInputStream(filePath);
-             XWPFDocument document = new XWPFDocument(fis)) {
-            StringBuilder text = new StringBuilder();
-            for (XWPFParagraph paragraph : document.getParagraphs()) {
-                text.append(paragraph.getText()).append("\n");
-            }
-            return text.toString();
-        } catch (IOException e) {
-            throw new RuntimeException("DOCX文本提取失败", e);
-        }
-    }
+    private String extractTextFromPdfWithOcr(String filePath, RagConfig.DocumentConfig.OcrConfig ocrConfig) {
+        log.info("启动 Tesseract OCR 降级: filePath={}, language={}, dpi={}",
+                filePath, ocrConfig.getLanguage(), ocrConfig.getRenderDpi());
 
-    /**
-     * 从TXT文件提取文本
-     */
-    private String extractTextFromTxt(String filePath) {
         try {
-            return Files.readString(Paths.get(filePath), StandardCharsets.UTF_8);
+            net.sourceforge.tess4j.Tesseract tesseract = new net.sourceforge.tess4j.Tesseract();
+
+            // 自动检测或使用环境变量指定的 tessdata 路径
+            String tessdataPath = resolveTessdataPath();
+            if (tessdataPath != null) {
+                tesseract.setDatapath(tessdataPath);
+                log.info("Tesseract datapath: {}", tessdataPath);
+            }
+
+            tesseract.setLanguage(ocrConfig.getLanguage());
+
+            org.apache.pdfbox.pdmodel.PDDocument document =
+                    org.apache.pdfbox.Loader.loadPDF(new File(filePath));
+            org.apache.pdfbox.rendering.PDFRenderer renderer =
+                    new org.apache.pdfbox.rendering.PDFRenderer(document);
+
+            StringBuilder result = new StringBuilder();
+            int pageCount = document.getNumberOfPages();
+            int ocrFailedPages = 0;
+            String lastOcrError = null;
+            log.info("PDF 共 {} 页，开始逐页 OCR", pageCount);
+
+            for (int page = 0; page < pageCount; page++) {
+                try {
+                    java.awt.image.BufferedImage image = renderer.renderImageWithDPI(page, ocrConfig.getRenderDpi());
+                    String pageText = tesseract.doOCR(image);
+                    if (pageText != null && !pageText.isBlank()) {
+                        result.append(pageText.trim()).append("\n\n");
+                    }
+                    if ((page + 1) % 10 == 0) {
+                        log.info("OCR 进度: {}/{} 页", page + 1, pageCount);
+                    }
+                } catch (Exception e) {
+                    ocrFailedPages++;
+                    lastOcrError = e.getMessage();
+                    log.warn("OCR 第 {} 页失败: {}", page + 1, e.getMessage());
+                }
+            }
+
+            document.close();
+
+            String ocrResult = result.toString().trim();
+            if (ocrResult.isEmpty() && ocrFailedPages > 0) {
+                throw new RuntimeException(String.format(
+                        "Tesseract OCR 全部 %d 页均失败，最后错误: %s。请检查 Tesseract 是否安装且语言包 '%s' 已下载。",
+                        ocrFailedPages, lastOcrError, ocrConfig.getLanguage()));
+            }
+
+            log.info("Tesseract OCR 完成: {} 页处理, {} 字符, {} 页失败",
+                    pageCount, ocrResult.length(), ocrFailedPages);
+            return ocrResult;
         } catch (IOException e) {
-            throw new RuntimeException("TXT文本读取失败", e);
+            throw new RuntimeException("Tesseract OCR 降级提取失败", e);
         }
     }
 
     /**
-     * 文本分块（待实现）
+     * 解析 Tesseract tessdata 目录路径
+     */
+    private String resolveTessdataPath() {
+        // 优先级：环境变量 > 系统属性 > 常见安装路径 > null（使用 Tess4J 默认）
+        String envPath = System.getenv("TESSDATA_PREFIX");
+        if (envPath != null && !envPath.isBlank()) {
+            return envPath;
+        }
+        String sysProp = System.getProperty("TESSDATA_PREFIX");
+        if (sysProp != null && !sysProp.isBlank()) {
+            return sysProp;
+        }
+        // Windows 常见安装路径
+        String[] commonPaths = {
+            "C:\\Program Files\\Tesseract-OCR\\tessdata",
+            "C:\\Program Files (x86)\\Tesseract-OCR\\tessdata",
+            "/usr/share/tesseract-ocr/5/tessdata",
+            "/usr/share/tesseract-ocr/4/tessdata",
+            "/usr/local/share/tessdata"
+        };
+        for (String path : commonPaths) {
+            if (java.nio.file.Files.isDirectory(java.nio.file.Path.of(path))) {
+                return path;
+            }
+        }
+        // 返回 null，让 Tess4J 使用内置默认值
+        return null;
+    }
+
+    /**
+     * 文本分块：根据配置的策略选择分割方式
      */
     private List<DocumentChunk> chunkText(String text, Long documentId) {
         RagConfig.DocumentConfig.ChunkConfig chunkConfig = ragConfig.getDocument().getChunk();
-        int chunkSize = chunkConfig.getSize();
-        int overlap = chunkConfig.getOverlap();
+        String strategy = chunkConfig.getStrategy();
 
+        if ("medical".equals(strategy)) {
+            return chunkTextMedical(text, documentId, chunkConfig);
+        }
+
+        List<String> segments;
+        if ("recursive".equals(strategy) || "semantic".equals(strategy)) {
+            RecursiveTextSplitter splitter = new RecursiveTextSplitter(
+                    chunkConfig.getSize(),
+                    chunkConfig.getOverlap(),
+                    chunkConfig.getMinChunkSize(),
+                    parseSeparators(chunkConfig.getSeparators()));
+            segments = splitter.split(text);
+        } else {
+            segments = fixedSizeSplit(text, chunkConfig.getSize());
+        }
+
+        // 构建 DocumentChunk 列表
         List<DocumentChunk> chunks = new ArrayList<>();
-        // 简单实现：按字符数固定分块
-        int length = text.length();
-        int index = 0;
-        int chunkIndex = 0;
-
-        while (index < length) {
-            int end = Math.min(index + chunkSize, length);
-            String chunkContent = text.substring(index, end);
+        int offset = 0;
+        for (int i = 0; i < segments.size(); i++) {
+            String content = segments.get(i);
+            int startChar = text.indexOf(content, offset);
+            if (startChar == -1) {
+                startChar = offset;
+            }
+            int endChar = startChar + content.length();
+            offset = endChar;
 
             DocumentChunk chunk = DocumentChunk.builder()
                     .documentId(documentId)
-                    .chunkIndex(chunkIndex)
-                    .content(chunkContent)
-                    .metadata(String.format("{\"start_char\": %d, \"end_char\": %d}", index, end))
+                    .chunkIndex(i)
+                    .content(content)
+                    .metadata(String.format("{\"start_char\": %d, \"end_char\": %d}", startChar, endChar))
                     .build();
-
             chunks.add(chunk);
-            chunkIndex++;
-
-            // 如果已到达文本末尾，退出循环防止死循环
-            if (end >= length) {
-                break;
-            }
-            index = end - overlap; // 应用重叠
         }
 
-        log.debug("文本分块完成: documentId={}, chunkCount={}", documentId, chunks.size());
+        log.debug("文本分块完成: documentId={}, strategy={}, chunkCount={}",
+                documentId, strategy, chunks.size());
         return chunks;
+    }
+
+    /**
+     * 医学文档结构感知分块
+     */
+    private List<DocumentChunk> chunkTextMedical(String text, Long documentId,
+                                                  RagConfig.DocumentConfig.ChunkConfig chunkConfig) {
+        RagConfig.DocumentConfig.ChunkConfig.MedicalChunkConfig medicalConfig =
+                chunkConfig.getMedical();
+        if (medicalConfig == null) {
+            medicalConfig = new RagConfig.DocumentConfig.ChunkConfig.MedicalChunkConfig();
+        }
+
+        MedicalDocumentSplitter splitter = new MedicalDocumentSplitter(
+                chunkConfig.getSize(),
+                chunkConfig.getOverlap(),
+                chunkConfig.getMinChunkSize(),
+                parseSeparators(chunkConfig.getSeparators()),
+                medicalConfig.isSectionHierarchy(),
+                medicalConfig.isTableProtection(),
+                medicalConfig.isIcdDetection(),
+                medicalConfig.isSiblingContext(),
+                medicalConfig.getMinSectionHeaderLength(),
+                medicalConfig.getMinTableRows(),
+                medicalConfig.getSiblingMergeThreshold(),
+                medicalConfig.getMaxDepth());
+
+        List<MedicalDocumentSplitter.SegmentInfo> segmentInfos = splitter.splitWithMetadata(text);
+        return buildChunksWithMetadata(segmentInfos, documentId);
+    }
+
+    /**
+     * 从携带层级元数据的 SegmentInfo 构建 DocumentChunk 列表
+     */
+    private List<DocumentChunk> buildChunksWithMetadata(
+            List<MedicalDocumentSplitter.SegmentInfo> segmentInfos, Long documentId) {
+        List<DocumentChunk> chunks = new ArrayList<>();
+        for (int i = 0; i < segmentInfos.size(); i++) {
+            MedicalDocumentSplitter.SegmentInfo info = segmentInfos.get(i);
+            DocumentChunk chunk = DocumentChunk.builder()
+                    .documentId(documentId)
+                    .chunkIndex(i)
+                    .content(info.getText())
+                    .metadata(buildChunkMetadataJson(info))
+                    .build();
+            chunks.add(chunk);
+        }
+        log.debug("医学文档分块完成: documentId={}, strategy=medical, chunkCount={}",
+                documentId, chunks.size());
+        return chunks;
+    }
+
+    /**
+     * 构建增强的 chunk metadata JSON（含层级元数据）
+     */
+    private String buildChunkMetadataJson(MedicalDocumentSplitter.SegmentInfo info) {
+        StringBuilder json = new StringBuilder("{");
+        json.append("\"start_char\": ").append(info.getStartChar())
+                .append(", \"end_char\": ").append(info.getEndChar());
+        if (info.getSectionPath() != null && !info.getSectionPath().equals("[]")) {
+            json.append(", \"section_path\": ").append(info.getSectionPath());
+        }
+        if (info.getBreadcrumb() != null) {
+            json.append(", \"breadcrumb\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getBreadcrumb()))
+                    .append("\"");
+        }
+        if (info.getSectionTitle() != null) {
+            json.append(", \"section_title\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getSectionTitle()))
+                    .append("\"");
+        }
+        json.append(", \"section_level\": ").append(info.getSectionLevel());
+        if (info.getParentSection() != null) {
+            json.append(", \"parent_section\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getParentSection()))
+                    .append("\"");
+        }
+        if (info.getRootSection() != null) {
+            json.append(", \"root_section\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getRootSection()))
+                    .append("\"");
+        }
+        if (info.getParagraphNumber() != null) {
+            json.append(", \"paragraph_number\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getParagraphNumber()))
+                    .append("\"");
+        }
+        if (info.getPrevSibling() != null) {
+            json.append(", \"prev_sibling\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getPrevSibling()))
+                    .append("\"");
+        }
+        if (info.getNextSibling() != null) {
+            json.append(", \"next_sibling\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getNextSibling()))
+                    .append("\"");
+        }
+        if (info.getDocumentTopic() != null) {
+            json.append(", \"document_topic\": \"")
+                    .append(MedicalDocumentSplitter.escapeJson(info.getDocumentTopic()))
+                    .append("\"");
+        }
+        json.append(", \"document_section_count\": ").append(info.getDocumentSectionCount());
+        if (info.isTable()) {
+            json.append(", \"is_table\": true");
+        }
+        if (info.getIcdCodes() != null && !info.getIcdCodes().isEmpty()) {
+            json.append(", \"icd_codes\": [");
+            for (int j = 0; j < info.getIcdCodes().size(); j++) {
+                if (j > 0) json.append(", ");
+                json.append("\"").append(info.getIcdCodes().get(j)).append("\"");
+            }
+            json.append("]");
+        }
+        json.append("}");
+        return json.toString();
+    }
+
+    /**
+     * 固定大小分割（原有逻辑保留）
+     */
+    private List<String> fixedSizeSplit(String text, int size) {
+        List<String> result = new ArrayList<>();
+        int length = text.length();
+        int index = 0;
+        while (index < length) {
+            int end = Math.min(index + size, length);
+            result.add(text.substring(index, end));
+            index = end;
+        }
+        return result;
+    }
+
+    /**
+     * 解析配置中的分隔符列表
+     */
+    private List<String> parseSeparators(String separatorsStr) {
+        if (separatorsStr == null || separatorsStr.isBlank()) {
+            return List.of("\n\n", "\n", "。", "；", "，", " ", "");
+        }
+        String[] parts = separatorsStr.split(",");
+        List<String> result = new ArrayList<>();
+        for (String part : parts) {
+            // 还原转义字符 \n
+            result.add(part.replace("\\n", "\n"));
+        }
+        return result;
     }
 
     /**
@@ -542,34 +1054,33 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
      * 存储向量到Milvus
      */
     private List<String> storeVectorsToMilvus(List<List<Float>> vectors, List<DocumentChunk> chunks) {
-        List<String> vectorIds = new ArrayList<>();
-
+        // 构建批量数据
+        List<MilvusService.VectorData> dataList = new ArrayList<>();
         for (int i = 0; i < vectors.size(); i++) {
             DocumentChunk chunk = chunks.get(i);
-            List<Float> vector = vectors.get(i);
 
-            // 构建元数据JSON
-            String metadata = String.format(
-                "{\"document_id\": %d, \"chunk_index\": %d, \"chunk_identifier\": \"%s\"}",
-                chunk.getDocumentId(), chunk.getChunkIndex(), chunk.getChunkIdentifier()
-            );
-
-            // 调用MilvusService插入单个向量
-            Long vectorId = milvusService.insertVector(
-                chunk.getId(),
-                chunk.getDocumentId(),
-                chunk.getContent(),
-                vector,
-                metadata
-            );
-
-            if (vectorId == null) {
-                throw new RuntimeException("向量存储到Milvus失败: chunkIndex=" + chunk.getChunkIndex());
-            }
-
-            vectorIds.add(vectorId.toString());
+            MilvusService.VectorData data = new MilvusService.VectorData();
+            data.setChunkId(chunk.getId());
+            data.setDocumentId(chunk.getDocumentId());
+            data.setContent(chunk.getContent());
+            data.setEmbedding(vectors.get(i));
+            data.setMetadata(chunk.getMetadata());
+            dataList.add(data);
         }
 
+        // 批量插入
+        List<Long> ids = milvusService.batchInsertVectors(dataList);
+        if (ids == null || ids.size() != chunks.size()) {
+            throw new RuntimeException("批量向量存储失败: 期望=" + chunks.size() + ", 实际=" + (ids != null ? ids.size() : 0));
+        }
+
+        // 持久化到磁盘，确保数据不丢失
+        milvusService.flushCollection();
+
+        List<String> vectorIds = new ArrayList<>();
+        for (Long id : ids) {
+            vectorIds.add(id.toString());
+        }
         return vectorIds;
     }
 

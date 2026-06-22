@@ -100,7 +100,7 @@ imkqas:
 
     # 文档处理配置
     document:
-      supported-formats: txt
+      supported-formats: pdf
       chunk:
         size: 200
         overlap: 20

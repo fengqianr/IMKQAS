@@ -59,9 +59,6 @@ public class MilvusService {
             log.info("插入向量数据: chunkId={}, documentId={}, contentLength={}",
                     chunkId, documentId, content.length());
 
-            // 确保集合已加载
-            loadCollection();
-
             // 构建插入数据
             List<InsertParam.Field> fields = new ArrayList<>();
             fields.add(new InsertParam.Field("chunk_id", List.of(chunkId)));
@@ -353,6 +350,28 @@ public class MilvusService {
     }
 
     /**
+     * 持久化集合数据到磁盘
+     * Milvus insert 后必须调用 flush，否则数据在缓冲区中可能丢失
+     */
+    public void flushCollection() {
+        try {
+            io.milvus.param.collection.FlushParam flushParam =
+                    io.milvus.param.collection.FlushParam.newBuilder()
+                            .withCollectionNames(List.of(collectionName))
+                            .build();
+            R<io.milvus.grpc.FlushResponse> flushResponse = milvusClient.flush(flushParam);
+            if (flushResponse.getStatus() != R.Status.Success.getCode()) {
+                log.error("持久化集合失败: {}", safeGetMessage(flushResponse));
+                throw new RuntimeException("持久化集合失败: " + safeGetMessage(flushResponse));
+            }
+            log.info("集合数据已持久化: {}, flushTime={}", collectionName, System.currentTimeMillis());
+        } catch (Exception e) {
+            log.error("持久化集合异常", e);
+            throw new RuntimeException("持久化集合异常", e);
+        }
+    }
+
+    /**
      * 释放集合从内存
      */
     public void releaseCollection() {
@@ -381,9 +400,6 @@ public class MilvusService {
      */
     public long getCollectionCount() {
         try {
-            // 确保集合已加载，以获取最新统计信息
-            loadCollection();
-
             GetCollectionStatisticsParam param = GetCollectionStatisticsParam.newBuilder()
                     .withCollectionName(collectionName)
                     .build();

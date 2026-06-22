@@ -2,7 +2,6 @@ package com.student.service.rag.impl;
 
 import com.hankcs.hanlp.HanLP;
 import com.hankcs.hanlp.seg.common.Term;
-import com.hankcs.hanlp.tokenizer.NLPTokenizer;
 import com.student.service.rag.MedicalEntityRecognitionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -210,13 +209,10 @@ public class MedicalEntityRecognitionServiceImpl implements MedicalEntityRecogni
                 }
             }
 
-            // 3. 使用NLPTokenizer进行更精确的实体识别（如人群实体等）
-            List<Term> nlpTerms = NLPTokenizer.segment(query);
-            for (Term term : nlpTerms) {
+            // 3. 基于标准分词结果补充人群实体识别（精确匹配）
+            for (Term term : terms) {
                 String word = term.word.trim();
                 if (word.isEmpty() || foundTexts.contains(word)) continue;
-
-                // 精确匹配人群实体
                 if (POPULATION_ENTITIES.contains(word) && foundTexts.add(word)) {
                     entities.add(new MedicalEntity(word, EntityType.POPULATION, 0.95, term.offset, term.offset + word.length()));
                 }
