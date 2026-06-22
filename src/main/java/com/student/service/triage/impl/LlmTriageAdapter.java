@@ -99,7 +99,7 @@ public class LlmTriageAdapter {
             log.debug("LLM提示词构建完成: {}", prompt.substring(0, Math.min(100, prompt.length())) + "...");
 
             // 2. 调用LLM服务
-            String llmResponse = llmService.generateAnswer(prompt, Collections.emptyList());
+            String llmResponse = llmService.generateAnswerDirect(prompt);
             if (llmResponse == null || llmResponse.trim().isEmpty()) {
                 log.warn("LLM返回空响应");
                 return createFallbackResult(symptoms, "LLM返回空响应");

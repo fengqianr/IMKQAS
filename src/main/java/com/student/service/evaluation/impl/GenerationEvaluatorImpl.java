@@ -35,7 +35,7 @@ public class GenerationEvaluatorImpl implements GenerationEvaluator {
             return 0.0;
         }
         String prompt = buildFaithfulnessPrompt(query, answer, context);
-        String judgeResult = llmService.generateAnswer(prompt, List.of());
+        String judgeResult = llmService.generateAnswerDirect(prompt);
         return parseScore(judgeResult);
     }
 
@@ -48,7 +48,7 @@ public class GenerationEvaluatorImpl implements GenerationEvaluator {
             return 0.0;
         }
         String prompt = buildAnswerRelevancePrompt(query, answer);
-        String judgeResult = llmService.generateAnswer(prompt, List.of());
+        String judgeResult = llmService.generateAnswerDirect(prompt);
         return parseScore(judgeResult);
     }
 
@@ -61,7 +61,7 @@ public class GenerationEvaluatorImpl implements GenerationEvaluator {
             return 0.0;
         }
         String prompt = buildContextRelevancePrompt(query, context);
-        String judgeResult = llmService.generateAnswer(prompt, List.of());
+        String judgeResult = llmService.generateAnswerDirect(prompt);
         return parseScore(judgeResult);
     }
 

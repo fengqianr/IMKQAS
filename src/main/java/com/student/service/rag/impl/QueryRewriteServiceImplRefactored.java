@@ -356,7 +356,7 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
 
 
             // 记录改写
-            if (medicalizedQuery != null && !medicalizedQuery.equals(originalQuery)) {
+            if (medicalizedQuery != null && !expandedQuery.equals(originalQuery)) {
                 rewrittenQueries.incrementAndGet();
             }
 
@@ -364,9 +364,9 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
             totalProcessingTime.addAndGet(processingTime);
 
             log.debug("查询改写完成: original={}, rewritten={}, entities={}, time={}ms",
-                    originalQuery, medicalizedQuery, entities.size(), processingTime);
+                    originalQuery, expandedQuery, entities.size(), processingTime);
 
-            return medicalizedQuery.toString();
+            return expandedQuery;
 
         } catch (Exception e) {
             log.error("查询改写异常: query={}", originalQuery, e);

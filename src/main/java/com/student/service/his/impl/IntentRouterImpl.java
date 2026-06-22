@@ -96,7 +96,7 @@ public class IntentRouterImpl implements IntentRouter {
 
                 类别：""".formatted(userInput);
 
-        String result = llmService.generateAnswer(prompt, List.of());
+        String result = llmService.generateAnswerDirect(prompt);
         if (result == null) return IntentType.KNOWLEDGE_QUERY;
 
         String trimmed = result.trim().toUpperCase();
