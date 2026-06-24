@@ -9,8 +9,6 @@
         <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
           <router-link to="/qa" class="qa-nav-link" :class="$route.path === '/qa' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">智能问答</router-link>
           <router-link to="/knowledge" class="qa-nav-link" :class="$route.path === '/knowledge' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">知识库</router-link>
-          <router-link to="/stats" class="qa-nav-link" :class="$route.path === '/stats' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">数据分析</router-link>
-          <router-link to="/user" class="qa-nav-link" :class="$route.path === '/user' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">个人中心</router-link>
         </nav>
       </div>
       <div class="custom-flex custom-items-center custom-gap-4">

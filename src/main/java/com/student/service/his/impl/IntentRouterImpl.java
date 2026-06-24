@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 /**
  * 意图路由器实现
- * 多层过滤架构：Caffeine缓存 → 关键词 → 正则 → Redis → LLM(5s超时+断路器) → 兜底
+ * 多层过滤架构：Caffeine缓存 → 关键词 → 正则 → Redis → LLM(2s超时+断路器) → 兜底
  *
  * @author 系统
  * @version 2.0
@@ -209,11 +209,11 @@ public class IntentRouterImpl implements IntentRouter {
         try {
             IntentType result = CompletableFuture
                     .supplyAsync(() -> doClassifyByLlm(userInput))
-                    .get(5, TimeUnit.SECONDS);
+                    .get(2, TimeUnit.SECONDS);
             recordCircuitSuccess();
             return result;
         } catch (TimeoutException e) {
-            log.warn("LLM意图分类超时(5s)，走兜底: {}", userInput);
+            log.warn("LLM意图分类超时(2s)，走兜底: {}", userInput);
             recordCircuitFailure();
             return IntentType.KNOWLEDGE_QUERY;
         } catch (Exception e) {

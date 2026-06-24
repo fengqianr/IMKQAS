@@ -27,20 +27,6 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/KnowledgeView.vue'),
     meta: { requiresAuth: true, title: '知识库管理' }
   },
-  // 数据分析模块路由（占位）
-  {
-    path: '/stats',
-    name: 'Stats',
-    component: () => import('@/views/StatsView.vue'),
-    meta: { requiresAuth: true, title: '数据分析' }
-  },
-  // 用户管理模块路由（占位）
-  {
-    path: '/user',
-    name: 'User',
-    component: () => import('@/views/UserView.vue'),
-    meta: { requiresAuth: true, title: '用户管理' }
-  },
   // 重定向
   {
     path: '/',

@@ -16,6 +16,26 @@ export interface QaOptions {
   stream?: boolean
 }
 
+// 检索步骤（匹配后端 RetrievalStepDto）
+export interface RetrievalStep {
+  stepName: string
+  stepOrder: number
+  durationMs: number
+  inputCount: number
+  outputCount: number
+  intermediateData?: Record<string, any>
+  status: string
+  timestamp?: number
+}
+
+// 检索路径（匹配后端 RetrievalPathDto）
+export interface RetrievalPath {
+  steps: RetrievalStep[]
+  totalDurationMs: number
+  cacheHit: boolean
+  intentType: string
+}
+
 // QA问答响应类型
 export interface QaResponse {
   query: string
@@ -25,6 +45,9 @@ export interface QaResponse {
   processingTime: number
   modelUsed: string
   citations?: SourceCitation[]
+  intentType?: string
+  questionnaireSuggestion?: any
+  retrievalPath?: RetrievalPath
 }
 
 // 参考文献引用（匹配后端 SourceCitation）
@@ -42,11 +65,12 @@ export type SourceReference = SourceCitation
 
 // 流式问答响应块
 export interface QaStreamChunk {
-  type: 'text' | 'sources' | 'done' | 'error'
+  type: 'text' | 'sources' | 'retrievalPath' | 'done' | 'error'
   content?: string
   sources?: SourceReference[]
   conversationId?: string
   error?: string
+  retrievalPath?: RetrievalPath
 }
 
 // 科室导诊请求

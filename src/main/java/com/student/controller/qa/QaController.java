@@ -74,6 +74,17 @@ public class QaController {
                     }
                 }
 
+                // 发送检索路径追踪数据
+                if (response.getRetrievalPath() != null && response.getRetrievalPath().getSteps() != null
+                        && !response.getRetrievalPath().getSteps().isEmpty()) {
+                    Map<String, Object> retrievalPathEvent = new java.util.HashMap<>();
+                    retrievalPathEvent.put("type", "retrievalPath");
+                    retrievalPathEvent.put("data", response.getRetrievalPath());
+                    emitter.send(SseEmitter.event()
+                            .id("retrievalPath")
+                            .data(retrievalPathEvent));
+                }
+
                 // 发送参考文献引用信息
                 if (response.getCitations() != null && !response.getCitations().isEmpty()) {
                     Map<String, Object> sourcesEvent = new java.util.HashMap<>();

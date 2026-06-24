@@ -3,8 +3,6 @@ import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import QaView from '@/views/QaView.vue'
 import KnowledgeView from '@/views/KnowledgeView.vue'
-import StatsView from '@/views/StatsView.vue'
-import UserView from '@/views/UserView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 export const routes: RouteRecordRaw[] = [
@@ -48,18 +46,6 @@ export const routes: RouteRecordRaw[] = [
     name: 'knowledge',
     component: KnowledgeView,
     meta: { title: '知识库管理', requiresAuth: true, noLayout: true }
-  },
-  {
-    path: '/stats',
-    name: 'stats',
-    component: StatsView,
-    meta: { title: '数据统计', requiresAuth: true }
-  },
-  {
-    path: '/user',
-    name: 'user',
-    component: UserView,
-    meta: { title: '用户管理', requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',

@@ -2,6 +2,7 @@ package com.student.service.rag;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.student.dto.qa.RetrievalPathDto;
 import com.student.service.his.InterviewSuggestion;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -124,6 +125,7 @@ public interface QaService {
      */
     static class QaResponseWithSources extends QaResponse {
         private final List<SourceCitation> citations;
+        private final RetrievalPathDto retrievalPath;
 
         @JsonCreator
         public QaResponseWithSources(@JsonProperty("query") String query,
@@ -134,20 +136,34 @@ public interface QaService {
                                     @JsonProperty("modelUsed") String modelUsed,
                                     @JsonProperty("citations") List<SourceCitation> citations,
                                     @JsonProperty("intentType") String intentType,
-                                    @JsonProperty("questionnaireSuggestion") InterviewSuggestion questionnaireSuggestion) {
+                                    @JsonProperty("questionnaireSuggestion") InterviewSuggestion questionnaireSuggestion,
+                                    @JsonProperty("retrievalPath") RetrievalPathDto retrievalPath) {
             super(query, answer, retrievedContext, confidence, processingTime, modelUsed, intentType, questionnaireSuggestion);
             this.citations = citations;
+            this.retrievalPath = retrievalPath;
         }
 
-        /** 兼容旧调用方 */
+        /** 兼容旧调用方（无intent/retrievalPath） */
         public QaResponseWithSources(String query, String answer, List<String> retrievedContext,
                                     double confidence, long processingTime, String modelUsed,
                                     List<SourceCitation> citations) {
-            this(query, answer, retrievedContext, confidence, processingTime, modelUsed, citations, null, null);
+            this(query, answer, retrievedContext, confidence, processingTime, modelUsed, citations, null, null, null);
+        }
+
+        /** 兼容旧调用方（有intent，无retrievalPath） */
+        public QaResponseWithSources(String query, String answer, List<String> retrievedContext,
+                                    double confidence, long processingTime, String modelUsed,
+                                    List<SourceCitation> citations,
+                                    String intentType, InterviewSuggestion questionnaireSuggestion) {
+            this(query, answer, retrievedContext, confidence, processingTime, modelUsed, citations, intentType, questionnaireSuggestion, null);
         }
 
         public List<SourceCitation> getCitations() {
             return citations;
+        }
+
+        public RetrievalPathDto getRetrievalPath() {
+            return retrievalPath;
         }
     }
 

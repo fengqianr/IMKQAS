@@ -143,7 +143,7 @@ public class RagConfig {
         /** 初始检索top-k */
         @Min(1)
         @Max(100)
-        private int initialTopK = 20;
+        private int initialTopK = 10;
 
         /** 重排序top-k */
         @Min(1)

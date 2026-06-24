@@ -25,8 +25,8 @@
   │     └─ 命中高危词 → 阻断, 返回就医建议
   │
   ├─[4] MultiRetrievalService.hybridRetrieval()             ← 双路召回
-  │     ├─ vectorRetrieval()  ─→ EmbeddingService ─→ Milvus (K=30)
-  │     └─ keywordRetrieval() ─→ KeywordRetrievalService ─→ Lucene BM25 (K=30)
+  │     ├─ vectorRetrieval()  ─→ EmbeddingService ─→ Milvus (K=10)
+  │     └─ keywordRetrieval() ─→ KeywordRetrievalService ─→ Lucene BM25 (K=10)
   │
   ├─[5] RrfFusionService.fuseVectorAndKeyword()             ← RRF融合
   │     └─ score(d) = Σ w_i × 1/(60 + rank_i(d))
@@ -239,7 +239,7 @@ public QaResponse answer(String query, Long userId, Long conversationId) {
 │  ├─ MilvusService.searchSimilar()  │  │   搜索所有已索引文档片段
 │  │   Milvus 向量数据库             │  │
 │  │   Collection: document_chunks   │  │
-│  └─ 返回 topK=30                   │  └─ 返回 topK=30
+│  └─ 返回 topK=10                   │  └─ 返回 topK=10
 │                                    │
 └──────────┬──────────────────┬──────┘
            │                  │

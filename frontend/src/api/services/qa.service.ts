@@ -97,7 +97,19 @@ class QaService {
 
     eventSource.onmessage = (event) => {
       try {
-        const chunk: QaStreamChunk = JSON.parse(event.data)
+        const parsed = JSON.parse(event.data)
+
+        // 处理 retrievalPath 事件（特殊格式：{ type, data }）
+        if (parsed.type === 'retrievalPath' && parsed.data) {
+          const chunk: QaStreamChunk = {
+            type: 'retrievalPath',
+            retrievalPath: parsed.data
+          }
+          onChunk(chunk)
+          return
+        }
+
+        const chunk: QaStreamChunk = parsed
         onChunk(chunk)
 
         if (chunk.type === 'done' || chunk.type === 'error') {

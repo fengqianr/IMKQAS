@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * 多路检索服务实现类
  * 整合向量检索和关键词检索，使用标准RRF融合算法进行混合检索
- * 双路并行召回（各30条），通过RRF融合去重排序后输出候选集
+ * 双路并行召回（各10条），通过RRF融合去重排序后输出候选集
  *
  * @author 系统
  * @version 2.0
@@ -174,11 +174,11 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
             keywordWeight = keywordWeight / totalWeight;
         }
 
-        // 双路各召回 K=30，为RRF融合提供足够候选
+        // 双路各召回 K=10，为RRF融合提供足够候选
         int perSideK = ragConfig.getRetrieval().getInitialTopK();
 
         try {
-            // 1. 并行执行向量检索和关键词检索（各 K=30）
+            // 1. 并行执行向量检索和关键词检索（各 K=10）
             CompletableFuture<List<RetrievalResult>> vectorFuture = CompletableFuture.supplyAsync(
                     () -> vectorRetrieval(query, perSideK),
                     executorService

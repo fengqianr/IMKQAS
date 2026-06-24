@@ -10,8 +10,6 @@
         <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
           <a class="qa-nav-link qa-nav-link-active" href="/qa">智能问答</a>
           <a class="qa-nav-link qa-nav-link-inactive" href="/knowledge">知识库</a>
-          <a class="qa-nav-link qa-nav-link-inactive" href="/stats">数据分析</a>
-          <a class="qa-nav-link qa-nav-link-inactive" href="/user">个人中心</a>
         </nav>
       </div>
       <div class="custom-flex custom-items-center custom-gap-4">
@@ -127,35 +125,31 @@
             知识检索路径
           </h3>
           <div>
-            <div v-for="(step, index) in retrievalSteps" :key="index" class="qa-retrieval-step">
-              <div :class="['qa-step-dot', step.color === 'secondary' ? 'qa-step-dot-secondary' : 'qa-step-dot-primary']"></div>
-              <div :class="['qa-step-title', step.color === 'secondary' ? 'qa-step-title-secondary' : 'qa-step-title-primary']">{{ step.title }}</div>
+            <div v-for="(step, index) in retrievalSteps" :key="index"
+                 v-show="expandedSteps || index < 3"
+                 class="qa-retrieval-step">
+              <div :class="['qa-step-dot', `qa-step-dot-${getStepColor(step)}`]"></div>
+              <div :class="['qa-step-title', `qa-step-title-${getStepColor(step)}`]">{{ step.stepName }}</div>
               <div class="qa-step-card">
-                <template v-if="step.description.includes('：')">
-                  <span class="text-on-surface-variant">{{ step.description.split('：')[0] }}：</span>
-                  <span class="qa-step-card-text">{{ step.description.split('：').slice(1).join('：') }}</span>
-                </template>
-                <template v-else>
-                  {{ step.description }}
-                </template>
-                <div v-if="step.confidence" class="qa-confidence-bar">
-                  <div class="qa-confidence-fill" :style="{ width: step.confidence * 100 + '%' }"></div>
+                <div class="qa-step-card-header">
+                  <span class="qa-step-status" :class="`qa-step-status-${getStepColor(step)}`">
+                    {{ getStatusLabel(step.status) }}
+                  </span>
+                  <span class="qa-step-duration">{{ formatDuration(step.durationMs) }}</span>
                 </div>
-                <div v-if="step.confidence" class="qa-confidence-label">置信度: {{ step.confidence.toFixed(2) }}</div>
+                <div v-if="getStepResultItems(step).length > 0" class="qa-step-result">
+                  <div v-for="item in getStepResultItems(step)" :key="item.label" class="qa-step-result-item">
+                    <span class="qa-step-result-label">{{ item.label }}</span>
+                    <span class="qa-step-result-value">{{ item.value }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div>
-          <h3 class="qa-panel-title">
-            <span class="qa-panel-title-icon material-symbols-outlined">monitoring</span>
-            患者体征快照
-          </h3>
-          <div class="qa-vitals-card">
-            <div v-for="(value, key) in patientVitals" :key="key" class="qa-vital-row">
-              <span class="qa-vital-label">{{ key }}</span>
-              <span :class="['qa-vital-value', key === '最新 INR' ? 'qa-vital-value-primary' : key === '近7日出血风险' ? 'qa-vital-value-accent' : 'qa-vital-value-default']">{{ value }}</span>
-            </div>
+            <button v-if="retrievalSteps.length > 3"
+                    @click="expandedSteps = !expandedSteps"
+                    class="qa-expand-toggle">
+              {{ expandedSteps ? '收起' : `展开全部 ${retrievalSteps.length} 步` }}
+            </button>
           </div>
         </div>
       </aside>
@@ -169,7 +163,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { authService } from '@/api/services/auth.service'
-import type { Conversation } from '@/api/types/qa.types'
+import type { Conversation, RetrievalStep } from '@/api/types/qa.types'
 
 interface Session {
   id: string
@@ -185,13 +179,6 @@ interface ChatMessage {
   sourceReferences?: string
 }
 
-interface RetrievalStep {
-  title: string
-  description: string
-  color: 'primary' | 'secondary'
-  confidence?: number
-}
-
 // 会话数据
 const sessions = ref<Session[]>([])
 const activeSessionId = ref<string | null>(null)
@@ -204,19 +191,55 @@ const loadingMessages = ref(false)
 // 输入文本
 const inputText = ref('')
 
-// 检索路径步骤
-const retrievalSteps = ref<RetrievalStep[]>([
-  { title: '关键实体识别', description: '识别对象：王某, 65岁, 华法林, 牙龈出血', color: 'primary', confidence: undefined },
-  { title: '向量语义库检索', description: '命中章节：《抗凝药物出血管理规范》第4章', color: 'secondary', confidence: 0.89 },
-  { title: '逻辑推理生成', description: '生成策略：多源整合 + 风险量化提示', color: 'primary', confidence: undefined }
-])
+// 检索路径步骤（初始为空，收到API响应后填充）
+const retrievalSteps = ref<RetrievalStep[]>([])
+const expandedSteps = ref(false)
 
-// 患者体征
-const patientVitals = reactive({
-  '最新 INR': '2.85',
-  '血压 (mmHg)': '132/84',
-  '近7日出血风险': '中度'
-})
+// 根据步骤状态和类型确定显示颜色
+const getStepColor = (step: RetrievalStep): string => {
+  if (step.status === 'BLOCKED' || step.status === 'ERROR') return 'error'
+  if (step.stepName.includes('安全兜底')) return 'warning'
+  if (step.stepName.includes('缓存')) return 'secondary'
+  return 'primary'
+}
+
+// 格式化耗时显示
+const formatDuration = (ms: number): string => {
+  if (ms === 0) return '<1ms'
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+  return `${(ms / 60000).toFixed(1)}m`
+}
+
+// 从步骤 intermediateData 提取结构化结果项
+const getStepResultItems = (step: RetrievalStep): { label: string; value: string }[] => {
+  const items: { label: string; value: string }[] = []
+  // 优先展示输入输出
+  if (step.inputCount > 0) items.push({ label: '输入', value: String(step.inputCount) })
+  if (step.outputCount > 0) items.push({ label: '输出', value: String(step.outputCount) })
+  // 展示中间数据中的关键结果
+  if (step.intermediateData) {
+    const displayKeys = ['结果', '命中片段', '示例来源', '通过', '丢弃', '通过率',
+                         '最高分', '最高置信度', '已改写', '候选数', '上下文片段',
+                         '答案长度', '引用数', '置信度', 'intentType']
+    for (const key of displayKeys) {
+      const val = step.intermediateData[key]
+      if (val !== undefined && val !== null && String(val).length > 0) {
+        items.push({ label: key, value: String(val) })
+      }
+    }
+  }
+  return items.length > 0 ? items : [{ label: '状态', value: '执行中...' }]
+}
+
+// 状态中文映射
+const getStatusLabel = (status: string): string => {
+  switch (status) {
+    case 'BLOCKED': return '已阻断'
+    case 'ERROR': return '异常'
+    default: return '成功'
+  }
+}
 
 // 加载会话列表
 const loadConversations = async () => {
@@ -405,10 +428,16 @@ ${sourceRefs.map(ref => `<span class="px-2 py-1 bg-surface-container text-[11px]
     })
 
     // 更新右侧知识检索路径面板
-    if (response.citations && response.citations.length > 0) {
+    if (response.retrievalPath && response.retrievalPath.steps.length > 0) {
+      retrievalSteps.value = response.retrievalPath.steps
+      expandedSteps.value = false
+    } else if (response.citations && response.citations.length > 0) {
+      // 降级：从现有响应字段构建简单步骤
       retrievalSteps.value = [
-        { title: '向量语义库检索', description: `命中 ${response.citations.length} 个相关文档片段`, color: 'secondary', confidence: response.confidence },
-        { title: '逻辑推理生成', description: `模型: ${response.modelUsed}`, color: 'primary', confidence: undefined }
+        { stepName: '向量语义库检索', stepOrder: 1, durationMs: 0, inputCount: 0,
+          outputCount: response.citations.length, status: 'SUCCESS' },
+        { stepName: 'LLM推理生成', stepOrder: 2, durationMs: 0, inputCount: response.citations.length,
+          outputCount: 1, status: 'SUCCESS' }
       ]
     }
 

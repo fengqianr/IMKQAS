@@ -32,33 +32,6 @@
         </div>
       </el-card>
 
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-icon">
-            <el-icon size="32" color="#005eb8">
-              <DataAnalysis />
-            </el-icon>
-          </div>
-          <div class="stat-info">
-            <h3>数据分析</h3>
-            <p class="stat-desc">查看系统使用统计</p>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-icon">
-            <el-icon size="32" color="#005eb8">
-              <User />
-            </el-icon>
-          </div>
-          <div class="stat-info">
-            <h3>用户管理</h3>
-            <p class="stat-desc">管理账户和健康档案</p>
-          </div>
-        </div>
-      </el-card>
     </div>
 
     <el-card class="quick-actions-card">
@@ -71,14 +44,6 @@
         <el-button size="large" @click="gotoKnowledge">
           <el-icon><Document /></el-icon>
           管理知识库
-        </el-button>
-        <el-button size="large" @click="gotoStats">
-          <el-icon><DataAnalysis /></el-icon>
-          查看统计
-        </el-button>
-        <el-button size="large" @click="gotoUser">
-          <el-icon><User /></el-icon>
-          个人中心
         </el-button>
       </div>
     </el-card>
@@ -112,8 +77,7 @@
         <template #header>
           <div class="card-header">
             <h3>最近活动</h3>
-            <el-link type="primary" :underline="false" @click="gotoStats">查看更多</el-link>
-          </div>
+            <span></span>          </div>
         </template>
         <div class="activity-list">
           <div v-for="(activity, index) in recentActivities" :key="index" class="activity-item">
@@ -197,8 +161,6 @@ import { useRouter } from 'vue-router'
 import {
   ChatDotRound,
   Document,
-  DataAnalysis,
-  User,
   Histogram,
   UploadFilled,
   EditPen,
@@ -221,14 +183,6 @@ const gotoKnowledge = () => {
   router.push('/knowledge')
 }
 
-const gotoStats = () => {
-  router.push('/stats')
-}
-
-const gotoUser = () => {
-  router.push('/user')
-}
-
 // 新添加的数据和方法
 const chartPeriod = ref('7d')
 
@@ -245,7 +199,7 @@ const getActivityIcon = (type: string) => {
     qa: ChatLineRound,
     upload: UploadFilled,
     system: Setting,
-    user: User,
+    user: EditPen,
     warning: Warning
   }
   return icons[type] || Clock

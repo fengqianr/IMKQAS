@@ -458,6 +458,16 @@
   box-shadow: 0 0 0 4px rgba(74, 95, 131, 0.1);
 }
 
+.qa-step-dot-warning {
+  background-color: #d97706;
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.1);
+}
+
+.qa-step-dot-error {
+  background-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
 .qa-step-title {
   font-size: 11px;
   font-weight: 700;
@@ -472,6 +482,14 @@
   color: #4a5f83;
 }
 
+.qa-step-title-warning {
+  color: #92400e;
+}
+
+.qa-step-title-error {
+  color: #991b1b;
+}
+
 .qa-step-card {
   background-color: #f8f9fa;
   padding: 1rem;
@@ -484,6 +502,83 @@
 .qa-step-card-text {
   color: #191c1d;
   font-weight: 500;
+}
+
+/* 步骤状态标签 */
+.qa-step-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.qa-step-status-primary { background-color: #dbeafe; color: #1e40af; }
+.qa-step-status-secondary { background-color: #e2e8f0; color: #475569; }
+.qa-step-status-warning { background-color: #fef3c7; color: #92400e; }
+.qa-step-status-error { background-color: #fee2e2; color: #991b1b; }
+
+/* 步骤卡片头部（状态 + 耗时） */
+.qa-step-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+/* 步骤耗时显示 */
+.qa-step-duration {
+  font-size: 10px;
+  color: #727783;
+  font-weight: 500;
+}
+
+/* 步骤结果区域 */
+.qa-step-result {
+  border-top: 1px solid #e2e4e9;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.qa-step-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.125rem 0;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.qa-step-result-label {
+  color: #727783;
+  flex-shrink: 0;
+}
+
+.qa-step-result-value {
+  color: #191c1d;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-all;
+}
+
+/* 展开/收起按钮 */
+.qa-expand-toggle {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  background: none;
+  border: 1px dashed #c2c6d4;
+  border-radius: 0.5rem;
+  color: #005eb8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+.qa-expand-toggle:hover {
+  background-color: rgba(0, 94, 184, 0.05);
 }
 
 /* 置信度进度条 */
@@ -506,42 +601,6 @@
   margin-top: 0.5rem;
   text-align: right;
   font-size: 10px;
-}
-
-/* 患者体征快照 */
-.qa-vitals-card {
-  background-color: #f8f9fa;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.qa-vital-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.qa-vital-label {
-  font-size: 0.75rem;
-  color: #424752;
-}
-
-.qa-vital-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.qa-vital-value-primary {
-  color: #00478d;
-}
-
-.qa-vital-value-accent {
-  color: #793100;
-}
-
-.qa-vital-value-default {
-  color: #191c1d;
 }
 
 /* ===== 滚动条隐藏 ===== */
@@ -701,9 +760,4 @@
   overflow: hidden;
   position: relative;
   background-color: #f8f9fa;
-}
-
-/* 体征行之间的间距 */
-.qa-vital-row + .qa-vital-row {
-  margin-top: 1.5rem;
 }

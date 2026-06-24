@@ -1,6 +1,8 @@
 package com.student.service.rag.impl;
 
 import com.student.config.RagConfig;
+import com.student.dto.qa.RetrievalPathDto;
+import com.student.dto.qa.RetrievalStepDto;
 import com.student.entity.Document;
 import com.student.service.*;
 import com.student.service.document.DocumentService;
@@ -10,6 +12,7 @@ import com.student.utils.evaluation.PipelineTraceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -288,14 +291,18 @@ public class QaServiceImpl implements QaService {
     public QaResponseWithSources answerWithSources(String query, Long userId, Long conversationId) {
         long startTime = System.currentTimeMillis();
         totalQueries.incrementAndGet();
+        PipelineTraceContext.start();
 
         try {
             // 意图路由
+            long t1 = System.currentTimeMillis();
             IntentType intent = intentRouter.classify(query);
             InterviewSuggestion suggestion = null;
             if (intent == IntentType.DATA_COLLECTION || intent == IntentType.MIXED) {
                 suggestion = interviewEngine.suggestQuestionnaire(query);
             }
+            PipelineTraceContext.recordStep("意图路由", 1, System.currentTimeMillis() - t1,
+                    1, 1, Map.of("intentType", intent.name()));
 
             // DATA_COLLECTION → 仅返回问卷建议
             if (intent == IntentType.DATA_COLLECTION) {
@@ -304,63 +311,152 @@ public class QaServiceImpl implements QaService {
                 String answerText = suggestion.isMatched()
                         ? suggestion.getSuggestionText()
                         : "感谢您的描述。目前暂未匹配到合适的评估问卷，建议您咨询专业医生获取更准确的评估。";
+                PipelineTraceContext.get().putMetadata("intentType", intent.name());
+                PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
+                List<RetrievalStepDto> stepDtos = buildStepDtos(trace);
+                RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
+                        .steps(stepDtos)
+                        .totalDurationMs(trace.getTotalDurationMs())
+                        .cacheHit(false)
+                        .intentType(intent.name())
+                        .build();
                 return new QaResponseWithSources(query, answerText, Collections.emptyList(),
                         0.85, processingTime, "intent-router", Collections.emptyList(),
-                        intent.name(), suggestion);
+                        intent.name(), suggestion, retrievalPath);
             }
 
             // ═══ 查询预处理 ═══
+            long t2 = System.currentTimeMillis();
             String processedQuery = queryRewriteService.rewrite(query, userId, conversationId);
-            if (processedQuery != null && !processedQuery.equals(query)) {
+            boolean wasRewritten = processedQuery != null && !processedQuery.equals(query);
+            PipelineTraceContext.recordStep("查询预处理", 2, System.currentTimeMillis() - t2,
+                    1, 1, Map.of("已改写", wasRewritten ? "是" : "否"));
+            if (wasRewritten) {
                 log.info("查询预处理完成(WithSources): raw={}, processed={}", query, processedQuery);
             }
 
             // ═══ 安全兜底：急症预检 ═══
+            long t3 = System.currentTimeMillis();
             SafetyDecision emergencyDecision = safetyGuardService.checkEmergency(processedQuery);
+            PipelineTraceContext.recordStep("安全兜底①-急症预检", 3, System.currentTimeMillis() - t3,
+                    1, 1, Map.of("结果", emergencyDecision.isBlocked() ? "触发阻断" : "通过"));
             if (emergencyDecision.isBlocked()) {
                 QaResponse er = buildEmergencyResponse(query, emergencyDecision, startTime, intent);
+                PipelineTraceContext.get().putMetadata("intentType", intent.name());
+                PipelineTraceContext.get().putMetadata("blockedAt", "emergency");
+                PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
+                List<RetrievalStepDto> stepDtos = buildStepDtos(trace);
+                RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
+                        .steps(stepDtos)
+                        .totalDurationMs(trace.getTotalDurationMs())
+                        .cacheHit(false)
+                        .intentType(intent.name())
+                        .build();
                 return new QaResponseWithSources(
                         er.getQuery(), er.getAnswer(), er.getRetrievedContext(),
                         er.getConfidence(), er.getProcessingTime(), er.getModelUsed(),
-                        Collections.emptyList(), er.getIntentType(), er.getQuestionnaireSuggestion());
+                        Collections.emptyList(), er.getIntentType(), er.getQuestionnaireSuggestion(), retrievalPath);
             }
 
+            long t4 = System.currentTimeMillis();
             List<MultiRetrievalService.RetrievalResult> retrievalResults = retrieveDocuments(processedQuery);
+            List<String> topDocTitles = retrievalResults.stream()
+                    .limit(3)
+                    .map(r -> getDocumentTitle(r.getDocumentId()))
+                    .collect(Collectors.toList());
+            PipelineTraceContext.recordStep("双路召回+RRF融合", 5, System.currentTimeMillis() - t4,
+                    0, retrievalResults.size(),
+                    Map.of("命中片段", retrievalResults.size(),
+                           "示例来源", topDocTitles.isEmpty() ? "无" : String.join("、", topDocTitles)));
             totalRetrievedDocuments.addAndGet(retrievalResults.size());
 
+            long t6 = System.currentTimeMillis();
             QualityFilterService.FilterResult filterResult = qualityFilterService.filter(retrievalResults);
             List<MultiRetrievalService.RetrievalResult> filteredResults = filterResult.getPassed();
+            PipelineTraceContext.recordStep("质量过滤", 6, System.currentTimeMillis() - t6,
+                    retrievalResults.size(), filteredResults.size(),
+                    Map.of("通过", filteredResults.size(),
+                           "丢弃", filterResult.getDiscardedCount(),
+                           "通过率", retrievalResults.size() > 0
+                                ? String.format("%.0f%%", filteredResults.size() * 100.0 / retrievalResults.size())
+                                : "0%"));
 
+            long t7 = System.currentTimeMillis();
             QualityFilterService.ContradictionResult contradiction =
                     qualityFilterService.detectContradictions(filteredResults, query);
+            PipelineTraceContext.recordStep("矛盾检测", 7, System.currentTimeMillis() - t7,
+                    1, 1, Map.of("结果", contradiction.isHasContradiction() ? "发现矛盾" : "无矛盾"));
             if (contradiction.isHasContradiction()) {
                 QaResponse cr = buildContradictionResponse(query, contradiction, startTime, intent);
+                PipelineTraceContext.get().putMetadata("intentType", intent.name());
+                PipelineTraceContext.get().putMetadata("blockedAt", "contradiction");
+                PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
+                List<RetrievalStepDto> stepDtos = buildStepDtos(trace);
+                RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
+                        .steps(stepDtos)
+                        .totalDurationMs(trace.getTotalDurationMs())
+                        .cacheHit(false)
+                        .intentType(intent.name())
+                        .build();
                 return new QaResponseWithSources(
                         cr.getQuery(), cr.getAnswer(), cr.getRetrievedContext(),
                         cr.getConfidence(), cr.getProcessingTime(), cr.getModelUsed(),
-                        Collections.emptyList(), cr.getIntentType(), cr.getQuestionnaireSuggestion());
+                        Collections.emptyList(), cr.getIntentType(), cr.getQuestionnaireSuggestion(), retrievalPath);
             }
 
+            long t8 = System.currentTimeMillis();
             List<MultiRetrievalService.RetrievalResult> rerankedResults =
                     rerankDocuments(processedQuery, filteredResults);
+            double topScore = rerankedResults.stream()
+                    .mapToDouble(r -> r.getScore() != null ? r.getScore() : 0.0)
+                    .max().orElse(0.0);
+            PipelineTraceContext.recordStep("多因子重排序", 8, System.currentTimeMillis() - t8,
+                    filteredResults.size(), rerankedResults.size(),
+                    Map.of("最高分", String.format("%.2f", topScore),
+                           "候选数", rerankedResults.size()));
 
+            long t9 = System.currentTimeMillis();
             ConfidenceDecision confidenceDecision = safetyGuardService.assessConfidence(rerankedResults);
+            PipelineTraceContext.recordStep("安全兜底②-置信度门控", 9, System.currentTimeMillis() - t9,
+                    1, 1, Map.of("结果", confidenceDecision.isBlocked() ? "低于阈值，已阻断" : "通过",
+                           "最高置信度", String.format("%.2f", confidenceDecision.getMaxScore())));
             if (confidenceDecision.isBlocked()) {
                 QaResponse lr = buildLowConfidenceResponse(query, confidenceDecision, startTime, intent);
+                PipelineTraceContext.get().putMetadata("intentType", intent.name());
+                PipelineTraceContext.get().putMetadata("blockedAt", "lowConfidence");
+                PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
+                List<RetrievalStepDto> stepDtos = buildStepDtos(trace);
+                RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
+                        .steps(stepDtos)
+                        .totalDurationMs(trace.getTotalDurationMs())
+                        .cacheHit(false)
+                        .intentType(intent.name())
+                        .build();
                 return new QaResponseWithSources(
                         lr.getQuery(), lr.getAnswer(), lr.getRetrievedContext(),
                         lr.getConfidence(), lr.getProcessingTime(), lr.getModelUsed(),
-                        Collections.emptyList(), lr.getIntentType(), lr.getQuestionnaireSuggestion());
+                        Collections.emptyList(), lr.getIntentType(), lr.getQuestionnaireSuggestion(), retrievalPath);
             }
 
+            long t10 = System.currentTimeMillis();
             List<LlmService.ContextWithSource> contextWithSources = buildContextWithSources(rerankedResults);
             LlmService.AnswerWithCitations answerWithCitations =
                     llmService.generateAnswerWithCitations(query, contextWithSources);
+            PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t10,
+                    contextWithSources.size(), 1,
+                    Map.of("上下文片段", contextWithSources.size(),
+                           "答案长度", answerWithCitations.getAnswer().length() + "字",
+                           "引用数", String.valueOf(answerWithCitations.getCitations().size())));
             List<SourceCitation> citations = buildSourceCitations(
                     rerankedResults, answerWithCitations.getCitations());
 
             double confidence = calculateConfidence(rerankedResults, answerWithCitations.getAnswer());
+            long t12 = System.currentTimeMillis();
             String sanitizedAnswer = safetyGuardService.sanitizeAnswer(answerWithCitations.getAnswer(), confidence);
+            boolean wasSanitized = !sanitizedAnswer.equals(answerWithCitations.getAnswer());
+            PipelineTraceContext.recordStep("安全兜底③-答案净化", 12, System.currentTimeMillis() - t12,
+                    1, 1, Map.of("结果", wasSanitized ? "已净化（移除风险内容）" : "无需净化",
+                           "置信度", String.format("%.2f", confidence)));
 
             // MIXED：末尾附加问卷推荐
             if (intent == IntentType.MIXED && suggestion != null && suggestion.isMatched()) {
@@ -376,14 +472,28 @@ public class QaServiceImpl implements QaService {
                     .limit(3)
                     .collect(Collectors.toList());
 
+            // 收集管线追踪数据
+            PipelineTraceContext.get().putMetadata("confidence", confidence);
+            PipelineTraceContext.get().putMetadata("cacheHit", false);
+            PipelineTraceContext.get().putMetadata("intentType", intent.name());
+            PipelineTraceContext.get().putMetadata("totalTimeMs", processingTime);
+            PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
+            List<RetrievalStepDto> stepDtos = buildStepDtos(trace);
+            RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
+                    .steps(stepDtos)
+                    .totalDurationMs(trace.getTotalDurationMs())
+                    .cacheHit(false)
+                    .intentType(intent.name())
+                    .build();
+
             QaResponseWithSources response = new QaResponseWithSources(
                     query, sanitizedAnswer, contextSummary,
                     confidence, processingTime, llmService.getModelInfo().getName(),
-                    citations, intent.name(), suggestion);
+                    citations, intent.name(), suggestion, retrievalPath);
 
-            log.info("带来源问答完成: query={}, intent={}, sources={}, answerLength={}, confidence={}, time={}ms",
+            log.info("带来源问答完成: query={}, intent={}, sources={}, answerLength={}, confidence={}, time={}ms, traceSteps={}",
                     query, intent, citations.size(), answerWithCitations.getAnswer().length(),
-                    confidence, processingTime);
+                    confidence, processingTime, stepDtos.size());
 
             return response;
 
@@ -391,11 +501,12 @@ public class QaServiceImpl implements QaService {
             log.error("带来源问答异常: query={}, userId={}, conversationId={}",
                     query, userId, conversationId, e);
             failedQueries.incrementAndGet();
+            PipelineTraceContext.clear();
             QaResponse fallback = getFallbackResponse(query, startTime);
             return new QaResponseWithSources(
                     fallback.getQuery(), fallback.getAnswer(), fallback.getRetrievedContext(),
                     fallback.getConfidence(), fallback.getProcessingTime(), fallback.getModelUsed(),
-                    Collections.emptyList(), fallback.getIntentType(), fallback.getQuestionnaireSuggestion());
+                    Collections.emptyList(), fallback.getIntentType(), fallback.getQuestionnaireSuggestion(), null);
         }
     }
 
@@ -707,6 +818,26 @@ public class QaServiceImpl implements QaService {
         String fallbackAnswer = "抱歉，当前无法处理您的查询。请检查网络连接或稍后重试。";
         return new QaResponse(query, fallbackAnswer, Collections.emptyList(),
                 0.1, processingTime, "fallback", null, null);
+    }
+
+    /**
+     * 将管线追踪记录转换为DTO列表（按stepOrder排序）
+     */
+    private List<RetrievalStepDto> buildStepDtos(PipelineTraceContext.PipelineTrace trace) {
+        return trace.getSteps().stream()
+                .map(step -> RetrievalStepDto.builder()
+                        .stepName(step.stepName)
+                        .stepOrder(step.stepOrder)
+                        .durationMs(step.durationMs)
+                        .inputCount(step.inputCount)
+                        .outputCount(step.outputCount)
+                        .intermediateData(step.intermediateData != null
+                                ? new HashMap<>(step.intermediateData) : new HashMap<>())
+                        .status(step.status)
+                        .timestamp(step.timestamp != null ? step.timestamp.toEpochMilli() : null)
+                        .build())
+                .sorted(Comparator.comparingInt(RetrievalStepDto::getStepOrder))
+                .collect(Collectors.toList());
     }
 
     private static String truncate(String s, int maxLen) {

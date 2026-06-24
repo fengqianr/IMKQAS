@@ -22,16 +22,6 @@
               class="text-secondary hover:text-brand transition-colors font-semibold px-3 py-1.5 rounded-full"
               :class="{ 'bg-brand text-on-brand': $route.path === '/knowledge' }"
             >知识库</router-link>
-            <router-link
-              to="/stats"
-              class="text-secondary hover:text-brand transition-colors font-semibold px-3 py-1.5 rounded-full"
-              :class="{ 'bg-brand text-on-brand': $route.path === '/stats' }"
-            >数据分析</router-link>
-            <router-link
-              to="/user"
-              class="text-secondary hover:text-brand transition-colors font-semibold px-3 py-1.5 rounded-full"
-              :class="{ 'bg-brand text-on-brand': $route.path === '/user' }"
-            >个人中心</router-link>
           </div>
         </div>
         <div class="flex items-center gap-4">
@@ -66,10 +56,6 @@
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="profile">
-                    <span class="material-symbols-outlined mr-2">person</span>
-                    个人资料
-                  </el-dropdown-item>
                   <el-dropdown-item command="settings">
                     <span class="material-symbols-outlined mr-2">settings</span>
                     系统设置
@@ -110,9 +96,6 @@ const userAvatar = computed(() => authStore.user?.avatar || '')
 // 方法
 const handleUserCommand = async (command: string) => {
   switch (command) {
-    case 'profile':
-      router.push('/user')
-      break
     case 'settings':
       ElMessage.info('系统设置功能开发中')
       break
