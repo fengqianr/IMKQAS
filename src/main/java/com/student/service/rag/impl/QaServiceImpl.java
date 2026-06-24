@@ -169,7 +169,8 @@ public class QaServiceImpl implements QaService {
             // ═══ [10][11] 语义化缓存链 → LLM生成 ═══
             String answer;
             String modelUsed = llmService.getModelInfo().getName();
-            String normalizedQuery = queryRewriteService.normalize(query);
+            // 直接使用查询预处理阶段的结果，避免对SNOMED CT的重复调用
+            String normalizedQuery = processedQuery != null ? processedQuery : query;
             List<Long> sortedFragmentIds = extractSortedFragmentIds(rerankedResults);
 
             long t10 = System.currentTimeMillis();
@@ -190,7 +191,7 @@ public class QaServiceImpl implements QaService {
                 if (lockAcquired) {
                     try {
                         long t11 = System.currentTimeMillis();
-                        answer = generateAnswer(query, context);
+                        answer = generateAnswer(processedQuery, context);
                         PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t11);
 
                         long t12 = System.currentTimeMillis();
@@ -215,7 +216,7 @@ public class QaServiceImpl implements QaService {
                         log.info("语义缓存重试命中: query={}", truncate(query, 50));
                     } else {
                         long t11 = System.currentTimeMillis();
-                        answer = generateAnswer(query, context);
+                        answer = generateAnswer(processedQuery, context);
                         PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t11);
 
                         long t12 = System.currentTimeMillis();

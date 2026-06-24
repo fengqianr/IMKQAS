@@ -92,6 +92,18 @@ curl http://localhost:9000/minio/health/live
 ```
 ### 1.4 Milvus（Docker Compose）
 ```bash
+# 1. 使用DaoCloud镜像
+docker pull docker.m.daocloud.io/minio/minio:RELEASE.2023-03-20T20-16-18Z
+docker tag docker.m.daocloud.io/minio/minio:RELEASE.2023-03-20T20-16-18Z minio/minio:RELEASE.2023-03-20T20-16-18Z
+
+# 2. 拉取etcd
+docker pull docker.m.daocloud.io/quayio/coreos/etcd:v3.5.5
+docker tag docker.m.daocloud.io/quayio/coreos/etcd:v3.5.5 quay.io/coreos/etcd:v3.5.5
+
+# 3. 拉取milvus（这步最关键）
+docker pull docker.m.daocloud.io/milvusdb/milvus:v2.6.14
+docker tag docker.m.daocloud.io/milvusdb/milvus:v2.6.14 milvusdb/milvus:v2.6.14
+
 # 启动
 cd ~
 docker compose -f milvus-standalone-docker-compose.yml up -d

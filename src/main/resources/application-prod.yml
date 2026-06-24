@@ -94,7 +94,7 @@ imkqas:
       model: gte-rerank
     retrieval:
       top-k: 30
-      rerank-top-k: 10
+      rerank-top-k: 5
 
   # 安全配置
   security:

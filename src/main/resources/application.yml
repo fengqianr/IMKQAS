@@ -102,7 +102,7 @@ imkqas:
       api-endpoint: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
       api-key: sk-ca1040e1914248cbb02dcb7ca8c7120a
       # 重排序top-k
-      top-k: 5
+      top-k: 10
       # 缓存配置
       cache-enabled: true
       cache-ttl: 1800  # 30分钟
@@ -138,8 +138,8 @@ imkqas:
         keyword: 0.4
       # 双路召回各取 K=30，RRF融合后输出候选集
       initial-top-k: 30
-      # 精排输出 top10 送入 LLM 生成
-      rerank-top-k: 10
+      # 精排输出 top5 送入 LLM 生成
+      rerank-top-k: 5
       # RRF融合参数
       rrf-k: 60
       # 超时配置 (毫秒)

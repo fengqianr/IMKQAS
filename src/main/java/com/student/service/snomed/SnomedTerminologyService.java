@@ -105,8 +105,9 @@ public class SnomedTerminologyService {
                     continue;
                 }
 
-                // 检查SNOMED CT服务
-                if (configProperties.isEnabled()) {
+                // 检查SNOMED CT服务（跳过单字词和纯标点/数字，避免无效查询）
+                boolean skipSnomed = word.length() < 2 || !word.matches(".*[\\u4e00-\\u9fff].*");
+                if (!skipSnomed && configProperties.isEnabled()) {
                     SnomedTermResponse snomedTerm = lookupByTerm(word);
                     if (snomedTerm != null) {
                         result.append(snomedTerm.getTerm()).append(" ");
