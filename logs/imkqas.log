@@ -3605,3 +3605,71 @@ Unconditional classes:
 2026-06-25 14:30:00 [http-nio-8080-exec-9] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
 2026-06-25 14:30:00 [http-nio-8080-exec-9] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2069714645658734593(Long), 10(Long)
 2026-06-25 14:30:00 [http-nio-8080-exec-9] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 10
+2026-06-25 15:25:18 [term-change-checker] ERROR com.student.service.RedisService - 获取缓存失败: key=sem:term:mapping-hash
+org.springframework.dao.QueryTimeoutException: Redis command timed out
+	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:68)
+	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:41)
+	at org.springframework.data.redis.PassThroughExceptionTranslationStrategy.translate(PassThroughExceptionTranslationStrategy.java:40)
+	at org.springframework.data.redis.FallbackExceptionTranslationStrategy.translate(FallbackExceptionTranslationStrategy.java:38)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.convertLettuceAccessException(LettuceConnection.java:308)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.await(LettuceConnection.java:1026)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.lambda$doInvoke$3(LettuceConnection.java:445)
+	at org.springframework.data.redis.connection.lettuce.LettuceInvoker$Synchronizer.invoke(LettuceInvoker.java:665)
+	at org.springframework.data.redis.connection.lettuce.LettuceInvoker.just(LettuceInvoker.java:94)
+	at org.springframework.data.redis.connection.lettuce.LettuceStringCommands.get(LettuceStringCommands.java:54)
+	at org.springframework.data.redis.connection.DefaultedRedisConnection.get(DefaultedRedisConnection.java:284)
+	at org.springframework.data.redis.core.DefaultValueOperations$1.inRedis(DefaultValueOperations.java:54)
+	at org.springframework.data.redis.core.AbstractOperations$ValueDeserializingRedisCallback.doInRedis(AbstractOperations.java:61)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:396)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:363)
+	at org.springframework.data.redis.core.AbstractOperations.execute(AbstractOperations.java:97)
+	at org.springframework.data.redis.core.DefaultValueOperations.get(DefaultValueOperations.java:50)
+	at com.student.service.RedisService.get(RedisService.java:59)
+	at com.student.service.rag.impl.TermChangeListenerImpl.getTermMappingHash(TermChangeListenerImpl.java:138)
+	at com.student.service.rag.impl.TermChangeListenerImpl.scheduledVersionCheck(TermChangeListenerImpl.java:109)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: io.lettuce.core.RedisCommandTimeoutException: Command timed out after 5 second(s)
+	at io.lettuce.core.internal.ExceptionFactory.createTimeoutException(ExceptionFactory.java:59)
+	at io.lettuce.core.internal.Futures.awaitOrCancel(Futures.java:246)
+	at io.lettuce.core.LettuceFutures.awaitOrCancel(LettuceFutures.java:74)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.await(LettuceConnection.java:1024)
+	... 20 common frames omitted
+2026-06-25 15:25:18 [term-change-checker] DEBUG c.s.s.r.impl.TermChangeListenerImpl - 术语映射表未变更: hash=b811b44eef1db722f6ac9ace280876f4, 检查次数=1
+2026-06-25 15:25:35 [lettuce-eventExecutorLoop-1-1] INFO  i.l.core.protocol.ConnectionWatchdog - Reconnecting, last destination was /8.138.40.200:6379
+2026-06-25 15:25:35 [lettuce-nioEventLoop-4-2] INFO  i.l.c.protocol.ReconnectionHandler - Reconnected to 8.138.40.200/<unresolved>:6379
+2026-06-25 15:30:39 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-06-25 15:30:43 [http-nio-8080-exec-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@3174af1 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:30:46 [http-nio-8080-exec-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@689940ea (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:30:49 [http-nio-8080-exec-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@9e3b88b (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:30:52 [http-nio-8080-exec-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@309a3b84 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:30:55 [http-nio-8080-exec-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@2de43b35 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:30:55 [http-nio-8080-exec-1] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-06-25 15:30:55 [http-nio-8080-exec-1] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-06-25 15:30:55 [http-nio-8080-exec-1] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-06-25 15:30:55 [http-nio-8080-exec-1] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-06-25 15:30:55 [http-nio-8080-exec-1] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-06-25 15:30:55 [http-nio-8080-exec-1] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 1
+2026-06-25 15:30:55 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2069714645658734593, query=null
+2026-06-25 15:30:55 [http-nio-8080-exec-2] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-06-25 15:30:55 [http-nio-8080-exec-2] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2069714645658734593(Long)
+2026-06-25 15:30:55 [http-nio-8080-exec-2] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-06-25 15:30:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-06-25 15:30:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2069714645658734593(Long), 10(Long)
+2026-06-25 15:30:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 10
+2026-06-25 15:45:15 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/documents, query=current=1&size=100
+2026-06-25 15:45:18 [http-nio-8080-exec-6] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@3c8c951d (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:45:21 [http-nio-8080-exec-6] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4f25b4e0 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:45:24 [http-nio-8080-exec-6] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@60be8857 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:45:27 [http-nio-8080-exec-6] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@38c2cd20 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:45:30 [http-nio-8080-exec-6] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@22eb1ffd (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-06-25 15:45:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM documents WHERE deleted = 0
+2026-06-25 15:45:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-06-25 15:45:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-06-25 15:45:30 [http-nio-8080-exec-6] DEBUG c.s.mapper.DocumentMapper.selectList - ==>  Preparing: SELECT id,title,category,file_path,chunk_count,status,uploaded_by,created_at,updated_at,deleted FROM documents WHERE deleted=0 LIMIT ?
+2026-06-25 15:45:30 [http-nio-8080-exec-6] DEBUG c.s.mapper.DocumentMapper.selectList - ==> Parameters: 100(Long)
+2026-06-25 15:45:30 [http-nio-8080-exec-6] DEBUG c.s.mapper.DocumentMapper.selectList - <==      Total: 1
