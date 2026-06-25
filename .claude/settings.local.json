@@ -21,7 +21,13 @@
       "Bash(git add *)",
       "Bash(git stash *)",
       "Bash(git push *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(npx vue-tsc *)",
+      "Read(//d D:/Java/代码/**)",
+      "Bash(grep -rn \"circuit_breaker\\\\|CIRCUIT_BREAKER\\\\|circuitBreaker\\\\|熔断\" src/ --include=\"*.java\" --include=\"*.yml\" --include=\"*.yaml\" --include=\"*.properties\" --include=\"*.xml\")",
+      "Read(//c/Users/冯芊肉/.m2/repository/com/hankcs/hanlp/portable-1.8.4/**)",
+      "Bash(jar xf *)",
+      "Bash(javap -p 'com/hankcs/hanlp/HanLP$Config.class')"
     ]
   }
 }

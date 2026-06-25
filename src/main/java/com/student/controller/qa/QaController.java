@@ -52,50 +52,50 @@ public class QaController {
             @RequestParam(required = false) Long conversationId) {
         log.info("流式问答请求: query={}, userId={}, conversationId={}", query, userId, conversationId);
 
-        SseEmitter emitter = new SseEmitter(60000L); // 60秒超时
+        SseEmitter emitter = new SseEmitter(60000L);
 
         CompletableFuture.runAsync(() -> {
             try {
-                // 使用带来源的问答，获取引用信息
                 QaService.QaResponseWithSources response = qaService.answerWithSources(query, userId, conversationId);
-
-                // 模拟流式输出：将回答拆分为多个事件
                 String answer = response.getAnswer();
                 String[] chunks = answer.split("(?<=[。！？；.?!;])");
 
                 for (int i = 0; i < chunks.length; i++) {
                     if (!chunks[i].trim().isEmpty()) {
                         String chunk = chunks[i].trim();
+                        Map<String, Object> textEvent = new java.util.HashMap<>();
+                        textEvent.put("type", "text");
+                        textEvent.put("content", chunk);
                         emitter.send(SseEmitter.event()
                                 .id(String.valueOf(i))
-                                .data(chunk)
-                                .comment("Chunk " + (i + 1) + "/" + chunks.length));
-                        Thread.sleep(100); // 模拟流式延迟
+                                .data(textEvent));
+                        Thread.sleep(80);
                     }
                 }
 
-                // 发送检索路径追踪数据
+                // 发送检索路径
                 if (response.getRetrievalPath() != null && response.getRetrievalPath().getSteps() != null
                         && !response.getRetrievalPath().getSteps().isEmpty()) {
-                    Map<String, Object> retrievalPathEvent = new java.util.HashMap<>();
-                    retrievalPathEvent.put("type", "retrievalPath");
-                    retrievalPathEvent.put("data", response.getRetrievalPath());
+                    Map<String, Object> retrievalEvent = new java.util.HashMap<>();
+                    retrievalEvent.put("type", "retrievalPath");
+                    retrievalEvent.put("data", response.getRetrievalPath());
                     emitter.send(SseEmitter.event()
                             .id("retrievalPath")
-                            .data(retrievalPathEvent));
+                            .data(retrievalEvent));
                 }
 
-                // 发送参考文献引用信息
+                // 发送参考文献
                 if (response.getCitations() != null && !response.getCitations().isEmpty()) {
                     Map<String, Object> sourcesEvent = new java.util.HashMap<>();
                     sourcesEvent.put("type", "sources");
                     sourcesEvent.put("sources", response.getCitations().stream()
                             .map(c -> {
                                 Map<String, Object> src = new java.util.HashMap<>();
-                                src.put("id", c.getDocumentId());
+                                src.put("documentId", c.getDocumentId());
+                                src.put("chunkId", c.getChunkId());
                                 src.put("title", c.getTitle());
-                                src.put("content", c.getSnippet());
-                                src.put("similarity", c.getRelevanceScore());
+                                src.put("snippet", c.getSnippet());
+                                src.put("relevanceScore", c.getRelevanceScore());
                                 return src;
                             })
                             .collect(java.util.stream.Collectors.toList()));
@@ -104,13 +104,29 @@ public class QaController {
                             .data(sourcesEvent));
                 }
 
+                // 发送完成事件
+                Map<String, Object> doneEvent = new java.util.HashMap<>();
+                doneEvent.put("type", "done");
+                doneEvent.put("answer", answer);
+                if (conversationId != null) {
+                    doneEvent.put("conversationId", conversationId);
+                }
                 emitter.send(SseEmitter.event()
                         .id("complete")
-                        .data("")
-                        .comment("问答完成"));
+                        .data(doneEvent));
                 emitter.complete();
             } catch (Exception e) {
                 log.error("流式问答异常", e);
+                try {
+                    Map<String, Object> errorEvent = new java.util.HashMap<>();
+                    errorEvent.put("type", "error");
+                    errorEvent.put("error", e.getMessage());
+                    emitter.send(SseEmitter.event()
+                            .id("error")
+                            .data(errorEvent));
+                } catch (Exception sendEx) {
+                    log.error("发送错误事件失败", sendEx);
+                }
                 emitter.completeWithError(e);
             }
         });

@@ -1,6 +1,7 @@
 package com.student.service.rag.impl;
 
 import com.hankcs.hanlp.HanLP;
+import com.hankcs.hanlp.dictionary.CustomDictionary;
 import com.hankcs.hanlp.seg.common.Term;
 import com.student.service.rag.MedicalEntityRecognitionService;
 import lombok.extern.slf4j.Slf4j;
@@ -9,10 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,6 +35,9 @@ public class MedicalEntityRecognitionServiceImpl implements MedicalEntityRecogni
     // 分类词库：按实体类型组织的THUOCL词条
     private final Map<EntityType, Set<String>> entityDictionary = new ConcurrentHashMap<>();
     private long dictLastLoadedTime = 0;
+
+    // HanLP自定义词典注册状态（避免重复写入）
+    private boolean hanLpDictRegistered = false;
 
     // 统计
     private final AtomicInteger totalQueries = new AtomicInteger(0);
@@ -84,6 +86,8 @@ public class MedicalEntityRecognitionServiceImpl implements MedicalEntityRecogni
                 newDict.put(type, new HashSet<>());
             }
 
+            Map<String, Integer> thuoclTerms = new LinkedHashMap<>();
+
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -91,9 +95,24 @@ public class MedicalEntityRecognitionServiceImpl implements MedicalEntityRecogni
 
                 String[] parts = line.split("\t");
                 String term = parts[0].trim();
-                EntityType type = parts.length > 1 ? parseEntityType(parts[1].trim()) : classifyByFeatures(term);
+                int freq = 0;
+                EntityType type;
+
+                if (parts.length > 1) {
+                    String second = parts[1].trim();
+                    // 第二列可能是频率（纯数字）或实体类型标签
+                    if (second.matches("\\d+")) {
+                        freq = Integer.parseInt(second);
+                        type = classifyByFeatures(term);
+                    } else {
+                        type = parseEntityType(second);
+                    }
+                } else {
+                    type = classifyByFeatures(term);
+                }
 
                 newDict.get(type).add(term);
+                thuoclTerms.put(term, freq);
             }
 
             entityDictionary.clear();
@@ -101,9 +120,46 @@ public class MedicalEntityRecognitionServiceImpl implements MedicalEntityRecogni
             dictLastLoadedTime = lastModified;
 
             log.info("THUOCL医学词库加载成功: 文件={}, 条目数={}", thuoclDictPath, getTotalDictSize());
+
+            // 注入HanLP自定义词典
+            registerHanLpCustomDictionary(thuoclTerms);
         } catch (IOException e) {
             log.error("加载THUOCL词库失败: {}", thuoclDictPath, e);
             loadBuiltinDictionary();
+        }
+    }
+
+    /**
+     * 将THUOCL医学词条注入HanLP自定义词典，确保医学复合词不被切碎
+     */
+    private void registerHanLpCustomDictionary(Map<String, Integer> thuoclTerms) {
+        try {
+            String customDictPath = HanLP.Config.CustomDictionaryPath[0];
+            File dictFile = new File(customDictPath);
+            File parentDir = dictFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
+            // 导出THUOCL词条为HanLP自定义词典格式: word nature freq
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(dictFile), StandardCharsets.UTF_8))) {
+                for (Map.Entry<String, Integer> entry : thuoclTerms.entrySet()) {
+                    String word = entry.getKey();
+                    int freq = entry.getValue();
+                    if (freq <= 0) {
+                        freq = 1000; // 默认频率，确保HanLP优先识别
+                    }
+                    writer.write(word + " nz " + freq);
+                    writer.newLine();
+                }
+            }
+
+            CustomDictionary.reload();
+            hanLpDictRegistered = true;
+            log.info("HanLP自定义词典注入完成: {} 个医学词条已注册", thuoclTerms.size());
+        } catch (IOException e) {
+            log.warn("HanLP自定义词典写入失败，分词准确性可能受影响: {}", e.getMessage());
         }
     }
 

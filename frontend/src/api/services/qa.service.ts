@@ -54,85 +54,117 @@ class QaService {
     }
   }
 
-  // 流式问答
-  streamAsk(
+  // 流式问答（使用 fetch + ReadableStream 支持 POST 和 JWT 认证）
+  async streamAsk(
     request: QaAskRequest,
     onChunk: (chunk: QaStreamChunk) => void,
     onError?: (error: Error) => void,
     onComplete?: () => void
-  ): () => void {
-    // 取消之前的SSE连接
+  ): Promise<() => void> {
+    // 取消之前的连接
     this.stopStreaming()
 
+    this.sseController = new AbortController()
+    const token = authService.getToken()
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'text/event-stream'
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+
+    // 构建表单参数
     const params = new URLSearchParams()
     params.append('query', request.question)
     if (request.userId) params.append('userId', request.userId.toString())
     if (request.conversationId) params.append('conversationId', request.conversationId)
 
-    const token = authService.getToken()
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Accept: 'text/event-stream'
-    }
+    try {
+      const response = await fetch(`${this.baseURL}/qa/stream`, {
+        method: 'POST',
+        headers,
+        body: params.toString(),
+        signal: this.sseController.signal
+      })
 
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
 
-    this.sseController = new AbortController()
-    // signal is available but EventSource doesn't support it directly
-    const _signal = this.sseController.signal
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('浏览器不支持流式响应')
+      }
 
-    const eventSource = new EventSource(
-      `${this.baseURL}/qa/stream?${params.toString()}`,
-      {
-        withCredentials: true,
-        headers
-      } as any
-    )
+      const decoder = new TextDecoder()
+      let buffer = ''
 
-    eventSource.onopen = () => {
-      console.log('SSE连接已建立')
-    }
+      const processLine = (line: string) => {
+        if (line.startsWith('data:')) {
+          const jsonStr = line.substring(5).trim()
+          if (!jsonStr) return
+          try {
+            const parsed = JSON.parse(jsonStr)
 
-    eventSource.onmessage = (event) => {
-      try {
-        const parsed = JSON.parse(event.data)
+            // 处理 retrievalPath 事件
+            if (parsed.type === 'retrievalPath' && parsed.data) {
+              onChunk({ type: 'retrievalPath', retrievalPath: parsed.data })
+              return
+            }
 
-        // 处理 retrievalPath 事件（特殊格式：{ type, data }）
-        if (parsed.type === 'retrievalPath' && parsed.data) {
-          const chunk: QaStreamChunk = {
-            type: 'retrievalPath',
-            retrievalPath: parsed.data
-          }
-          onChunk(chunk)
-          return
-        }
+            const chunk: QaStreamChunk = parsed
+            onChunk(chunk)
 
-        const chunk: QaStreamChunk = parsed
-        onChunk(chunk)
-
-        if (chunk.type === 'done' || chunk.type === 'error') {
-          eventSource.close()
-          if (chunk.type === 'error') {
-            onError?.(new Error(chunk.error || '流式问答错误'))
-          } else {
-            onComplete?.()
+            if (chunk.type === 'done') {
+              this.sseController = null
+              onComplete?.()
+            } else if (chunk.type === 'error') {
+              this.sseController = null
+              onError?.(new Error(chunk.error || '流式问答错误'))
+            }
+          } catch {
+            // 非 JSON 数据，忽略
           }
         }
-      } catch (error) {
-        console.error('解析SSE数据失败:', error)
-        onError?.(new Error('解析响应数据失败'))
+      }
+
+      // 循环读取 SSE 数据流
+      const readLoop = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            // 保留最后一个可能不完整的行
+            buffer = lines.pop() || ''
+
+            for (const line of lines) {
+              processLine(line)
+            }
+          }
+          // 处理剩余的 buffer
+          if (buffer.trim()) {
+            processLine(buffer)
+          }
+        } catch (err: any) {
+          if (err.name !== 'AbortError') {
+            console.error('读取流式数据失败:', err)
+            onError?.(new Error('流式连接中断'))
+          }
+        }
+      }
+
+      readLoop()
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error('流式请求失败:', err)
+        onError?.(err instanceof Error ? err : new Error('流式连接失败'))
       }
     }
 
-    eventSource.onerror = (error) => {
-      console.error('SSE连接错误:', error)
-      eventSource.close()
-      onError?.(new Error('流式连接中断'))
-    }
-
-    // 返回取消函数
     return () => {
       this.stopStreaming()
     }

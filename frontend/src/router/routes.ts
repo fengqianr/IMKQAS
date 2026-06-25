@@ -39,13 +39,13 @@ export const routes: RouteRecordRaw[] = [
     path: '/qa',
     name: 'qa',
     component: QaView,
-    meta: { title: '智能问答', requiresAuth: true, noLayout: true }
+    meta: { title: '智能问答', requiresAuth: false, noLayout: true }
   },
   {
     path: '/knowledge',
     name: 'knowledge',
     component: KnowledgeView,
-    meta: { title: '知识库管理', requiresAuth: true, noLayout: true }
+    meta: { title: '知识库管理', requiresAuth: false, noLayout: true }
   },
   {
     path: '/:pathMatch(.*)*',

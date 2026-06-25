@@ -50,7 +50,7 @@
         </nav>
 
         <div class="qa-sidebar-footer">
-          <div class="qa-sidebar-footer-item">
+          <div @click="deleteActiveSession" class="qa-sidebar-footer-item qa-clickable">
             <span class="material-symbols-outlined text-lg">delete</span>
             回收站
           </div>
@@ -92,7 +92,16 @@
                     <span class="qa-ai-name">PRECISION AI 临床决策支持</span>
                   </div>
                   <div class="qa-message-ai">
-                    <div class="qa-ai-content text-sm text-on-surface leading-relaxed" v-html="message.content"></div>
+                    <!-- 思考中状态 -->
+                    <div v-if="!message.content" class="qa-thinking">
+                      <span class="qa-thinking-text">正在思考中</span>
+                      <span class="qa-thinking-dots">
+                        <span class="qa-thinking-dot">.</span>
+                        <span class="qa-thinking-dot">.</span>
+                        <span class="qa-thinking-dot">.</span>
+                      </span>
+                    </div>
+                    <div v-else class="qa-ai-content text-sm text-on-surface leading-relaxed" v-html="message.content"></div>
                   </div>
                 </div>
               </div>
@@ -159,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { authService } from '@/api/services/auth.service'
@@ -194,6 +203,25 @@ const inputText = ref('')
 // 检索路径步骤（初始为空，收到API响应后填充）
 const retrievalSteps = ref<RetrievalStep[]>([])
 const expandedSteps = ref(false)
+
+// 删除当前活跃会话（移入回收站）
+const deleteActiveSession = async () => {
+  if (!activeSessionId.value) return
+  try {
+    await conversationService.deleteConversation(activeSessionId.value)
+    // 从侧边栏移除
+    sessions.value = sessions.value.filter(s => s.id !== activeSessionId.value)
+    // 切换到第一个剩余会话
+    if (sessions.value.length > 0) {
+      await switchSession(sessions.value[0].id)
+    } else {
+      activeSessionId.value = null
+      messages.value = []
+    }
+  } catch (error) {
+    console.error('删除对话失败:', error)
+  }
+}
 
 // 根据步骤状态和类型确定显示颜色
 const getStepColor = (step: RetrievalStep): string => {
@@ -260,18 +288,26 @@ const loadConversations = async () => {
     }
   } catch (error) {
     console.error('加载会话列表失败:', error)
-    // 使用模拟数据作为后备
-    sessions.value = [
-      { id: '1', title: '今日查房建议', icon: 'clinical_notes' },
-      { id: '2', title: '术前风险评估', icon: 'medical_services' },
-      { id: '3', title: '药物相互作用', icon: 'pill' },
-      { id: '4', title: '病历自动补全', icon: 'history_edu' }
-    ]
-    if (!activeSessionId.value) {
-      activeSessionId.value = '1'
-    }
+    sessions.value = []
   } finally {
     loadingSessions.value = false
+  }
+}
+
+// 从 sourceReferences JSON 构建参考文献 HTML
+const buildReferenceSection = (sourceReferencesJson: string): string => {
+  try {
+    const refs = JSON.parse(sourceReferencesJson)
+    if (!Array.isArray(refs) || refs.length === 0) return ''
+    return `
+<div class="mt-6 pt-4 border-t border-outline-variant">
+<div class="text-[10px] text-on-surface-variant font-bold uppercase mb-3 tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-xs">auto_stories</span>数据源与参考文献</div>
+<div class="flex flex-wrap gap-2">
+${refs.map((ref: any) => `<span class="px-2 py-1 bg-surface-container text-[11px] text-on-surface-variant rounded flex items-center gap-1 cursor-pointer hover:bg-secondary-fixed transition-colors" title="${ref.snippet || ''}">${ref.label}</span>`).join('\n')}
+</div>
+</div>`
+  } catch {
+    return ''
   }
 }
 
@@ -290,30 +326,21 @@ const loadMessages = async (sessionId: string) => {
     loadingMessages.value = true
     // sessionId就是conversationId
     const messagesList = await conversationService.getMessages(sessionId)
-    messages.value = messagesList.map(msg => ({
-      id: msg.id.toString(),
-      role: msg.role.toLowerCase() as 'user' | 'assistant',
-      content: msg.content,
-      sourceReferences: msg.sourceReferences
-    }))
+    messages.value = messagesList.map(msg => {
+      let content = msg.content
+      if (msg.role === 'assistant' && msg.sourceReferences) {
+        content += buildReferenceSection(msg.sourceReferences)
+      }
+      return {
+        id: msg.id.toString(),
+        role: msg.role.toLowerCase() as 'user' | 'assistant',
+        content,
+        sourceReferences: msg.sourceReferences
+      }
+    })
   } catch (error) {
     console.error('加载消息失败:', error)
-    // 使用模拟数据作为后备
-    messages.value = [
-      { id: '1', role: 'user', content: '请分析患者王某（65岁，男）在服用华法林期间出现轻微牙龈出血的临床风险，并给出调整建议。' },
-      { id: '2', role: 'assistant', content: `根据最新的《华法林临床应用中国专家共识》，针对该患者的情况，分析如下：<ul class="space-y-3 mb-6">
-<li class="flex gap-2"><span class="text-brand font-bold">1.</span><span><strong class="text-brand">当前风险等级：</strong>轻微出血（牙龈出血），属于临床常见不良反应。需首先核查患者最新的 INR（国际标准化比值）。</span></li>
-<li class="flex gap-2"><span class="text-brand font-bold">2.</span><span><strong class="text-brand">INR 阈值参考：</strong>若 INR &lt; 3.0，建议维持原剂量，并监测牙龈状况；若 INR 在 3.0-4.5 之间，建议减少剂量或停药一次。</span></li>
-<li class="flex gap-2"><span class="text-brand font-bold">3.</span><span><strong class="text-brand">相互作用核查：</strong>系统检测到患者近期曾开具阿司匹林，两者合用显著增加出血风险，建议评估双联抗栓的必要性。</span></li>
-</ul>
-<div class="mt-6 pt-4 border-t border-outline-variant">
-<div class="text-[10px] text-on-surface-variant font-bold uppercase mb-3 tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-xs">auto_stories</span>数据源与参考文献</div>
-<div class="flex flex-wrap gap-2">
-<span class="px-2 py-1 bg-surface-container text-[11px] text-on-surface-variant rounded flex items-center gap-1 cursor-pointer hover:bg-secondary-fixed transition-colors">[1] 华法林抗凝治疗中国专家共识 (2023)</span>
-<span class="px-2 py-1 bg-surface-container text-[11px] text-on-surface-variant rounded flex items-center gap-1 cursor-pointer hover:bg-secondary-fixed transition-colors">[2] 临床药物相互作用数据库 v4.2</span>
-</div>
-</div>` }
-    ]
+    messages.value = []
   } finally {
     loadingMessages.value = false
   }
@@ -322,6 +349,8 @@ const loadMessages = async (sessionId: string) => {
 // 切换会话
 const switchSession = async (sessionId: string) => {
   activeSessionId.value = sessionId
+  retrievalSteps.value = []
+  expandedSteps.value = false
   await loadMessages(sessionId)
 }
 
@@ -358,7 +387,7 @@ const createNewSession = async () => {
   }
 }
 
-// 发送消息
+// 发送消息（流式）
 const sendMessage = async () => {
   const content = inputText.value.trim()
   if (!content || !activeSessionId.value) return
@@ -370,86 +399,105 @@ const sendMessage = async () => {
     content: content
   }
   messages.value.push(userMessage)
-
-  // 清空输入框
   inputText.value = ''
+  // 清空上一轮的检索路径，等待本次新路径
+  retrievalSteps.value = []
+  expandedSteps.value = false
+
+  // 创建AI消息占位
+  const aiMsgId = (Date.now() + 1).toString()
+  const aiMessage: ChatMessage = {
+    id: aiMsgId,
+    role: 'assistant',
+    content: ''
+  }
+  messages.value.push(aiMessage)
+  let streamingContent = ''
+  let pendingSources: any[] = []
 
   try {
     // 保存用户消息到后端
-    await conversationService.createMessage({
+    conversationService.createMessage({
       conversationId: activeSessionId.value,
       content: content,
       role: 'user'
-    })
+    }).catch(err => console.error('保存用户消息失败:', err))
 
-    // 调用QA服务获取AI回复
-    const response = await qaService.ask({
-      question: content,
-      conversationId: activeSessionId.value,
-      userId: authService.getToken() ? 1 : undefined
-    })
-
-    // 从响应中提取参考文献引用
-    const sourceRefs = response.citations?.map((c, i) => ({
-      id: c.documentId,
-      chunkId: c.chunkId,
-      label: `[${i + 1}] ${c.title}`,
-      snippet: c.snippet,
-      score: c.relevanceScore
-    })) || []
-
-    // 构建带参考文献的AI回复内容
-    let aiContent = response.answer
-    if (sourceRefs.length > 0) {
-      const refSection = `
-<div class="mt-6 pt-4 border-t border-outline-variant">
-<div class="text-[10px] text-on-surface-variant font-bold uppercase mb-3 tracking-widest flex items-center gap-2"><span class="material-symbols-outlined text-xs">auto_stories</span>数据源与参考文献</div>
-<div class="flex flex-wrap gap-2">
-${sourceRefs.map(ref => `<span class="px-2 py-1 bg-surface-container text-[11px] text-on-surface-variant rounded flex items-center gap-1 cursor-pointer hover:bg-secondary-fixed transition-colors" title="${ref.snippet}">${ref.label}</span>`).join('\n')}
-</div>
-</div>`
-      aiContent += refSection
+    // 首条消息时自动更新对话标题
+    const isFirstMessage = messages.value.length === 2 // 用户消息 + AI占位
+    if (isFirstMessage) {
+      const newTitle = content.length > 30 ? content.substring(0, 30) + '...' : content
+      conversationService.updateConversationTitle(activeSessionId.value, newTitle)
+        .then(() => {
+          const session = sessions.value.find(s => s.id === activeSessionId.value)
+          if (session) session.title = newTitle
+        })
+        .catch(() => {})
     }
 
-    // 添加AI回复到UI
-    const aiMessage: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: aiContent
-    }
-    messages.value.push(aiMessage)
-
-    // 保存AI回复和引用到后端
-    await conversationService.createMessage({
-      conversationId: activeSessionId.value,
-      content: response.answer,
-      role: 'assistant',
-      sourceReferences: JSON.stringify(sourceRefs)
-    })
-
-    // 更新右侧知识检索路径面板
-    if (response.retrievalPath && response.retrievalPath.steps.length > 0) {
-      retrievalSteps.value = response.retrievalPath.steps
-      expandedSteps.value = false
-    } else if (response.citations && response.citations.length > 0) {
-      // 降级：从现有响应字段构建简单步骤
-      retrievalSteps.value = [
-        { stepName: '向量语义库检索', stepOrder: 1, durationMs: 0, inputCount: 0,
-          outputCount: response.citations.length, status: 'SUCCESS' },
-        { stepName: 'LLM推理生成', stepOrder: 2, durationMs: 0, inputCount: response.citations.length,
-          outputCount: 1, status: 'SUCCESS' }
-      ]
-    }
-
+    // 调用流式问答
+    qaService.streamAsk(
+      {
+        question: content,
+        conversationId: activeSessionId.value,
+        userId: authService.getToken() ? 1 : undefined
+      },
+      // onChunk
+      (chunk) => {
+        if (chunk.type === 'text' && chunk.content) {
+          streamingContent += chunk.content
+          const msg = messages.value.find(m => m.id === aiMsgId)
+          if (msg) msg.content = streamingContent
+        } else if (chunk.type === 'sources' && chunk.sources) {
+          pendingSources = chunk.sources
+        } else if (chunk.type === 'retrievalPath' && chunk.retrievalPath) {
+          retrievalSteps.value = chunk.retrievalPath.steps
+          expandedSteps.value = false
+        }
+      },
+      // onError
+      (error) => {
+        const msg = messages.value.find(m => m.id === aiMsgId)
+        if (msg && !streamingContent) {
+          msg.content = `抱歉，处理您的请求时出现错误：${error.message}。请稍后重试。`
+        }
+      },
+      // onComplete
+      async () => {
+        // 附加参考文献
+        if (pendingSources.length > 0) {
+          const sourceRefs = pendingSources.map((s: any, i: number) => ({
+            id: s.documentId || s.id,
+            chunkId: s.chunkId,
+            label: `[${i + 1}] ${s.title}`,
+            snippet: s.snippet || s.content,
+            score: s.relevanceScore || s.similarity
+          }))
+          const refSection = buildReferenceSection(JSON.stringify(sourceRefs))
+          const msg = messages.value.find(m => m.id === aiMsgId)
+          if (msg) msg.content = streamingContent + refSection
+          // 异步保存AI消息
+          conversationService.createMessage({
+            conversationId: activeSessionId.value!,
+            content: streamingContent,
+            role: 'assistant',
+            sourceReferences: JSON.stringify(sourceRefs)
+          }).catch(err => console.error('保存AI消息失败:', err))
+        } else {
+          conversationService.createMessage({
+            conversationId: activeSessionId.value!,
+            content: streamingContent,
+            role: 'assistant'
+          }).catch(err => console.error('保存AI消息失败:', err))
+        }
+      }
+    )
   } catch (error) {
     console.error('发送消息失败:', error)
-    // 添加错误提示消息
-    const errorMessage: ChatMessage = {
-      id: (Date.now() + 2).toString(),
-      role: 'assistant',
-      content: `抱歉，处理您的请求时出现错误：${(error as Error).message}。请稍后重试。`
+    const msg = messages.value.find(m => m.id === aiMsgId)
+    if (msg && !streamingContent) {
+      msg.content = `抱歉，处理您的请求时出现错误：${(error as Error).message}。请稍后重试。`
     }
-    messages.value.push(errorMessage)
   }
 }
 
@@ -507,5 +555,53 @@ onMounted(() => {
     rgba(255, 255, 255, 0.4) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ===== 可点击元素 ===== */
+.qa-clickable {
+  cursor: pointer;
+}
+
+/* ===== 思考中动画 ===== */
+.qa-thinking {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+.qa-thinking-text {
+  font-size: 14px;
+  color: #727783;
+}
+
+.qa-thinking-dots {
+  display: inline-flex;
+}
+
+.qa-thinking-dot {
+  font-size: 18px;
+  font-weight: 700;
+  color: #00478d;
+  animation: qa-dot-bounce 1.4s infinite both;
+}
+
+.qa-thinking-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.qa-thinking-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes qa-dot-bounce {
+  0%, 80%, 100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
 }
 </style>

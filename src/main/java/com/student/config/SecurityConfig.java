@@ -75,8 +75,9 @@ public class SecurityConfig {
                                 "/api/qa/**",
                                 "/api/conversations/**",
                                 "/api/messages/**",
-                                // 数据管理端点
-                                "/api/document-chunks/clear-all",
+                                "/api/documents/**",
+                                "/api/rag/**",
+                                "/api/document-chunks/**",
                                 // 静态资源
                                 "/favicon.ico",
                                 "/error"

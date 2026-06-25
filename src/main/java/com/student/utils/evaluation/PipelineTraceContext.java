@@ -93,6 +93,8 @@ public final class PipelineTraceContext {
         public void start() {
             this.pipelineStart = Instant.now();
             this.finished = false;
+            this.steps.clear();
+            this.metadata.clear();
         }
 
         public void finish() {

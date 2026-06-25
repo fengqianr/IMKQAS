@@ -8,7 +8,9 @@ import type {
   ConversationListResponse,
   ConversationResponse,
   MessageListResponse,
-  MessageResponse
+  MessageResponse,
+  TrashListResponse,
+  RestoreResponse
 } from '../types/qa.types'
 import { authService } from './auth.service'
 
@@ -96,8 +98,8 @@ class ConversationService {
   // 更新对话标题
   async updateConversationTitle(conversationId: string, title: string): Promise<Conversation> {
     try {
-      const response = await axios.patch<ConversationResponse>(
-        `${this.baseURL}/conversations/${conversationId}/title`,
+      const response = await axios.put<ConversationResponse>(
+        `${this.baseURL}/conversations/${conversationId}`,
         { title },
         {
           headers: {
@@ -157,10 +159,9 @@ class ConversationService {
   async getMessages(conversationId: string): Promise<Message[]> {
     try {
       const response = await axios.get<MessageListResponse>(
-        `${this.baseURL}/messages`,
+        `${this.baseURL}/messages/by-conversation/${conversationId}`,
         {
-          headers: this.getAuthHeaders(),
-          params: { conversationId }
+          headers: this.getAuthHeaders()
         }
       )
 
@@ -218,6 +219,46 @@ class ConversationService {
       return response.data.success
     } catch (error: any) {
       console.error('删除消息失败:', error)
+      throw new Error(error.response?.data?.message || error.message || '网络错误')
+    }
+  }
+
+  // 获取回收站中的已删除对话
+  async getDeletedConversations(userId?: number): Promise<Conversation[]> {
+    try {
+      const response = await axios.get<TrashListResponse>(
+        `${this.baseURL}/conversations/trash`,
+        {
+          params: userId ? { userId } : {},
+          headers: this.getAuthHeaders()
+        }
+      )
+
+      if (response.data.success && response.data.data) {
+        return response.data.data
+      } else {
+        throw new Error(response.data.message || '获取回收站列表失败')
+      }
+    } catch (error: any) {
+      console.error('获取回收站列表失败:', error)
+      throw new Error(error.response?.data?.message || error.message || '网络错误')
+    }
+  }
+
+  // 从回收站恢复对话
+  async restoreConversation(conversationId: string): Promise<boolean> {
+    try {
+      const response = await axios.put<RestoreResponse>(
+        `${this.baseURL}/conversations/${conversationId}/restore`,
+        {},
+        {
+          headers: this.getAuthHeaders()
+        }
+      )
+
+      return response.data.success
+    } catch (error: any) {
+      console.error('恢复对话失败:', error)
       throw new Error(error.response?.data?.message || error.message || '网络错误')
     }
   }

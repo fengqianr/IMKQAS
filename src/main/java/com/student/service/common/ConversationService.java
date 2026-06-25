@@ -11,5 +11,18 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @version 1.0
  */
 public interface ConversationService extends IService<Conversation> {
-    // 可以添加额外的业务方法声明
+
+    /**
+     * 查询已删除（回收站）的对话列表
+     * @param userId 用户ID，为null时查询所有
+     * @return 已删除的对话列表
+     */
+    java.util.List<Conversation> listDeleted(Long userId);
+
+    /**
+     * 从回收站恢复对话
+     * @param id 对话ID
+     * @return 是否恢复成功
+     */
+    boolean restoreConversation(Long id);
 }

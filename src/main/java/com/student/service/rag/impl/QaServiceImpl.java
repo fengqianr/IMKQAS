@@ -264,8 +264,9 @@ public class QaServiceImpl implements QaService {
         } catch (Exception e) {
             log.error("问答异常: query={}, userId={}, conversationId={}", query, userId, conversationId, e);
             failedQueries.incrementAndGet();
-            PipelineTraceContext.clear();
             return getFallbackResponse(query, startTime);
+        } finally {
+            PipelineTraceContext.clear();
         }
     }
 
@@ -501,12 +502,13 @@ public class QaServiceImpl implements QaService {
             log.error("带来源问答异常: query={}, userId={}, conversationId={}",
                     query, userId, conversationId, e);
             failedQueries.incrementAndGet();
-            PipelineTraceContext.clear();
             QaResponse fallback = getFallbackResponse(query, startTime);
             return new QaResponseWithSources(
                     fallback.getQuery(), fallback.getAnswer(), fallback.getRetrievedContext(),
                     fallback.getConfidence(), fallback.getProcessingTime(), fallback.getModelUsed(),
                     Collections.emptyList(), fallback.getIntentType(), fallback.getQuestionnaireSuggestion(), null);
+        } finally {
+            PipelineTraceContext.clear();
         }
     }
 

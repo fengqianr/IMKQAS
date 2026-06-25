@@ -2,6 +2,7 @@ package com.student.controller;
 
 import com.student.entity.Conversation;
 import com.student.entity.Message;
+import com.student.dto.ApiResponse;
 import com.student.service.common.ConversationService;
 import com.student.service.common.MessageService;
 import com.student.service.export.ConversationExportService;
@@ -111,6 +112,31 @@ public class ConversationController {
         wrapper.eq("user_id", userId);
         wrapper.orderByDesc("created_at");
         return service.page(new Page<>(current, size), wrapper);
+    }
+
+    /**
+     * 获取回收站中的对话列表
+     * @param userId 用户ID（可选）
+     * @return 已删除的对话列表
+     */
+    @GetMapping("/trash")
+    public ApiResponse<List<Conversation>> listTrash(@RequestParam(required = false) Long userId) {
+        List<Conversation> deleted = service.listDeleted(userId);
+        return ApiResponse.success(deleted);
+    }
+
+    /**
+     * 从回收站恢复对话
+     * @param id 对话ID
+     * @return 操作结果
+     */
+    @PutMapping("/{id}/restore")
+    public ApiResponse<Void> restoreConversation(@PathVariable Long id) {
+        boolean restored = service.restoreConversation(id);
+        if (restored) {
+            return ApiResponse.success();
+        }
+        return ApiResponse.error("恢复失败，对话不存在或已被永久删除");
     }
 
     /**

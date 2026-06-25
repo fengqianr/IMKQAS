@@ -88,6 +88,13 @@ public class IntentRouterImpl implements IntentRouter {
     private static final int CIRCUIT_THRESHOLD = 5;
     private static final long CIRCUIT_COOLDOWN_MS = 30_000;
 
+    // Redis 断路器（第1次连接超时即熔断，保护下游）
+    private final AtomicInteger redisFailures = new AtomicInteger(0);
+    private final AtomicLong redisLastFailureTime = new AtomicLong(0);
+    private final AtomicBoolean redisCircuitOpen = new AtomicBoolean(false);
+    private static final int REDIS_CIRCUIT_THRESHOLD = 1;
+    private static final long REDIS_CIRCUIT_COOLDOWN_MS = 30_000;
+
     @Override
     public IntentType classify(String userInput) {
         if (userInput == null || userInput.isBlank()) {
@@ -174,24 +181,37 @@ public class IntentRouterImpl implements IntentRouter {
      */
     private void cacheIntent(String normalized, IntentType intent) {
         intentCache.put(normalized, intent);
+        if (!isRedisCircuitAllowed()) {
+            log.debug("Redis断路器已打开，跳过Redis写入");
+            return;
+        }
         try {
             redisService.set(REDIS_KEY_PREFIX + normalized, intent.name(), 7200L);
+            recordRedisCircuitSuccess();
         } catch (Exception e) {
-            log.debug("Redis缓存写入失败（不影响主流程）: {}", e.getMessage());
+            log.warn("Redis缓存写入失败: {}", e.getMessage());
+            recordRedisCircuitFailure();
         }
     }
 
     /**
-     * 从Redis读取缓存
+     * 从Redis读取缓存（带熔断保护）
      */
     private IntentType getFromRedis(String normalized) {
+        if (!isRedisCircuitAllowed()) {
+            log.debug("Redis断路器已打开，跳过Redis读取");
+            return null;
+        }
         try {
             Object val = redisService.get(REDIS_KEY_PREFIX + normalized);
             if (val instanceof String) {
+                recordRedisCircuitSuccess();
                 return IntentType.valueOf((String) val);
             }
+            recordRedisCircuitSuccess();
         } catch (Exception e) {
-            log.debug("Redis缓存读取失败（不影响主流程）: {}", e.getMessage());
+            log.warn("Redis缓存读取失败: {}", e.getMessage());
+            recordRedisCircuitFailure();
         }
         return null;
     }
@@ -249,7 +269,7 @@ public class IntentRouterImpl implements IntentRouter {
         return IntentType.KNOWLEDGE_QUERY;
     }
 
-    // ==================== 断路器 ====================
+    // ==================== LLM 断路器 ====================
 
     private boolean isCircuitAllowed() {
         if (!llmCircuitOpen.get()) return true;
@@ -271,6 +291,31 @@ public class IntentRouterImpl implements IntentRouter {
         if (llmFailures.incrementAndGet() >= CIRCUIT_THRESHOLD) {
             llmCircuitOpen.set(true);
             log.warn("LLM断路器打开: 连续失败{}次", CIRCUIT_THRESHOLD);
+        }
+    }
+
+    // ==================== Redis 断路器 ====================
+
+    private boolean isRedisCircuitAllowed() {
+        if (!redisCircuitOpen.get()) return true;
+        if (System.currentTimeMillis() - redisLastFailureTime.get() > REDIS_CIRCUIT_COOLDOWN_MS) {
+            redisCircuitOpen.set(false);
+            redisFailures.set(0);
+            log.info("Redis断路器进入半开状态，允许试探请求");
+            return true;
+        }
+        return false;
+    }
+
+    private void recordRedisCircuitSuccess() {
+        redisFailures.set(0);
+    }
+
+    private void recordRedisCircuitFailure() {
+        redisLastFailureTime.set(System.currentTimeMillis());
+        if (redisFailures.incrementAndGet() >= REDIS_CIRCUIT_THRESHOLD) {
+            redisCircuitOpen.set(true);
+            log.warn("Redis断路器打开: 连续失败{}次（第1次连接超时即熔断）", REDIS_CIRCUIT_THRESHOLD);
         }
     }
 

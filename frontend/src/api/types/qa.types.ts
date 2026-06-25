@@ -196,3 +196,5 @@ export type ConversationResponse = ApiResponse<Conversation>
 export type MessageListResponse = ApiResponse<Message[]>
 export type MessageResponse = ApiResponse<Message>
 export type DocumentProcessResponseWrapper = ApiResponse<DocumentProcessResponse>
+export type TrashListResponse = ApiResponse<Conversation[]>
+export type RestoreResponse = ApiResponse<void>
