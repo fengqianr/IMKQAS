@@ -278,7 +278,7 @@
 - [阶段2执行计划](implementation/phase2-implementation-plan.md)
 - [测试报告](testing-report.md) - 项目测试状态与覆盖率
 - [RAG管线优化方案 v2](../rag-pipeline-optimization-v2.md) - 检索质量+缓存架构提升
-- [RAG管线代码链路全追踪](ragTrace) - 以代码执行路径为主线的完整RAG管线文档
+- [RAG管线代码链路全追踪](RAG 检索管线) - 以代码执行路径为主线的完整RAG管线文档
 - [CLAUDE.md](../../CLAUDE.md) - 项目开发规范
 
 ---
