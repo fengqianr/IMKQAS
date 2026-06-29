@@ -91,8 +91,8 @@
                     </div>
                     <span class="qa-ai-name">PRECISION AI 临床决策支持</span>
                   </div>
-                  <div class="qa-message-ai">
-                    <!-- 思考中状态 -->
+                  <div v-if="message.content || !message.questionnaire" class="qa-message-ai">
+                    <!-- 思考中状态（仅当无内容且无问卷卡片时显示） -->
                     <div v-if="!message.content" class="qa-thinking">
                       <span class="qa-thinking-text">正在思考中</span>
                       <span class="qa-thinking-dots">
@@ -103,6 +103,101 @@
                     </div>
                     <div v-else class="qa-ai-content text-sm text-on-surface leading-relaxed" v-html="message.content"></div>
                   </div>
+                  <!-- 问卷建议卡片 -->
+                  <div v-if="message.questionnaire?.type === 'suggestion'" class="qa-questionnaire-card qa-suggestion-card">
+                    <div class="qa-suggestion-header">
+                      <span class="material-symbols-outlined qa-suggestion-icon">assignment</span>
+                      <div>
+                        <div class="qa-suggestion-title">{{ message.questionnaire.suggestionText || '检测到您可能需要填写量表' }}</div>
+                        <div v-if="message.questionnaire.questionnaireTitle" class="qa-suggestion-subtitle">
+                          建议填写：{{ message.questionnaire.questionnaireTitle }}
+                        </div>
+                        <div v-if="message.questionnaire.confidence" class="qa-suggestion-confidence">
+                          匹配置信度：{{ (message.questionnaire.confidence * 100).toFixed(0) }}%
+                        </div>
+                      </div>
+                    </div>
+                    <div class="qa-suggestion-actions">
+                      <button @click="startInterviewFlow(message.questionnaire.questionnaireId!, message.questionnaire.questionnaireTitle!)"
+                              :disabled="interviewActive"
+                              class="qa-suggestion-btn qa-suggestion-btn-primary">
+                        <span class="material-symbols-outlined text-sm">play_arrow</span>
+                        {{ interviewActive ? '填表中...' : '开始填表' }}
+                      </button>
+                      <button @click="cancelInterview" class="qa-suggestion-btn qa-suggestion-btn-secondary">
+                        忽略
+                      </button>
+                    </div>
+                  </div>
+                  <!-- 问卷问题卡片 -->
+                  <div v-if="message.questionnaire?.type === 'question'" class="qa-questionnaire-card qa-question-card">
+                    <div class="qa-question-progress-bar">
+                      <div class="qa-question-progress-fill" :style="{ width: ((message.questionnaire.currentIndex! + 1) / message.questionnaire.totalQuestions! * 100) + '%' }"></div>
+                    </div>
+                    <div class="qa-question-progress-text">
+                      问题 {{ message.questionnaire.currentIndex! + 1 }} / {{ message.questionnaire.totalQuestions }}
+                    </div>
+                    <div class="qa-question-text">{{ message.questionnaire.questionText }}</div>
+                    <div class="qa-question-hint">
+                      <span class="material-symbols-outlined qa-hint-icon">info</span>
+                      可直接点击下方选项，也可在输入框中用自然语言描述您的情况
+                    </div>
+                    <div class="qa-question-options">
+                      <button v-for="opt in message.questionnaire.options"
+                              :key="opt.code"
+                              @click="submitInterviewAnswer(opt.code, opt.display)"
+                              :disabled="interviewLoading"
+                              class="qa-option-btn">
+                        <span class="qa-option-code">{{ opt.code }}</span>
+                        <span class="qa-option-display">{{ opt.display }}</span>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- 问卷完成卡片 -->
+                  <div v-if="message.questionnaire?.type === 'completion'" class="qa-questionnaire-card qa-completion-card">
+                    <div class="qa-completion-header">
+                      <span class="material-symbols-outlined qa-completion-icon">check_circle</span>
+                      <span class="qa-completion-title">问卷填写完成</span>
+                    </div>
+                    <div v-if="message.questionnaire.severity" class="qa-completion-score">
+                      <span class="qa-completion-score-label">评估结果：</span>
+                      <span :class="['qa-severity-badge', 'qa-severity-' + getSeverityLevel(message.questionnaire.severity)]">
+                        {{ message.questionnaire.severity }}
+                      </span>
+                    </div>
+                    <div v-if="message.questionnaire.totalScore !== undefined" class="qa-completion-score-num">
+                      总分：{{ message.questionnaire.totalScore }} / {{ message.questionnaire.maxScore }}
+                    </div>
+                    <div v-if="message.questionnaire.interpretation" class="qa-completion-interpretation">
+                      {{ message.questionnaire.interpretation }}
+                    </div>
+                    <div v-if="message.questionnaire.analysisSummary" class="qa-analysis-summary">
+                      <div class="qa-analysis-summary-title">AI 分析摘要</div>
+                      <div class="qa-analysis-summary-content">{{ message.questionnaire.analysisSummary }}</div>
+                    </div>
+                    <button v-if="message.questionnaire.analysisId"
+                            @click="showDetailedReport(message)"
+                            class="qa-report-btn">
+                      <span class="material-symbols-outlined text-sm">description</span>
+                      查看详细评估报告
+                    </button>
+                    <div v-if="message.questionnaire.completionMessage" class="qa-completion-message">
+                      {{ message.questionnaire.completionMessage }}
+                    </div>
+                  </div>
+                  <!-- 安全警报卡片 -->
+                  <div v-if="message.questionnaire?.type === 'safety_alert'" class="qa-questionnaire-card qa-safety-alert-card">
+                    <div class="qa-safety-alert-header">
+                      <span class="material-symbols-outlined qa-safety-alert-icon">warning</span>
+                      <span class="qa-safety-alert-title">安全提醒</span>
+                    </div>
+                    <div v-if="message.questionnaire.reason" class="qa-safety-alert-reason">
+                      {{ message.questionnaire.reason }}
+                    </div>
+                    <div v-if="message.questionnaire.alertMessage" class="qa-safety-alert-message">
+                      {{ message.questionnaire.alertMessage }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -111,11 +206,14 @@
         <!-- 输入区域 -->
         <div class="qa-input-area">
           <div class="qa-input-wrapper">
-            <textarea v-model="inputText" @keyup.enter="sendMessage" class="qa-input-field"
+            <textarea v-model="inputText" @keyup.enter="sendMessage"
+                      @compositionstart="isComposing = true"
+                      @compositionend="isComposing = false"
+                      class="qa-input-field"
                       placeholder="输入临床问题或上传病例附件..." rows="1"></textarea>
             <div class="qa-input-actions">
               <button class="qa-input-btn material-symbols-outlined">attach_file</button>
-              <button @click="sendMessage" class="qa-send-btn">
+              <button type="button" @click="sendMessage" class="qa-send-btn">
                 <span class="material-symbols-outlined text-sm">send</span>
               </button>
             </div>
@@ -164,15 +262,101 @@
       </aside>
 
     </div>
+
+    <!-- 详细评估报告弹窗 -->
+    <div v-if="showReportDialog" class="qa-report-overlay" @click.self="showReportDialog = false">
+      <div class="qa-report-dialog">
+        <div class="qa-report-dialog-header">
+          <h3 class="qa-report-dialog-title">AI 详细评估报告</h3>
+          <button @click="showReportDialog = false" class="qa-report-dialog-close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div v-if="reportLoading" class="qa-report-loading">
+          <span class="qa-thinking-text">正在加载报告...</span>
+        </div>
+        <div v-else-if="currentReport" class="qa-report-content">
+          <!-- 摘要 -->
+          <div class="qa-report-section">
+            <h4 class="qa-report-section-title">评估摘要</h4>
+            <p class="qa-report-text">{{ currentReport.summary }}</p>
+          </div>
+          <!-- 风险评估 -->
+          <div v-if="currentReport.riskAssessment" class="qa-report-section">
+            <h4 class="qa-report-section-title">风险评估</h4>
+            <div class="qa-report-risk">
+              <span :class="['qa-severity-badge', 'qa-severity-' + getSeverityLevel(currentReport.riskAssessment.level)]">
+                {{ currentReport.riskAssessment.level }}
+              </span>
+              <p class="qa-report-text">{{ currentReport.riskAssessment.description }}</p>
+              <p v-if="currentReport.riskAssessment.requiresUrgentAttention" class="qa-report-urgent">
+                需要紧急关注
+              </p>
+            </div>
+          </div>
+          <!-- 详细分析 -->
+          <div v-if="currentReport.detailAnalysis" class="qa-report-section">
+            <h4 class="qa-report-section-title">详细分析</h4>
+            <p class="qa-report-text">{{ currentReport.detailAnalysis.overview }}</p>
+            <ul v-if="currentReport.detailAnalysis.patterns?.length" class="qa-report-list">
+              <li v-for="(p, i) in currentReport.detailAnalysis.patterns" :key="i">{{ p }}</li>
+            </ul>
+            <p class="qa-report-conclusion">{{ currentReport.detailAnalysis.conclusion }}</p>
+          </div>
+          <!-- 建议 -->
+          <div v-if="currentReport.recommendations" class="qa-report-section">
+            <h4 class="qa-report-section-title">分层建议</h4>
+            <div v-if="currentReport.recommendations.immediate?.length" class="qa-report-rec-group">
+              <h5 class="qa-report-rec-label">即时行动</h5>
+              <div v-for="(r, i) in currentReport.recommendations.immediate" :key="i" class="qa-report-rec-item">
+                <strong>{{ r.title }}</strong>
+                <p>{{ r.description }}</p>
+              </div>
+            </div>
+            <div v-if="currentReport.recommendations.shortTerm?.length" class="qa-report-rec-group">
+              <h5 class="qa-report-rec-label">短期建议</h5>
+              <div v-for="(r, i) in currentReport.recommendations.shortTerm" :key="i" class="qa-report-rec-item">
+                <strong>{{ r.title }}</strong>
+                <p>{{ r.description }}</p>
+              </div>
+            </div>
+            <div v-if="currentReport.recommendations.professional?.length" class="qa-report-rec-group">
+              <h5 class="qa-report-rec-label">专业资源</h5>
+              <div v-for="(r, i) in currentReport.recommendations.professional" :key="i" class="qa-report-rec-item">
+                <strong>{{ r.title }}</strong>
+                <p>{{ r.description }}</p>
+                <span v-if="r.resource" class="qa-report-rec-resource">{{ r.resource }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- 随访建议 -->
+          <div v-if="currentReport.followUp" class="qa-report-section">
+            <h4 class="qa-report-section-title">随访建议</h4>
+            <p class="qa-report-text"><strong>建议时间：</strong>{{ currentReport.followUp.suggestedDate }}</p>
+            <p class="qa-report-text">{{ currentReport.followUp.rationale }}</p>
+          </div>
+          <!-- 免责声明 -->
+          <div v-if="currentReport.disclaimer" class="qa-report-disclaimer">
+            {{ currentReport.disclaimer }}
+          </div>
+        </div>
+        <div v-else class="qa-report-loading">
+          <p>无法加载报告，请稍后重试</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { ElMessage } from 'element-plus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
+import { interviewService } from '@/api/services/interview.service'
 import { authService } from '@/api/services/auth.service'
 import type { Conversation, RetrievalStep } from '@/api/types/qa.types'
+import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview.types'
 
 interface Session {
   id: string
@@ -186,6 +370,30 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   sourceReferences?: string
+  questionnaire?: QuestionnaireBlock
+}
+
+interface QuestionnaireBlock {
+  type: 'suggestion' | 'question' | 'completion' | 'safety_alert'
+  suggestionText?: string
+  questionnaireTitle?: string
+  questionnaireId?: string
+  confidence?: number
+  linkId?: string
+  questionText?: string
+  currentIndex?: number
+  totalQuestions?: number
+  options?: AnswerOption[]
+  totalScore?: number
+  maxScore?: number
+  severity?: string
+  interpretation?: string
+  analysisSummary?: string
+  analysisId?: string
+  completionMessage?: string
+  reason?: string
+  alertMessage?: string
+  sessionId?: string
 }
 
 // 会话数据
@@ -204,6 +412,16 @@ const inputText = ref('')
 const retrievalSteps = ref<RetrievalStep[]>([])
 const expandedSteps = ref(false)
 
+// 问卷访谈状态
+const interviewActive = ref(false)
+const interviewLoading = ref(false)
+const interviewSessionId = ref<string | null>(null)
+
+// IME 组合输入状态（防止中文输入法 Enter 确认时重复触发 sendMessage）
+const isComposing = ref(false)
+// 防抖时间戳（防止同一毫秒内重复触发）
+let lastSendTime = 0
+
 // 删除当前活跃会话（移入回收站）
 const deleteActiveSession = async () => {
   if (!activeSessionId.value) return
@@ -221,6 +439,17 @@ const deleteActiveSession = async () => {
   } catch (error) {
     console.error('删除对话失败:', error)
   }
+}
+
+// 根据严重程度文本映射 CSS 等级
+const getSeverityLevel = (severity: string): string => {
+  const s = severity.toLowerCase()
+  if (s.includes('无') || s.includes('正常') || s.includes('none')) return 'none'
+  if (s.includes('轻度') || s.includes('轻微') || s.includes('mild')) return 'mild'
+  if (s.includes('中度') || s.includes('moderate')) return 'moderate'
+  if (s.includes('重度') || s.includes('严重') || s.includes('severe')) return 'severe'
+  if (s.includes('极') || s.includes('危') || s.includes('critical')) return 'critical'
+  return 'moderate'
 }
 
 // 根据步骤状态和类型确定显示颜色
@@ -326,7 +555,7 @@ const loadMessages = async (sessionId: string) => {
     loadingMessages.value = true
     // sessionId就是conversationId
     const messagesList = await conversationService.getMessages(sessionId)
-    messages.value = messagesList.map(msg => {
+    const historyMessages: ChatMessage[] = messagesList.map(msg => {
       let content = msg.content
       if (msg.role === 'assistant' && msg.sourceReferences) {
         content += buildReferenceSection(msg.sourceReferences)
@@ -338,11 +567,96 @@ const loadMessages = async (sessionId: string) => {
         sourceReferences: msg.sourceReferences
       }
     })
+
+    // 加载该对话下的历史访谈消息，重建问卷卡片
+    try {
+      const interviewMsgs = await interviewService.getInterviewsByConversation(sessionId)
+      for (const histItem of interviewMsgs) {
+        const details = await interviewService.getSessionMessages(histItem.sessionId)
+        for (const im of details) {
+          const qMsg = buildQuestionnaireMessage(im)
+          if (qMsg) historyMessages.push(qMsg)
+        }
+      }
+      // 按ID排序（兼容带前缀的访谈消息ID，如 um-xxx / im-xxx）
+      historyMessages.sort((a, b) => {
+        const aNum = Number(String(a.id).replace(/^[^0-9]+/, ''))
+        const bNum = Number(String(b.id).replace(/^[^0-9]+/, ''))
+        return aNum - bNum
+      })
+    } catch (e) {
+      console.warn('加载访谈历史消息失败:', e)
+    }
+
+    messages.value = historyMessages
   } catch (error) {
     console.error('加载消息失败:', error)
     messages.value = []
   } finally {
     loadingMessages.value = false
+  }
+}
+
+// 将 InterviewMessageItem 重建为问卷卡片 ChatMessage
+const buildQuestionnaireMessage = (im: InterviewMessageItem): ChatMessage | null => {
+  const d = im.messageData
+  let questionnaire: QuestionnaireBlock
+
+  switch (im.messageType) {
+    case 'question':
+      questionnaire = {
+        type: 'question',
+        linkId: d.linkId,
+        questionText: d.text,
+        currentIndex: d.currentIndex,
+        totalQuestions: d.totalQuestions,
+        options: d.options,
+        sessionId: im.sessionId
+      }
+      break
+    case 'completion':
+      questionnaire = {
+        type: 'completion',
+        totalScore: d.totalScore,
+        maxScore: d.maxScore,
+        severity: d.severity,
+        interpretation: d.interpretation,
+        analysisSummary: d.analysisSummary,
+        analysisId: d.analysisId,
+        completionMessage: d.message
+      }
+      break
+    case 'safety_alert':
+      questionnaire = {
+        type: 'safety_alert',
+        reason: d.reason,
+        alertMessage: d.message
+      }
+      break
+    case 'clarify':
+      questionnaire = {
+        type: 'question',
+        linkId: d.linkId,
+        questionText: d.text,
+        options: d.options,
+        sessionId: im.sessionId
+      }
+      break
+    case 'user_message':
+      return {
+        id: 'um-' + im.id,
+        role: 'user',
+        content: typeof d.text === 'string' ? d.text : (d.display || ''),
+      }
+    default:
+      return null
+  }
+
+  return {
+    id: 'im-' + im.id,
+    role: 'assistant',
+    content: '',
+    questionnaire
   }
 }
 
@@ -389,8 +703,23 @@ const createNewSession = async () => {
 
 // 发送消息（流式）
 const sendMessage = async () => {
+  // 中文输入法组合输入期间跳过
+  if (isComposing.value) return
+  // 300ms 内重复触发则跳过（防止 Enter 键同时触发 keyup + click 等场景）
+  const now = Date.now()
+  if (now - lastSendTime < 300) return
+  lastSendTime = now
+
   const content = inputText.value.trim()
   if (!content || !activeSessionId.value) return
+
+  inputText.value = ''
+
+  // 如果访谈活跃中，路由到访谈答案流程
+  if (interviewActive.value && interviewSessionId.value) {
+    await submitInterviewAnswer(content, content)
+    return
+  }
 
   // 添加用户消息到UI
   const userMessage: ChatMessage = {
@@ -399,7 +728,6 @@ const sendMessage = async () => {
     content: content
   }
   messages.value.push(userMessage)
-  inputText.value = ''
   // 清空上一轮的检索路径，等待本次新路径
   retrievalSteps.value = []
   expandedSteps.value = false
@@ -414,6 +742,7 @@ const sendMessage = async () => {
   messages.value.push(aiMessage)
   let streamingContent = ''
   let pendingSources: any[] = []
+  let pendingSuggestion: any = null
 
   try {
     // 保存用户消息到后端
@@ -453,6 +782,21 @@ const sendMessage = async () => {
         } else if (chunk.type === 'retrievalPath' && chunk.retrievalPath) {
           retrievalSteps.value = chunk.retrievalPath.steps
           expandedSteps.value = false
+        } else if (chunk.type === 'done') {
+          console.log('[DATA_COLLECTION] SSE done事件收到:', {
+            intentType: chunk.intentType,
+            hasQuestionnaireSuggestion: !!chunk.questionnaireSuggestion,
+            suggestionMatched: chunk.questionnaireSuggestion?.matched,
+            questionnaireId: chunk.questionnaireSuggestion?.questionnaireId,
+            questionnaireTitle: chunk.questionnaireSuggestion?.questionnaireTitle,
+            answerPreview: chunk.answer?.substring(0, 80)
+          })
+          if (chunk.questionnaireSuggestion?.matched) {
+            pendingSuggestion = chunk.questionnaireSuggestion
+            console.log('[DATA_COLLECTION] pendingSuggestion已设置, 等待onComplete触发')
+          } else if (chunk.intentType === 'DATA_COLLECTION') {
+            console.warn('[DATA_COLLECTION] 意图为DATA_COLLECTION但questionnaireSuggestion未匹配!', chunk)
+          }
         }
       },
       // onError
@@ -464,6 +808,30 @@ const sendMessage = async () => {
       },
       // onComplete
       async () => {
+        console.log('[DATA_COLLECTION] onComplete触发:', {
+          hasPendingSuggestion: !!pendingSuggestion,
+          interviewActive: interviewActive.value,
+          streamingContentLength: streamingContent.length
+        })
+        // 检测问卷建议，自动开始填表流程
+        if (pendingSuggestion) {
+          const suggestion = pendingSuggestion
+          pendingSuggestion = null
+          console.log('[DATA_COLLECTION] 调用startInterviewFlow:', {
+            questionnaireId: suggestion.questionnaireId,
+            questionnaireTitle: suggestion.questionnaireTitle
+          })
+          try {
+            await startInterviewFlow(
+              suggestion.questionnaireId,
+              suggestion.questionnaireTitle
+            )
+            console.log('[DATA_COLLECTION] startInterviewFlow完成')
+          } catch (err) {
+            console.error('[DATA_COLLECTION] startInterviewFlow异常:', err)
+          }
+          return
+        }
         // 附加参考文献
         if (pendingSources.length > 0) {
           const sourceRefs = pendingSources.map((s: any, i: number) => ({
@@ -499,6 +867,292 @@ const sendMessage = async () => {
       msg.content = `抱歉，处理您的请求时出现错误：${(error as Error).message}。请稍后重试。`
     }
   }
+}
+
+// 开始问卷访谈流程
+const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: string) => {
+  if (interviewActive.value) {
+    console.warn('[DATA_COLLECTION] startInterviewFlow: 访谈已活跃,跳过')
+    return
+  }
+  console.log('[DATA_COLLECTION] startInterviewFlow 开始:', {
+    questionnaireId,
+    title: _questionnaireTitle,
+    userId: authService.getToken() ? 1 : undefined,
+    conversationId: activeSessionId.value || undefined
+  })
+  interviewActive.value = true
+  interviewLoading.value = true
+
+  try {
+    console.log('[DATA_COLLECTION] 调用 interviewService.startLlmInterview...')
+    await interviewService.startLlmInterview(
+      {
+        questionnaireId,
+        userId: authService.getToken() ? 1 : undefined,
+        conversationId: activeSessionId.value || undefined
+      },
+      // onEvent
+      (event) => {
+        console.log('[DATA_COLLECTION] 访谈SSE事件:', event.type, event)
+        interviewLoading.value = false
+        switch (event.type) {
+          case 'question':
+            interviewSessionId.value = event.sessionId || interviewSessionId.value
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: '',
+              questionnaire: {
+                type: 'question',
+                linkId: event.linkId,
+                questionText: event.text,
+                currentIndex: event.currentIndex,
+                totalQuestions: event.totalQuestions,
+                options: event.options,
+                sessionId: interviewSessionId.value || undefined
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'completion':
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: '',
+              questionnaire: {
+                type: 'completion',
+                totalScore: event.totalScore,
+                maxScore: event.maxScore,
+                severity: event.severity,
+                interpretation: event.interpretation,
+                analysisSummary: event.analysisSummary,
+                analysisId: (event as any).analysisId,
+                completionMessage: event.message
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'safety_alert':
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: '',
+              questionnaire: {
+                type: 'safety_alert',
+                reason: event.reason,
+                alertMessage: event.message
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'clarify':
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: event.text,
+              questionnaire: {
+                type: 'question',
+                linkId: event.linkId,
+                questionText: event.text,
+                options: event.options,
+                sessionId: interviewSessionId.value || undefined
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'degradation':
+            console.warn('问卷采集降级:', (event as any).level, (event as any).reason)
+            ElMessage.warning((event as any).reason || '问卷采集已降级')
+            break
+          case 'done':
+            // SSE流结束但访谈仍活跃，不重置状态
+            break
+          case 'error':
+            console.error('问卷访谈错误:', (event as any).message)
+            interviewActive.value = false
+            interviewSessionId.value = null
+            break
+        }
+      },
+      // onError
+      (error) => {
+        console.error('[DATA_COLLECTION] 启动访谈失败(onError):', error.message, error)
+        interviewLoading.value = false
+        interviewActive.value = false
+      },
+      // onComplete
+      () => {
+        console.log('[DATA_COLLECTION] 访谈SSE流结束(onComplete)')
+        interviewLoading.value = false
+      }
+    )
+    console.log('[DATA_COLLECTION] startLlmInterview 返回')
+  } catch (err) {
+    console.error('[DATA_COLLECTION] 启动访谈异常(catch):', err)
+    interviewLoading.value = false
+    interviewActive.value = false
+  }
+}
+
+// 提交问卷答案
+const submitInterviewAnswer = async (selectedCode: string, displayText: string) => {
+  if (!interviewSessionId.value || interviewLoading.value) return
+  interviewLoading.value = true
+
+  // 立即显示用户消息
+  messages.value.push({
+    id: Date.now().toString(),
+    role: 'user',
+    content: displayText
+  })
+  nextTick(() => scrollToBottom())
+
+  try {
+    await interviewService.submitLlmAnswer(
+      {
+        sessionId: interviewSessionId.value,
+        userInput: displayText,
+        selectedCode
+      },
+      // onEvent
+      (event) => {
+        interviewLoading.value = false
+        switch (event.type) {
+          case 'question':
+            interviewSessionId.value = event.sessionId || interviewSessionId.value
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: '',
+              questionnaire: {
+                type: 'question',
+                linkId: event.linkId,
+                questionText: event.text,
+                currentIndex: event.currentIndex,
+                totalQuestions: event.totalQuestions,
+                options: event.options,
+                sessionId: interviewSessionId.value || undefined
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'completion':
+            interviewActive.value = false
+            interviewSessionId.value = null
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: '',
+              questionnaire: {
+                type: 'completion',
+                totalScore: event.totalScore,
+                maxScore: event.maxScore,
+                severity: event.severity,
+                interpretation: event.interpretation,
+                analysisSummary: event.analysisSummary,
+                analysisId: (event as any).analysisId,
+                completionMessage: event.message
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'safety_alert':
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: '',
+              questionnaire: {
+                type: 'safety_alert',
+                reason: event.reason,
+                alertMessage: event.message
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'clarify':
+            messages.value.push({
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: event.text,
+              questionnaire: {
+                type: 'question',
+                linkId: event.linkId,
+                questionText: event.text,
+                options: event.options,
+                sessionId: interviewSessionId.value || undefined
+              }
+            })
+            nextTick(() => scrollToBottom())
+            break
+          case 'degradation':
+            console.warn('问卷采集降级:', (event as any).level, (event as any).reason)
+            ElMessage.warning((event as any).reason || '问卷采集已降级')
+            break
+          case 'done':
+            // SSE流结束但访谈仍活跃，不重置状态
+            break
+          case 'error':
+            console.error('提交答案错误:', (event as any).message)
+            break
+        }
+      },
+      // onError
+      (error) => {
+        console.error('提交答案失败:', error)
+        interviewLoading.value = false
+      },
+      // onComplete
+      () => {
+        interviewLoading.value = false
+      }
+    )
+  } catch (err) {
+    console.error('提交答案异常:', err)
+    interviewLoading.value = false
+  }
+}
+
+// 详细报告弹窗状态
+const showReportDialog = ref(false)
+const reportLoading = ref(false)
+const currentReport = ref<AnalysisReport | null>(null)
+
+// 查看详细评估报告
+const showDetailedReport = async (message: ChatMessage) => {
+  const analysisId = message.questionnaire?.analysisId
+  if (!analysisId) return
+
+  reportLoading.value = true
+  showReportDialog.value = true
+
+  try {
+    // 从 analysisId 提取 sessionId (格式: analysis-{sessionId})
+    const sessionId = analysisId.startsWith('analysis-')
+      ? analysisId.substring(9)
+      : analysisId
+    const report = await interviewService.getAnalysisReport(sessionId)
+    currentReport.value = report
+  } catch (e) {
+    console.error('加载分析报告失败:', e)
+    currentReport.value = null
+  } finally {
+    reportLoading.value = false
+  }
+}
+
+// 取消访谈
+const cancelInterview = () => {
+  interviewActive.value = false
+  interviewSessionId.value = null
+  interviewLoading.value = false
+  qaService.stopStreaming()
+}
+
+// 滚动到底部
+const scrollToBottom = () => {
+  const el = document.querySelector('.qa-chat-scroll')
+  if (el) el.scrollTop = el.scrollHeight
 }
 
 // 组件挂载时加载会话列表
@@ -603,5 +1257,564 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(-4px);
   }
+}
+
+/* ===== 问卷卡片通用样式 ===== */
+.qa-questionnaire-card {
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid;
+  animation: qa-card-slide-in 0.3s ease-out;
+}
+
+@keyframes qa-card-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== 建议卡片 ===== */
+.qa-suggestion-card {
+  background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+  border-color: #c4d7f2;
+}
+
+.qa-suggestion-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.qa-suggestion-icon {
+  font-size: 28px;
+  color: #00478d;
+  margin-top: 2px;
+}
+
+.qa-suggestion-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.qa-suggestion-subtitle {
+  font-size: 13px;
+  color: #00478d;
+  font-weight: 500;
+}
+
+.qa-suggestion-confidence {
+  font-size: 11px;
+  color: #727783;
+  margin-top: 2px;
+}
+
+.qa-suggestion-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.qa-suggestion-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.qa-suggestion-btn-primary {
+  background: #00478d;
+  color: #fff;
+}
+
+.qa-suggestion-btn-primary:hover:not(:disabled) {
+  background: #003a70;
+}
+
+.qa-suggestion-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.qa-suggestion-btn-secondary {
+  background: #fff;
+  color: #727783;
+  border: 1px solid #dadce0;
+}
+
+.qa-suggestion-btn-secondary:hover {
+  background: #f1f3f4;
+}
+
+/* ===== 问题卡片 ===== */
+.qa-question-card {
+  background: #fff;
+  border-color: #e0e0e0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.qa-question-progress-bar {
+  height: 4px;
+  background: #e8eaed;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.qa-question-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00478d, #1976d2);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.qa-question-progress-text {
+  font-size: 11px;
+  color: #727783;
+  margin-bottom: 12px;
+}
+
+.qa-question-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.qa-question-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #727783;
+  margin-bottom: 14px;
+  padding: 6px 10px;
+  background: #f0f4ff;
+  border-radius: 6px;
+  border-left: 3px solid #00478d;
+}
+
+.qa-hint-icon {
+  font-size: 14px;
+  color: #00478d;
+  font-variation-settings: 'FILL' 0;
+}
+
+.qa-question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qa-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.qa-option-btn:hover:not(:disabled) {
+  background: #e8f0fe;
+  border-color: #00478d;
+}
+
+.qa-option-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qa-option-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #00478d;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.qa-option-display {
+  font-size: 13px;
+  color: #333;
+}
+
+/* ===== 完成卡片 ===== */
+.qa-completion-card {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border-color: #a5d6a7;
+}
+
+.qa-completion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.qa-completion-icon {
+  font-size: 24px;
+  color: #2e7d32;
+}
+
+.qa-completion-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1b5e20;
+}
+
+.qa-completion-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.qa-completion-score-label {
+  font-size: 13px;
+  color: #555;
+}
+
+.qa-severity-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.qa-severity-none {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.qa-severity-mild {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.qa-severity-moderate {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.qa-severity-severe {
+  background: #fbe9e7;
+  color: #bf360c;
+}
+
+.qa-severity-critical {
+  background: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ef5350;
+}
+
+.qa-completion-score-num {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.qa-completion-interpretation {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+}
+
+.qa-analysis-summary {
+  margin-bottom: 8px;
+  padding: 12px;
+  background: rgba(0, 71, 141, 0.04);
+  border-left: 3px solid #00478d;
+  border-radius: 0 8px 8px 0;
+}
+
+.qa-analysis-summary-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #00478d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.qa-analysis-summary-content {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.7;
+}
+
+.qa-completion-message {
+  font-size: 12px;
+  color: #727783;
+  font-style: italic;
+}
+
+/* ===== 安全警报卡片 ===== */
+.qa-safety-alert-card {
+  background: linear-gradient(135deg, #fff3e0 0%, #fbe9e7 100%);
+  border-color: #ef9a9a;
+}
+
+.qa-safety-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.qa-safety-alert-icon {
+  font-size: 24px;
+  color: #d32f2f;
+}
+
+.qa-safety-alert-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #c62828;
+}
+
+.qa-safety-alert-reason {
+  font-size: 14px;
+  font-weight: 500;
+  color: #b71c1c;
+  margin-bottom: 6px;
+}
+
+.qa-safety-alert-message {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* ===== 查看详细报告按钮 ===== */
+.qa-report-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #00478d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.qa-report-btn:hover {
+  background: #003666;
+}
+
+/* ===== 报告弹窗 ===== */
+.qa-report-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.qa-report-dialog {
+  width: 90%;
+  max-width: 680px;
+  max-height: 85vh;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.qa-report-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.qa-report-dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.qa-report-dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #666;
+  transition: background 0.2s;
+}
+
+.qa-report-dialog-close:hover {
+  background: #e0e0e0;
+}
+
+.qa-report-loading {
+  padding: 40px;
+  text-align: center;
+  color: #727783;
+}
+
+.qa-report-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.qa-report-section {
+  margin-bottom: 20px;
+}
+
+.qa-report-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00478d;
+  margin: 0 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e8f0fe;
+}
+
+.qa-report-text {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.6;
+  margin: 0 0 6px 0;
+}
+
+.qa-report-risk {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qa-report-urgent {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #ffebee;
+  color: #c62828;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.qa-report-list {
+  margin: 6px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.qa-report-conclusion {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  margin-top: 8px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  line-height: 1.6;
+}
+
+.qa-report-rec-group {
+  margin-bottom: 12px;
+}
+
+.qa-report-rec-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #727783;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 6px 0;
+}
+
+.qa-report-rec-item {
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.qa-report-rec-item strong {
+  color: #1a1a1a;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.qa-report-rec-item p {
+  margin: 0;
+  color: #555;
+}
+
+.qa-report-rec-resource {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: #e8f0fe;
+  color: #00478d;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.qa-report-disclaimer {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #8d6e00;
+  line-height: 1.5;
+  text-align: center;
 }
 </style>

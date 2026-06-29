@@ -518,6 +518,210 @@ public class FhirConverter {
         return result;
     }
 
+    // ==================== DiagnosticReport 转换 ====================
+
+    /**
+     * 将分析结果转换为FHIR DiagnosticReport
+     */
+    public DiagnosticReport toDiagnosticReport(com.student.service.his.AnalysisResult analysisResult,
+                                                String patientFhirId, String qrReference) {
+        DiagnosticReport report = new DiagnosticReport();
+        report.setId("dr-" + java.util.UUID.randomUUID().toString().substring(0, 8));
+        report.setStatus(DiagnosticReport.DiagnosticReportStatus.FINAL);
+
+        // 代码：心理健康评估报告
+        report.getCode().addCoding()
+                .setSystem("http://loinc.org")
+                .setCode("86971-7")
+                .setDisplay("心理健康评估报告");
+
+        if (patientFhirId != null) {
+            report.setSubject(new Reference("Patient/" + patientFhirId));
+        }
+
+        report.setIssued(new Date());
+
+        // 关联的QuestionnaireResponse
+        if (qrReference != null) {
+            report.addResult().setReference(qrReference);
+        }
+
+        // 结论
+        if (analysisResult.getSummary() != null) {
+            report.setConclusion(analysisResult.getSummary());
+        }
+
+        // 详细分析 → Extension
+        if (analysisResult.getDetailAnalysis() != null) {
+            try {
+                String detailJson = new com.fasterxml.jackson.databind.ObjectMapper()
+                        .writeValueAsString(analysisResult.getDetailAnalysis());
+                report.addExtension(new Extension(
+                        "http://imkqas.org/fhir/StructureDefinition/detail-analysis",
+                        new StringType(detailJson)));
+            } catch (Exception e) {
+                log.warn("序列化详细分析失败: {}", e.getMessage());
+            }
+        }
+
+        // 建议 → Extension
+        if (analysisResult.getRecommendations() != null) {
+            try {
+                String recJson = new com.fasterxml.jackson.databind.ObjectMapper()
+                        .writeValueAsString(analysisResult.getRecommendations());
+                report.addExtension(new Extension(
+                        "http://imkqas.org/fhir/StructureDefinition/recommendations",
+                        new StringType(recJson)));
+            } catch (Exception e) {
+                log.warn("序列化建议失败: {}", e.getMessage());
+            }
+        }
+
+        // 随访建议 → Extension
+        if (analysisResult.getFollowUp() != null) {
+            report.addExtension(new Extension(
+                    "http://imkqas.org/fhir/StructureDefinition/follow-up",
+                    new StringType(String.format("%s（%s）",
+                            analysisResult.getFollowUp().getSuggestedDate(),
+                            analysisResult.getFollowUp().getRationale()))));
+        }
+
+        // 免责声明 → Extension
+        if (analysisResult.getDisclaimer() != null) {
+            report.addExtension(new Extension(
+                    "http://imkqas.org/fhir/StructureDefinition/disclaimer",
+                    new StringType(analysisResult.getDisclaimer())));
+        }
+
+        return report;
+    }
+
+    /**
+     * 将分析结果转换为FHIR RiskAssessment
+     */
+    public RiskAssessment toRiskAssessment(
+            com.student.service.his.AnalysisResult analysisResult,
+            String patientFhirId, String qrReference) {
+
+        RiskAssessment risk = new RiskAssessment();
+        risk.setId("ra-" + java.util.UUID.randomUUID().toString().substring(0, 8));
+        risk.setStatus(RiskAssessment.RiskAssessmentStatus.FINAL);
+        risk.setOccurrence(new DateTimeType(new Date()));
+
+        if (patientFhirId != null) {
+            risk.setSubject(new Reference("Patient/" + patientFhirId));
+        }
+
+        // 依据：引用对应的QuestionnaireResponse
+        if (qrReference != null) {
+            risk.setBasis(List.of(new Reference(qrReference)));
+        }
+
+        // 风险预测
+        if (analysisResult.getRiskAssessment() != null) {
+            var riskBlock = analysisResult.getRiskAssessment();
+            RiskAssessment.RiskAssessmentPredictionComponent prediction =
+                    new RiskAssessment.RiskAssessmentPredictionComponent();
+            prediction.setOutcome(new CodeableConcept().setText(riskBlock.getLevel()));
+
+            if (riskBlock.getDescription() != null) {
+                prediction.setQualitativeRisk(new CodeableConcept()
+                        .setText(riskBlock.getDescription()));
+            }
+
+            risk.addPrediction(prediction);
+        }
+
+        // 紧急标记 → Extension
+        if (analysisResult.getRiskAssessment() != null
+                && analysisResult.getRiskAssessment().isRequiresUrgentAttention()) {
+            risk.addExtension(new Extension(
+                    "http://imkqas.org/fhir/StructureDefinition/requires-urgent-attention",
+                    new BooleanType(true)));
+        }
+
+        return risk;
+    }
+
+    // ==================== DiagnosticReport 缓存转换 ====================
+
+    /**
+     * 将分析结果转换为FhirDiagnosticReportCache实体
+     */
+    public FhirDiagnosticReportCache toDiagnosticReportCache(
+            com.student.service.his.AnalysisResult analysisResult,
+            String patientFhirId, String qrReference,
+            String sessionId, Long localUserId, Long conversationId) {
+
+        DiagnosticReport report = toDiagnosticReport(analysisResult, patientFhirId, qrReference);
+
+        String codeSystem = null;
+        String codeValue = null;
+        String codeDisplay = null;
+        if (report.hasCode() && report.getCode().hasCoding()) {
+            Coding coding = report.getCode().getCodingFirstRep();
+            codeSystem = coding.getSystem();
+            codeValue = coding.getCode();
+            codeDisplay = coding.getDisplay();
+        }
+
+        return FhirDiagnosticReportCache.builder()
+                .fhirId(report.getIdElement().getIdPart())
+                .patientFhirId(patientFhirId)
+                .sessionId(sessionId)
+                .questionnaireResponseRef(qrReference)
+                .status(report.hasStatus() ? report.getStatus().toCode() : null)
+                .codeSystem(codeSystem)
+                .codeValue(codeValue)
+                .codeDisplay(codeDisplay)
+                .conclusion(report.hasConclusion() ? report.getConclusion() : null)
+                .issuedDate(report.hasIssued() ? toLocalDateTime(report.getIssued()) : null)
+                .resourceJson(toJson(report))
+                .localUserId(localUserId)
+                .conversationId(conversationId)
+                .build();
+    }
+
+    // ==================== RiskAssessment 缓存转换 ====================
+
+    /**
+     * 将分析结果转换为FhirRiskAssessmentCache实体
+     */
+    public FhirRiskAssessmentCache toRiskAssessmentCache(
+            com.student.service.his.AnalysisResult analysisResult,
+            String patientFhirId, String qrReference,
+            String sessionId, Long localUserId, Long conversationId) {
+
+        RiskAssessment risk = toRiskAssessment(analysisResult, patientFhirId, qrReference);
+
+        String riskLevel = null;
+        String riskDescription = null;
+        if (analysisResult.getRiskAssessment() != null) {
+            riskLevel = analysisResult.getRiskAssessment().getLevel();
+            riskDescription = analysisResult.getRiskAssessment().getDescription();
+        }
+
+        boolean urgent = analysisResult.getRiskAssessment() != null
+                && analysisResult.getRiskAssessment().isRequiresUrgentAttention();
+
+        return FhirRiskAssessmentCache.builder()
+                .fhirId(risk.getIdElement().getIdPart())
+                .patientFhirId(patientFhirId)
+                .sessionId(sessionId)
+                .questionnaireResponseRef(qrReference)
+                .status(risk.hasStatus() ? risk.getStatus().toCode() : null)
+                .occurrenceDate(risk.hasOccurrence()
+                        ? toLocalDateTime(((DateTimeType) risk.getOccurrence()).getValue())
+                        : null)
+                .riskLevel(riskLevel)
+                .riskDescription(riskDescription)
+                .requiresUrgentAttention(urgent ? 1 : 0)
+                .resourceJson(toJson(risk))
+                .localUserId(localUserId)
+                .conversationId(conversationId)
+                .build();
+    }
+
     // ==================== 工具方法 ====================
 
     /**

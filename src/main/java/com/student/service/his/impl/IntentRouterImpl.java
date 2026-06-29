@@ -177,7 +177,7 @@ public class IntentRouterImpl implements IntentRouter {
     }
 
     /**
-     * 写入多级缓存（Caffeine + Redis）
+     * 写入多级缓存（Caffeine同步 + Redis异步，Redis失败不影响主链路）
      */
     private void cacheIntent(String normalized, IntentType intent) {
         intentCache.put(normalized, intent);
@@ -185,13 +185,15 @@ public class IntentRouterImpl implements IntentRouter {
             log.debug("Redis断路器已打开，跳过Redis写入");
             return;
         }
-        try {
-            redisService.set(REDIS_KEY_PREFIX + normalized, intent.name(), 7200L);
-            recordRedisCircuitSuccess();
-        } catch (Exception e) {
-            log.warn("Redis缓存写入失败: {}", e.getMessage());
-            recordRedisCircuitFailure();
-        }
+        CompletableFuture.runAsync(() -> {
+            try {
+                redisService.set(REDIS_KEY_PREFIX + normalized, intent.name(), 7200L);
+                recordRedisCircuitSuccess();
+            } catch (Exception e) {
+                log.warn("Redis缓存写入失败: {}", e.getMessage());
+                recordRedisCircuitFailure();
+            }
+        });
     }
 
     /**

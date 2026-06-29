@@ -1,5 +1,6 @@
 package com.student.config;
 
+import com.student.utils.EnvUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -46,8 +47,8 @@ public class RagConfig {
         /** 远程API端点 */
         private String apiEndpoint = "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank";
 
-        /** API密钥 (环境变量) */
-        private String apiKey = "sk-ca1040e1914248cbb02dcb7ca8c7120a";
+        /** API密钥 (从.env文件读取) */
+        private String apiKey = "";
 
         /** 重排序top-k */
         @Min(1)
@@ -85,8 +86,8 @@ public class RagConfig {
         /** API端点 */
         private String apiEndpoint = "https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings";
 
-        /** API密钥 (从环境变量读取) */
-        private String apiKey = "sk-ca1040e1914248cbb02dcb7ca8c7120a";
+        /** API密钥 (从.env文件读取) */
+        private String apiKey = "";
 
         /** 是否启用缓存 */
         private boolean cacheEnabled = true;
@@ -172,8 +173,8 @@ public class RagConfig {
         @NotBlank
         private String baseUrl = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
 
-        /** API密钥 (从环境变量读取) */
-        private String apiKey = "sk-ca1040e1914248cbb02dcb7ca8c7120a";
+        /** API密钥 (从.env文件读取) */
+        private String apiKey = "";
 
         /** 模型名称: qwen-turbo / qwen-plus / qwen-max */
         @NotBlank
@@ -544,10 +545,48 @@ public class RagConfig {
 
     /**
      * 配置初始化方法
+     * 从.env文件加载敏感配置（API密钥等），覆盖yml中的空值
      */
     @PostConstruct
     public void init() {
-        log.info("RAG配置初始化完成");
+        // 从.env文件加载API密钥（优先级：专用变量 > DASHSCOPE_API_KEY > BAILIAN_API_KEY）
+        String dashscopeKey = EnvUtil.getEnv("DASHSCOPE_API_KEY");
+        String bailianKey = EnvUtil.getEnv("BAILIAN_API_KEY");
+        String defaultKey = dashscopeKey != null ? dashscopeKey : bailianKey;
+
+        // LLM配置
+        if (isBlank(llm.getApiKey())) {
+            String key = EnvUtil.getEnv("IMKQAS_RAG_LLM_API_KEY");
+            llm.setApiKey(key != null ? key : defaultKey);
+        }
+        String llmBaseUrl = EnvUtil.getEnv("IMKQAS_RAG_LLM_BASE_URL");
+        if (llmBaseUrl != null && !llmBaseUrl.isBlank()) {
+            llm.setBaseUrl(llmBaseUrl);
+        }
+
+        // 嵌入模型配置
+        if (isBlank(embedding.getApiKey())) {
+            String key = EnvUtil.getEnv("IMKQAS_RAG_EMBEDDING_API_KEY");
+            embedding.setApiKey(key != null ? key : defaultKey);
+        }
+        String embEndpoint = EnvUtil.getEnv("IMKQAS_RAG_EMBEDDING_API_ENDPOINT");
+        if (embEndpoint != null && !embEndpoint.isBlank()) {
+            embedding.setApiEndpoint(embEndpoint);
+        }
+
+        // 重排序模型配置
+        if (isBlank(reranker.getApiKey())) {
+            String key = EnvUtil.getEnv("IMKQAS_RAG_RERANKER_API_KEY");
+            reranker.setApiKey(key != null ? key : defaultKey);
+        }
+        String rerankEndpoint = EnvUtil.getEnv("IMKQAS_RAG_RERANKER_API_ENDPOINT");
+        if (rerankEndpoint != null && !rerankEndpoint.isBlank()) {
+            reranker.setApiEndpoint(rerankEndpoint);
+        }
+
+        log.info("RAG配置初始化完成 (API密钥来源: {})",
+                dashscopeKey != null ? ".env DASHSCOPE_API_KEY" :
+                bailianKey != null ? ".env BAILIAN_API_KEY" : "未配置");
 
         log.info("重排序模型: {}, 部署方式: {}",
                 reranker.getModel(), reranker.getDeployment());
@@ -569,5 +608,9 @@ public class RagConfig {
         log.info("MinerU PDF转换: 启用={}, API端点={}, 超时={}s",
                 document.getMineru().isEnabled(), document.getMineru().getApiEndpoint(),
                 document.getMineru().getTimeout());
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 }

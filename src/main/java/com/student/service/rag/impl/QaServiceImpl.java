@@ -43,6 +43,7 @@ public class QaServiceImpl implements QaService {
     private final SemanticCacheService semanticCacheService;
     private final IntentRouter intentRouter;
     private final InterviewEngine interviewEngine;
+    private final ConversationStateManager conversationStateManager;
 
     public QaServiceImpl(MultiRetrievalService multiRetrievalService,
                          MultiFactorRerankService multiFactorRerankService,
@@ -55,7 +56,8 @@ public class QaServiceImpl implements QaService {
                          QueryRewriteService queryRewriteService,
                          SemanticCacheService semanticCacheService,
                          IntentRouter intentRouter,
-                         InterviewEngine interviewEngine) {
+                         InterviewEngine interviewEngine,
+                         ConversationStateManager conversationStateManager) {
         this.multiRetrievalService = multiRetrievalService;
         this.multiFactorRerankService = multiFactorRerankService;
         this.qualityFilterService = qualityFilterService;
@@ -68,6 +70,7 @@ public class QaServiceImpl implements QaService {
         this.semanticCacheService = semanticCacheService;
         this.intentRouter = intentRouter;
         this.interviewEngine = interviewEngine;
+        this.conversationStateManager = conversationStateManager;
     }
 
     // 文档标题缓存（避免重复查询）
@@ -312,6 +315,10 @@ public class QaServiceImpl implements QaService {
                 String answerText = suggestion.isMatched()
                         ? suggestion.getSuggestionText()
                         : "感谢您的描述。目前暂未匹配到合适的评估问卷，建议您咨询专业医生获取更准确的评估。";
+                log.info("[DATA_COLLECTION] 返回问卷建议: matched={}, questionnaireId={}, answerLength={}, processingTime={}ms",
+                        suggestion.isMatched(),
+                        suggestion.getQuestionnaire() != null ? suggestion.getQuestionnaire().getId() : "null",
+                        answerText.length(), processingTime);
                 PipelineTraceContext.get().putMetadata("intentType", intent.name());
                 PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
                 List<RetrievalStepDto> stepDtos = buildStepDtos(trace);

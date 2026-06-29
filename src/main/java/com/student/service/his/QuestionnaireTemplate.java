@@ -34,11 +34,23 @@ public class QuestionnaireTemplate {
     /** 分类：mental_health/diabetes/sleep/pain/general */
     private String category;
 
+    /** 编码系统URI（如 http://loinc.org），用于FHIR Coding.system */
+    private String codeSystem;
+
     /** 题目列表 */
     private List<QuestionItem> items;
 
     /** 评分规则 */
     private ScoringRule scoringRule;
+
+    /** 必填题linkId列表（空表示全部必填） */
+    private List<String> requiredItems;
+
+    /** 安全关键词列表，用于规则层面的安全标记检测 */
+    private List<String> safetyKeywords;
+
+    /** 组合逻辑规则列表 */
+    private List<ComboRule> comboRules;
 
     /**
      * 单个问题
@@ -116,5 +128,44 @@ public class QuestionnaireTemplate {
 
         /** 解释文本 */
         private String interpretation;
+    }
+
+    /**
+     * 组合逻辑规则 —— 多个题目答案满足条件时触发组合标记
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ComboRule {
+        /** 规则ID，如 "anhedonia_with_depression" */
+        private String ruleId;
+
+        /** 组合标记标签，如 "快感缺失伴情绪低落" */
+        private String label;
+
+        /** 标记类型：combo / safety */
+        private String flagType;
+
+        /** 条件列表，所有条件必须同时满足（AND逻辑） */
+        private List<ComboCondition> conditions;
+    }
+
+    /**
+     * 组合规则中的单个条件
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ComboCondition {
+        /** 题目linkId，如 "/q1" */
+        private String linkId;
+
+        /** 运算符：GTE (>=), GT (>), LTE (<=), LT (<), EQ (==) */
+        private String operator;
+
+        /** 比较值 */
+        private int value;
     }
 }

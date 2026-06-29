@@ -126,7 +126,7 @@ curl http://localhost:9091/healthz
 ### 1.5 IMKQAS App（Docker Compose）
 
 第一步：停止所有服务
-bash
+```bash
 # 1. 停止后端服务
 pkill -f "IMKQAS-1.0-SNAPSHOT.jar"
 
@@ -135,8 +135,10 @@ pkill -f "vite"
 
 # 3. 确认所有服务已停止
 ps aux | grep -E "IMKQAS-1.0-SNAPSHOT.jar|vite" | grep -v grep
+```
+
 第二步：备份当前版本（可选但推荐）
-bash
+```bash
 # 备份当前运行的 JAR 包
 cd ~/IMKQAS
 mkdir -p backups
@@ -144,8 +146,10 @@ cp target/IMKQAS-1.0-SNAPSHOT.jar backups/IMKQAS-$(date +%Y%m%d_%H%M%S).jar
 
 # 备份前端构建产物（如果有）
 cp -r frontend/dist backups/dist-$(date +%Y%m%d_%H%M%S) 2>/dev/null
+```
+
 第三步：拉取最新代码
-bash
+```bash
 cd ~/IMKQAS
 
 # 1. 查看当前分支
@@ -159,8 +163,11 @@ git pull
 
 # 4. 查看更新内容
 git log --oneline -5
+```
+
+
 第四步：重新构建后端
-bash
+```bash
 cd ~/IMKQAS
 
 # 1. 清理旧的构建产物
@@ -171,8 +178,11 @@ mvn clean package -DskipTests
 
 # 3. 确认构建成功
 ls -lh target/IMKQAS-1.0-SNAPSHOT.jar
+
+```
+
 第五步：重新构建前端
-bash
+```bash
 cd ~/IMKQAS/frontend
 
 # 1. 清理旧的依赖和构建产物
@@ -186,8 +196,10 @@ npm run build
 
 # 4. 确认构建成功
 ls -lh dist/
+```
+
 第六步：启动后端服务
-bash
+```bash
 cd ~/IMKQAS
 
 # 1. 创建日志目录
@@ -207,6 +219,8 @@ tail -30 logs/backend.log
 
 # 6. 测试后端健康
 curl http://localhost:8080/api/actuator/health
+```
+
 第七步：启动前端开发服务器（或配置Nginx）
 方案A：启动开发服务器（用于调试）
 bash
@@ -217,6 +231,7 @@ nohup npm run dev -- --host > dev.log 2>&1 &
 
 # 查看日志
 tail -f dev.log
+
 方案B：配置 Nginx 提供静态文件（生产环境推荐）
 bash
 # 1. 确认 Nginx 配置

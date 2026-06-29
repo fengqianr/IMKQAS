@@ -40,9 +40,13 @@ public class ConversationStateManagerImpl implements ConversationStateManager {
     @Override
     public ConversationState transition(Long conversationId, ConversationState targetState) {
         String key = KEY_PREFIX + conversationId;
-        redisService.set(key, targetState.name(), (long) STATE_TTL_SECONDS);
-        log.info("对话状态切换: conversationId={}, {} -> {}", conversationId,
-                getState(conversationId), targetState);
+        try {
+            redisService.set(key, targetState.name(), (long) STATE_TTL_SECONDS);
+        } catch (Exception e) {
+            log.warn("对话状态切换Redis写入失败: conversationId={}, targetState={}, error={}",
+                    conversationId, targetState, e.getMessage());
+        }
+        log.info("对话状态切换: conversationId={}, targetState={}", conversationId, targetState);
         return targetState;
     }
 
@@ -63,11 +67,16 @@ public class ConversationStateManagerImpl implements ConversationStateManager {
     }
 
     /**
-     * 设置待恢复的问卷会话ID
+     * 设置待恢复的问卷会话ID（Redis失败不阻塞主流程）
      */
     public void setPendingInterviewSessionId(Long conversationId, String sessionId) {
         String pendingKey = KEY_PREFIX + conversationId + ":pending_interview";
-        redisService.set(pendingKey, sessionId, (long) STATE_TTL_SECONDS);
+        try {
+            redisService.set(pendingKey, sessionId, (long) STATE_TTL_SECONDS);
+        } catch (Exception e) {
+            log.warn("设置pending interview session id失败(Redis不可用): conversationId={}, sessionId={}, error={}",
+                    conversationId, sessionId, e.getMessage());
+        }
     }
 
     @Override

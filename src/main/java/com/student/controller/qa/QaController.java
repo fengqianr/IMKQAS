@@ -108,9 +108,31 @@ public class QaController {
                 Map<String, Object> doneEvent = new java.util.HashMap<>();
                 doneEvent.put("type", "done");
                 doneEvent.put("answer", answer);
+                doneEvent.put("intentType", response.getIntentType());
                 if (conversationId != null) {
                     doneEvent.put("conversationId", conversationId);
                 }
+                if (response.getQuestionnaireSuggestion() != null
+                        && response.getQuestionnaireSuggestion().isMatched()) {
+                    Map<String, Object> suggestion = new java.util.HashMap<>();
+                    suggestion.put("matched", true);
+                    suggestion.put("confidence", response.getQuestionnaireSuggestion().getConfidence());
+                    suggestion.put("suggestionText", response.getQuestionnaireSuggestion().getSuggestionText());
+                    if (response.getQuestionnaireSuggestion().getQuestionnaire() != null) {
+                        var q = response.getQuestionnaireSuggestion().getQuestionnaire();
+                        suggestion.put("questionnaireId", q.getId());
+                        suggestion.put("questionnaireTitle", q.getTitle());
+                        log.info("[DATA_COLLECTION] SSE done事件携带问卷建议: questionnaireId={}, title={}, matched={}, confidence={}",
+                                q.getId(), q.getTitle(), true, response.getQuestionnaireSuggestion().getConfidence());
+                    } else {
+                        log.warn("[DATA_COLLECTION] SSE done事件: matched=true 但 questionnaire 为 null!");
+                    }
+                    doneEvent.put("questionnaireSuggestion", suggestion);
+                }
+                log.info("[DATA_COLLECTION] SSE done事件已发送: intentType={}, hasQuestionnaireSuggestion={}, answer长度={}",
+                        response.getIntentType(),
+                        response.getQuestionnaireSuggestion() != null && response.getQuestionnaireSuggestion().isMatched(),
+                        answer != null ? answer.length() : 0);
                 emitter.send(SseEmitter.event()
                         .id("complete")
                         .data(doneEvent));

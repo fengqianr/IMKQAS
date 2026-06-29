@@ -1,4 +1,5 @@
 import type { ApiResponse } from './auth.types'
+import type { AnswerOption } from './interview.types'
 
 // QA问答请求类型
 export interface QaAskRequest {
@@ -66,11 +67,65 @@ export type SourceReference = SourceCitation
 // 流式问答响应块
 export interface QaStreamChunk {
   type: 'text' | 'sources' | 'retrievalPath' | 'done' | 'error'
+        | 'question' | 'completion' | 'safety_alert' | 'progress' | 'clarify' | 'degradation'
   content?: string
   sources?: SourceReference[]
   conversationId?: string
   error?: string
   retrievalPath?: RetrievalPath
+  // done 事件字段
+  answer?: string
+  intentType?: string
+  questionnaireSuggestion?: {
+    matched: boolean
+    confidence: number
+    suggestionText: string
+    questionnaireId?: string
+    questionnaireTitle?: string
+  }
+  // 问卷相关字段
+  linkId?: string
+  text?: string
+  currentIndex?: number
+  totalQuestions?: number
+  progress?: string
+  options?: AnswerOption[]
+  totalScore?: number
+  maxScore?: number
+  severity?: string
+  interpretation?: string
+  message?: string
+  reason?: string
+  percent?: number
+  level?: string
+}
+
+// 问卷问题数据块
+export interface QuestionChunk {
+  type: 'question'
+  linkId: string
+  text: string
+  currentIndex: number
+  totalQuestions: number
+  progress: string
+  options?: AnswerOption[]
+}
+
+// 问卷完成数据块
+export interface CompletionChunk {
+  type: 'completion'
+  message: string
+  totalScore: number
+  maxScore: number
+  severity: string
+  interpretation: string
+}
+
+// 安全警报数据块
+export interface SafetyAlertChunk {
+  type: 'safety_alert'
+  reason: string
+  message: string
 }
 
 // 科室导诊请求

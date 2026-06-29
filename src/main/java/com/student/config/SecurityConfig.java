@@ -78,6 +78,7 @@ public class SecurityConfig {
                                 "/api/documents/**",
                                 "/api/rag/**",
                                 "/api/document-chunks/**",
+                                "/api/his/interview/**",
                                 // 静态资源
                                 "/favicon.ico",
                                 "/error"

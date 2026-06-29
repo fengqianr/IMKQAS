@@ -10,18 +10,19 @@ spring:
 
   # 数据源配置
   datasource:
-    url: jdbc:mysql://8.138.40.200:3306/imkqas?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://8.138.40.200:3306/imkqas?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&connectTimeout=10000&socketTimeout=30000
     username: root
     password: fqr10292588
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      connection-timeout: 30000
+      connection-timeout: 10000
       maximum-pool-size: 10
       minimum-idle: 5
       connection-test-query: SELECT 1
       validation-timeout: 3000
-      max-lifetime: 600000
-      idle-timeout: 300000
+      max-lifetime: 240000
+      idle-timeout: 180000
+      keepalive-time: 60000
 
 
   # 文件上传配置
@@ -45,7 +46,7 @@ spring:
       port: 6379
       database: 0
       password:
-      timeout: 5000ms
+      timeout: 2000ms
       lettuce:
         pool:
           max-active: 8
@@ -100,7 +101,7 @@ imkqas:
       deployment: api
       # 远程API配置（阿里云DashScope）
       api-endpoint: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
-      api-key: sk-ca1040e1914248cbb02dcb7ca8c7120a
+      api-key: ""  # 从.env文件读取
       # 重排序top-k
       top-k: 10
       # 缓存配置
@@ -117,8 +118,8 @@ imkqas:
       dimension: 1024
       # API端点 (阿里云百炼)
       api-endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings
-      # API密钥 (从环境变量读取)
-      api-key: sk-ca1040e1914248cbb02dcb7ca8c7120a
+      # API密钥 (从.env文件读取)
+      api-key: ""
       # 是否启用缓存
       cache-enabled: true
       # 超时时间 (毫秒)
@@ -154,7 +155,7 @@ imkqas:
     # 大语言模型配置 (阿里云百炼 DashScope，兼容 OpenAI 接口格式)
     llm:
       base-url: https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
-      api-key: sk-ca1040e1914248cbb02dcb7ca8c7120a
+      api-key: ""  # 从.env文件读取
       model: qwen-plus                      # 可选: qwen-turbo / qwen-plus / qwen-max
       embedding-model: text-embedding-v3   # 输出维度 1024，与 Milvus 一致
       timeout: 60                           # 超时时间 (秒)

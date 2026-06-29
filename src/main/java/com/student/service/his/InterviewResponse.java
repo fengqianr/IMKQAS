@@ -54,5 +54,9 @@ public class InterviewResponse {
         private String interpretation;
         private boolean hasHistory;
         private String trendDescription;
+        /** 异步分析结果的摘要文本 */
+        private String analysisSummary;
+        /** 关联分析报告ID（用于后续查询完整报告） */
+        private String analysisId;
     }
 }
