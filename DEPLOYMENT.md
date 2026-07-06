@@ -192,7 +192,7 @@ rm -rf node_modules package-lock.json dist
 npm install --registry=https://registry.npmmirror.com
 
 # 3. 构建前端（生产环境）
-npm run build
+npx vite build
 
 # 4. 确认构建成功
 ls -lh dist/
@@ -222,48 +222,22 @@ curl http://localhost:8080/api/actuator/health
 ```
 
 第七步：启动前端开发服务器（或配置Nginx）
-方案A：启动开发服务器（用于调试）
-bash
-cd ~/IMKQAS/frontend
-
-# 启动开发服务器
-nohup npm run dev -- --host > dev.log 2>&1 &
-
-# 查看日志
-tail -f dev.log
-
-方案B：配置 Nginx 提供静态文件（生产环境推荐）
-bash
-# 1. 确认 Nginx 配置
-sudo tee /etc/nginx/conf.d/imkqas.conf <<-'EOF'
-server {
-listen 80;
-server_name _;
-
-    root /home/admin/IMKQAS/frontend/dist;
-    index index.html;
-    
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-    
-    location /api/ {
-        proxy_pass http://localhost:8080/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-EOF
-
-# 2. 测试配置
+```bash
+# 1. 检查 Nginx 配置是否正确
 sudo nginx -t
 
-# 3. 重启 Nginx
+# 2. 重启 Nginx 加载最新配置
+sudo systemctl reload nginx
+
+# 或者完全重启（如果配置有重大变化）
 sudo systemctl restart nginx
+
+# 3. 查看 Nginx 状态
+sudo systemctl status nginx
 
 # 4. 测试访问
 curl -I http://localhost
+```
 第八步：验证完整部署
 bash
 #!/bin/bash
@@ -307,4 +281,5 @@ echo ""
 echo "访问地址："
 echo "  开发服务器: http://$(hostname -I | awk '{print $1}'):5173"
 echo "  生产环境: http://$(hostname -I | awk '{print $1}')"
+
 

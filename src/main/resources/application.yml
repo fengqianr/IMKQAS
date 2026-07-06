@@ -53,6 +53,24 @@ spring:
           max-idle: 8
           min-idle: 0
 
+    # RabbitMQ配置
+    rabbitmq:
+      host: ${RABBITMQ_HOST:8.138.40.200}
+      port: ${RABBITMQ_PORT:5672}
+      username: ${RABBITMQ_USER:fengqr}
+      password: ${RABBITMQ_PASS:fqr10292588}
+      # 启用消息发布确认
+      publisher-confirm-type: correlated
+      publisher-returns: true
+      listener:
+        simple:
+          acknowledge-mode: manual
+          prefetch: 1
+          # 不启用Spring自动重试（消费者自行控制指数退避）
+          retry:
+            enabled: false
+          default-requeue-rejected: false
+
   # Flyway数据库迁移配置
   flyway:
     enabled: true
@@ -286,6 +304,12 @@ imkqas:
         llm-min-confidence: 0.85
         # 是否启用LLM兜底推断
         llm-fallback-enabled: true
+        # 是否启用RabbitMQ异步审核队列（生产环境开启）
+        mq-enabled: true
+        # LLM推断结果Redis缓存（高置信度结果缓存7天，避免重复调用LLM）
+        llm-cache:
+          enabled: true
+          ttl: 604800
 
     # 性能监控配置
     monitoring:

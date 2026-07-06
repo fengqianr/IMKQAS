@@ -32,6 +32,16 @@ public interface SynonymExpansionService {
     TermMapping lookupTerm(String colloquialTerm);
 
     /**
+     * 强制LLM推断（绕过本地映射表和SNOMED CT缓存）
+     * 用于离线阈值调优，获取LLM对特定词条的原始置信度
+     *
+     * @param colloquialTerm 口语表达
+     * @param contextQuery 上下文查询（用于构建推断prompt）
+     * @return LLM推断结果，始终包含置信度分数
+     */
+    TermMapping lookupTermForceLlm(String colloquialTerm, String contextQuery);
+
+    /**
      * 批量查询术语的标准名称
      *
      * @param terms 术语列表
@@ -65,6 +75,19 @@ public interface SynonymExpansionService {
      * 检查服务是否可用
      */
     boolean isAvailable();
+
+    /**
+     * 清理指定标准术语的映射记录
+     * @return 删除的记录数
+     */
+    int cleanupByStandardTerm(String standardTerm);
+
+    /**
+     * 批量写入映射（跳过已存在的）
+     * @param mappings [{colloquialTerm, standardTerm, confidence}, ...]
+     * @return 实际写入数量
+     */
+    int batchUpsertMappings(List<Map<String, Object>> mappings);
 
     // ========== 内部数据类型 ==========
 

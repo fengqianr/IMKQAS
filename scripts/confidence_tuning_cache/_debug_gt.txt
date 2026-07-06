@@ -1,0 +1,50 @@
+
+
+KEY: Q046_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=小儿运动后咳嗽是哮喘吗，需要去医院吗？
+---
+KEY: Q121_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=请问肺炎咳嗽是什么样的，严重吗？
+---
+KEY: Q305_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=肺炎咳嗽是什么样的，该如何处理？
+---
+KEY: Q379_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=宝宝夜间咳嗽是哮喘吗，怎么办？
+---
+KEY: Q391_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=孩子运动后咳嗽是哮喘吗，要不要紧？
+---
+KEY: Q405_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=医生，夜间咳嗽是哮喘吗？
+---
+KEY: Q442_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=我想问一下夜间咳嗽是哮喘吗？
+---
+KEY: Q496_咳嗽
+  term=咳嗽
+  gtTerm=测试标准术语
+  gtSource=LOCAL
+  contextQuery=请问运动后咳嗽是哮喘吗，严重吗？
+---

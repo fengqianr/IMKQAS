@@ -83,6 +83,8 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/error"
                         ).permitAll()
+                        // 管理员端点（仅ADMIN角色可访问）
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // 需要认证的端点
                         .anyRequest().authenticated())
                 // 添加JWT认证过滤器

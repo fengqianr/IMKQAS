@@ -54,6 +54,10 @@
             <span class="material-symbols-outlined text-lg">delete</span>
             回收站
           </div>
+          <div @click="showReviewPanel = true" v-if="authStore.userRole === 'ADMIN'" class="qa-sidebar-footer-item qa-clickable">
+            <span class="material-symbols-outlined text-lg">rate_review</span>
+            词条审核
+          </div>
           <div class="qa-sidebar-footer-item">
             <span class="material-symbols-outlined text-lg">help</span>
             帮助中心
@@ -346,6 +350,9 @@
       </div>
     </div>
   </div>
+
+  <!-- 词条审核面板（管理员可见） -->
+  <TermReviewPanel v-model="showReviewPanel" />
 </template>
 
 <script setup lang="ts">
@@ -355,6 +362,8 @@ import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
 import { authService } from '@/api/services/auth.service'
+import { useAuthStore } from '@/stores/auth.store'
+import TermReviewPanel from '@/components/TermReviewPanel.vue'
 import type { Conversation, RetrievalStep } from '@/api/types/qa.types'
 import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview.types'
 
@@ -416,6 +425,10 @@ const expandedSteps = ref(false)
 const interviewActive = ref(false)
 const interviewLoading = ref(false)
 const interviewSessionId = ref<string | null>(null)
+
+// 词条审核面板
+const showReviewPanel = ref(false)
+const authStore = useAuthStore()
 
 // IME 组合输入状态（防止中文输入法 Enter 确认时重复触发 sendMessage）
 const isComposing = ref(false)

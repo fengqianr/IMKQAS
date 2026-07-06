@@ -173,10 +173,11 @@ public class AuthController {
                     .body(ApiResponse.error("令牌无效或已过期"));
         }
 
-        // 这里应返回完整的用户信息，简化返回ID和角色
+        // 返回用户基本信息，字段名需与前端UserInfo类型保持一致
+        final String userRoleValue = role;
         return ResponseEntity.ok(ApiResponse.success("获取成功", new Object() {
             public final Long id = userId;
-            public final String userRole = role;
+            public final String role = userRoleValue;
         }));
     }
 

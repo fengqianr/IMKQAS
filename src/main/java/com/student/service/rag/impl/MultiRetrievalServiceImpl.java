@@ -226,6 +226,68 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
     }
 
     @Override
+    public List<RetrievalResult> hybridRetrievalWithPerSideK(
+            String query, int topK, int perSideK, double vectorWeight, double keywordWeight) {
+        long startTime = System.currentTimeMillis();
+        totalQueries.incrementAndGet();
+        hybridQueries.incrementAndGet();
+
+        // 归一化权重
+        double totalWeight = vectorWeight + keywordWeight;
+        if (totalWeight != 1.0) {
+            vectorWeight = vectorWeight / totalWeight;
+            keywordWeight = keywordWeight / totalWeight;
+        }
+
+        try {
+            // 1. 并行执行向量检索和关键词检索（使用传入的 perSideK）
+            CompletableFuture<List<RetrievalResult>> vectorFuture = CompletableFuture.supplyAsync(
+                    () -> vectorRetrieval(query, perSideK),
+                    executorService
+            );
+
+            CompletableFuture<List<RetrievalResult>> keywordFuture = CompletableFuture.supplyAsync(
+                    () -> keywordRetrieval(query, perSideK),
+                    executorService
+            );
+
+            // 2. 等待双路检索完成
+            CompletableFuture.allOf(vectorFuture, keywordFuture).get(
+                    ragConfig.getRetrieval().getTimeout(),
+                    TimeUnit.MILLISECONDS
+            );
+
+            List<RetrievalResult> vectorResults = vectorFuture.get();
+            List<RetrievalResult> keywordResults = keywordFuture.get();
+
+            // 3. 使用标准RRF融合算法
+            List<RetrievalResult> fusedResults = rrfFusionService.fuseVectorAndKeyword(
+                    vectorResults, keywordResults,
+                    vectorWeight, keywordWeight,
+                    topK
+            );
+
+            // 4. 更新统计信息
+            long responseTime = System.currentTimeMillis() - startTime;
+            totalResponseTime.addAndGet(responseTime);
+            hybridSuccessCount.incrementAndGet();
+
+            log.info("混合检索(perSideK={})完成: query={}, vector={}, keyword={}, fused={}, time={}ms",
+                    perSideK, truncate(query), vectorResults.size(), keywordResults.size(),
+                    fusedResults.size(), responseTime);
+
+            return fusedResults;
+
+        } catch (TimeoutException e) {
+            log.error("混合检索超时: query={}, timeout={}ms", query, ragConfig.getRetrieval().getTimeout());
+            return fallbackRetrieval(query, topK, vectorWeight > keywordWeight);
+        } catch (Exception e) {
+            log.error("混合检索异常: query={}", query, e);
+            return fallbackRetrieval(query, topK, vectorWeight > keywordWeight);
+        }
+    }
+
+    @Override
     public RetrievalMode getCurrentMode() {
         return currentMode;
     }

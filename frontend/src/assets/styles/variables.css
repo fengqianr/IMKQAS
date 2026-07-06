@@ -1,6 +1,7 @@
 :root {
   /* 颜色系统 - 临床精准框架 (Clinical Precision) */
   /* 品牌核心色 */
+  --color-primary: #005eb8;
   --color-brand: #005eb8;
   --color-on-brand: #ffffff;
   --color-brand-hover: #004a9e;

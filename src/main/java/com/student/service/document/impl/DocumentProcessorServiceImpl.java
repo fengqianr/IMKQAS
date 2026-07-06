@@ -42,6 +42,7 @@ import com.student.service.document.DocumentChunkService;
 import com.student.service.document.DocumentService;
 import com.student.service.rag.DocumentProcessorService;
 import com.student.service.rag.EmbeddingService;
+import com.student.service.rag.KeywordRetrievalService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,7 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     private final DocumentChunkService documentChunkService;
     private final EmbeddingService embeddingService;
     private final MilvusService milvusService;
+    private final KeywordRetrievalService keywordRetrievalService;
     private final RagConfig ragConfig;
     private final MinioService minioService;
 
@@ -108,6 +110,11 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
             log.info("文档处理步骤3-保存分块开始: documentId={}", documentId);
             saveChunksToDatabase(chunks);
             log.info("文档处理步骤3-保存分块完成: documentId={}, chunkCount={}", documentId, chunks.size());
+
+            // 3.5. 同步索引到 Lucene
+            log.info("文档处理步骤3.5-关键词索引开始: documentId={}", documentId);
+            keywordRetrievalService.addBatchToIndex(chunks);
+            log.info("文档处理步骤3.5-关键词索引完成: documentId={}, chunkCount={}", documentId, chunks.size());
 
             // 4. 向量化分块内容
             log.info("文档处理步骤4-向量化开始: documentId={}, chunkCount={}", documentId, chunks.size());

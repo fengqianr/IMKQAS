@@ -53,6 +53,19 @@ public interface MultiRetrievalService {
     List<RetrievalResult> hybridRetrieval(String query, int topK, double vectorWeight, double keywordWeight);
 
     /**
+     * 混合检索（可配置每路召回数量，用于K值调优测试）
+     *
+     * @param query         查询文本
+     * @param topK          最终RRF融合输出数量
+     * @param perSideK      每路检索数量（覆盖配置中的initialTopK）
+     * @param vectorWeight  向量检索权重
+     * @param keywordWeight 关键词检索权重
+     * @return 检索结果列表
+     */
+    List<RetrievalResult> hybridRetrievalWithPerSideK(
+            String query, int topK, int perSideK, double vectorWeight, double keywordWeight);
+
+    /**
      * 获取检索模式
      *
      * @return 当前检索模式

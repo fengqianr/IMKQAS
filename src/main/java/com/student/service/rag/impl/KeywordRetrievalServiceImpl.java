@@ -120,6 +120,7 @@ public class KeywordRetrievalServiceImpl implements KeywordRetrievalService {
             org.apache.lucene.document.Document luceneDoc = convertToLuceneDocument(chunk);
             indexWriter.addDocument(luceneDoc);
             indexWriter.commit();
+            refreshSearcher();
 
             log.debug("文档分块添加到索引: chunkId={}, documentId={}", chunk.getId(), chunk.getDocumentId());
             return true;
@@ -152,6 +153,7 @@ public class KeywordRetrievalServiceImpl implements KeywordRetrievalService {
 
             if (successCount > 0) {
                 indexWriter.commit();
+                refreshSearcher();
             }
 
             log.info("批量添加文档分块到索引完成: total={}, success={}", chunks.size(), successCount);

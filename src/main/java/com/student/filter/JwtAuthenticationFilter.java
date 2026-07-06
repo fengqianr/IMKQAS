@@ -98,18 +98,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         // 设置认证信息到SecurityContext
                         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                        log.debug("用户认证成功: username={}", username);
+                        log.info("JWT认证成功: username={}, authorities={}", username,
+                                userDetails.getAuthorities());
                     } else {
-                        log.warn("令牌中的用户信息与数据库不匹配: tokenUsername={}", username);
+                        log.warn("令牌中的用户信息与数据库不匹配: tokenUsername={}, tokenUserId={}, dbUserId={}",
+                                username, jwtUtil.getUserIdFromToken(token),
+                                ((com.student.entity.User) userDetails).getId());
                         throw new AuthenticationException(ErrorCode.TOKEN_INVALID.getCode(),
                                 "令牌无效或已过期");
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("JWT认证失败", e);
+            log.error("JWT认证过程中异常: uri={}, error={}", request.getRequestURI(), e.getMessage());
             // 认证失败，继续执行过滤器链，由后续的授权机制处理
-            // 如果请求需要认证，Spring Security会返回401
         }
 
         // 继续执行过滤器链

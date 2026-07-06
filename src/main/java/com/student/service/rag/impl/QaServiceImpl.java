@@ -116,9 +116,12 @@ public class QaServiceImpl implements QaService {
             // ═══ [2] 查询预处理：分词 + 实体识别 + 同义词扩展 ═══
             long t2 = System.currentTimeMillis();
             String processedQuery = queryRewriteService.rewrite(query, userId, conversationId);
-            PipelineTraceContext.recordStep("查询预处理", 2, System.currentTimeMillis() - t2);
+            PipelineTraceContext.recordStep("查询预处理", 2, System.currentTimeMillis() - t2,
+                    1, 1, Map.of("已改写", processedQuery != null && !processedQuery.equals(query) ? "是" : "否"));
             if (processedQuery != null && !processedQuery.equals(query)) {
                 log.info("查询预处理完成: raw={}, processed={}", query, processedQuery);
+            } else {
+                log.info("查询改写未命中（三级链均无映射），使用原始Query进行向量检索（语义容错）: query={}", query);
             }
 
             // ═══ [3] 安全兜底：急症预检 ═══
@@ -341,6 +344,8 @@ public class QaServiceImpl implements QaService {
                     1, 1, Map.of("已改写", wasRewritten ? "是" : "否"));
             if (wasRewritten) {
                 log.info("查询预处理完成(WithSources): raw={}, processed={}", query, processedQuery);
+            } else {
+                log.info("查询改写未命中(WithSources)（三级链均无映射），使用原始Query进行向量检索（语义容错）: query={}", query);
             }
 
             // ═══ 安全兜底：急症预检 ═══
