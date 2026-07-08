@@ -178,6 +178,7 @@ export interface SubmitAnswerRequest {
   sessionId: string
   userInput: string
   selectedCode?: string
+  conversationId?: string
 }
 
 // ==================== 分析报告 ====================

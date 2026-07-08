@@ -155,8 +155,9 @@ public class InterviewController {
     public SseEmitter llmAnswer(@RequestBody Map<String, String> body) {
         String sessionId = body.get("sessionId");
         String userInput = body.get("userInput");
-        log.info("收到LLM回答请求: sessionId={}, inputLen={}", sessionId,
-                userInput != null ? userInput.length() : 0);
+        Long conversationId = parseLong(body.get("conversationId"));
+        log.info("收到LLM回答请求: sessionId={}, conversationId={}, inputLen={}", sessionId,
+                conversationId, userInput != null ? userInput.length() : 0);
 
         if (sessionId == null || sessionId.isBlank()) {
             SseEmitter errEmitter = new SseEmitter();
@@ -172,7 +173,7 @@ public class InterviewController {
 
         CompletableFuture.runAsync(() -> {
             try {
-                CollectionToolOutputs.AgentResult result = engine.processLlmTurn(sessionId, userInput);
+                CollectionToolOutputs.AgentResult result = engine.processLlmTurn(sessionId, userInput, conversationId);
                 emitAgentResult(emitter, result, sessionId);
                 sseEmitter.sendDone(emitter);
                 sseEmitter.complete(emitter);

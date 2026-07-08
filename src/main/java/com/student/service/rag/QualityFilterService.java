@@ -47,9 +47,17 @@ public interface QualityFilterService {
         }
 
         public void pass(MultiRetrievalService.RetrievalResult r) { passed.add(r); }
+
         public void discard(MultiRetrievalService.RetrievalResult r, String reason) {
             discarded.add(r);
             discardReasons.merge(reason, 1, Integer::sum);
+        }
+
+        /** 降权：修改分数后仍保留到通过列表 */
+        public void downgrade(MultiRetrievalService.RetrievalResult r, double factor, String reason) {
+            r.setScore(r.getScore() * factor);
+            passed.add(r);
+            discardReasons.merge("降权-" + reason, 1, Integer::sum);
         }
 
         public List<MultiRetrievalService.RetrievalResult> getPassed() { return passed; }

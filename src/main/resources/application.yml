@@ -339,6 +339,17 @@ imkqas:
       contradiction-detection-enabled: true
       # 矛盾检测权威性阈值
       contradiction-authority-threshold: 0.7
+      # ── 禁忌规则检测（离线标注 + 在线过滤） ──
+      # 是否启用
+      contraindication-rule-enabled: true
+      # 规则缓存TTL（秒）
+      contraindication-cache-ttl: 1800
+      # 绝对禁忌降权因子（0.0=直接过滤）
+      absolute-downgrade-factor: 0.0
+      # 相对禁忌降权因子
+      relative-downgrade-factor: 0.3
+      # 慎用降权因子
+      caution-downgrade-factor: 0.5
 
     # ─── 语义缓存链配置 ───
     semantic-cache:

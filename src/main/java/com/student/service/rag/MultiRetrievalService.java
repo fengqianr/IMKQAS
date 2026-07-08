@@ -101,7 +101,7 @@ public interface MultiRetrievalService {
     class RetrievalResult {
         private final Long chunkId;
         private final Long documentId;
-        private final Double score;
+        private Double score;
         private final String content;
         private final RetrievalSource source; // 来源：向量/关键词/混合
         private final Double vectorScore;     // 向量检索分数
@@ -136,6 +136,10 @@ public interface MultiRetrievalService {
 
         public Double getScore() {
             return score;
+        }
+
+        public void setScore(Double score) {
+            this.score = score;
         }
 
         public String getContent() {

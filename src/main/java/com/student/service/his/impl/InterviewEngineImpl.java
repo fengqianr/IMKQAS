@@ -230,10 +230,15 @@ public class InterviewEngineImpl implements InterviewEngine {
     }
 
     @Override
-    public CollectionToolOutputs.AgentResult processLlmTurn(String sessionId, String userInput) {
+    public CollectionToolOutputs.AgentResult processLlmTurn(String sessionId, String userInput, Long conversationId) {
         InterviewSession session = loadSession(sessionId);
         if (session == null) {
             throw new IllegalStateException("会话已过期或不存在: " + sessionId);
+        }
+        // 校验 conversationId 一致性，防止跨会话消息错位
+        if (conversationId != null && session.getConversationId() != null
+                && !conversationId.equals(session.getConversationId())) {
+            throw new IllegalStateException("当前对话与访谈所属对话不一致");
         }
         if (session.isCompleted()) {
             return CollectionToolOutputs.AgentResult.complete(

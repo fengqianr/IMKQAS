@@ -356,7 +356,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
@@ -421,10 +421,23 @@ const inputText = ref('')
 const retrievalSteps = ref<RetrievalStep[]>([])
 const expandedSteps = ref(false)
 
-// 问卷访谈状态
-const interviewActive = ref(false)
-const interviewLoading = ref(false)
-const interviewSessionId = ref<string | null>(null)
+// 问卷访谈状态（按 conversationId 隔离，支持断点续填）
+const interviewStates = ref<Map<string, { active: boolean; loading: boolean; sessionId: string | null }>>(new Map())
+
+function getCurrentInterview() {
+  if (!activeSessionId.value) return { active: false, loading: false, sessionId: null as string | null }
+  return interviewStates.value.get(activeSessionId.value) ?? { active: false, loading: false, sessionId: null }
+}
+
+function setInterviewState(partial: Partial<{ active: boolean; loading: boolean; sessionId: string | null }>) {
+  if (!activeSessionId.value) return
+  const current = getCurrentInterview()
+  interviewStates.value.set(activeSessionId.value, { ...current, ...partial })
+}
+
+const interviewActive = computed(() => getCurrentInterview().active)
+const interviewLoading = computed(() => getCurrentInterview().loading)
+const interviewSessionId = computed(() => getCurrentInterview().sessionId)
 
 // 词条审核面板
 const showReviewPanel = ref(false)
@@ -894,8 +907,7 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
     userId: authService.getToken() ? 1 : undefined,
     conversationId: activeSessionId.value || undefined
   })
-  interviewActive.value = true
-  interviewLoading.value = true
+  setInterviewState({ active: true, loading: true })
 
   try {
     console.log('[DATA_COLLECTION] 调用 interviewService.startLlmInterview...')
@@ -908,10 +920,10 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
       // onEvent
       (event) => {
         console.log('[DATA_COLLECTION] 访谈SSE事件:', event.type, event)
-        interviewLoading.value = false
+        setInterviewState({ loading: false })
         switch (event.type) {
           case 'question':
-            interviewSessionId.value = event.sessionId || interviewSessionId.value
+            setInterviewState({ sessionId: event.sessionId || interviewSessionId.value })
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
@@ -983,35 +995,32 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
             break
           case 'error':
             console.error('问卷访谈错误:', (event as any).message)
-            interviewActive.value = false
-            interviewSessionId.value = null
+            setInterviewState({ active: false, sessionId: null })
             break
         }
       },
       // onError
       (error) => {
         console.error('[DATA_COLLECTION] 启动访谈失败(onError):', error.message, error)
-        interviewLoading.value = false
-        interviewActive.value = false
+        setInterviewState({ loading: false, active: false })
       },
       // onComplete
       () => {
         console.log('[DATA_COLLECTION] 访谈SSE流结束(onComplete)')
-        interviewLoading.value = false
+        setInterviewState({ loading: false })
       }
     )
     console.log('[DATA_COLLECTION] startLlmInterview 返回')
   } catch (err) {
     console.error('[DATA_COLLECTION] 启动访谈异常(catch):', err)
-    interviewLoading.value = false
-    interviewActive.value = false
+    setInterviewState({ loading: false, active: false })
   }
 }
 
 // 提交问卷答案
 const submitInterviewAnswer = async (selectedCode: string, displayText: string) => {
   if (!interviewSessionId.value || interviewLoading.value) return
-  interviewLoading.value = true
+  setInterviewState({ loading: true })
 
   // 立即显示用户消息
   messages.value.push({
@@ -1026,14 +1035,15 @@ const submitInterviewAnswer = async (selectedCode: string, displayText: string) 
       {
         sessionId: interviewSessionId.value,
         userInput: displayText,
-        selectedCode
+        selectedCode,
+        conversationId: activeSessionId.value || undefined
       },
       // onEvent
       (event) => {
-        interviewLoading.value = false
+        setInterviewState({ loading: false })
         switch (event.type) {
           case 'question':
-            interviewSessionId.value = event.sessionId || interviewSessionId.value
+            setInterviewState({ sessionId: event.sessionId || interviewSessionId.value })
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
@@ -1051,8 +1061,7 @@ const submitInterviewAnswer = async (selectedCode: string, displayText: string) 
             nextTick(() => scrollToBottom())
             break
           case 'completion':
-            interviewActive.value = false
-            interviewSessionId.value = null
+            setInterviewState({ active: false, sessionId: null })
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
@@ -1113,16 +1122,16 @@ const submitInterviewAnswer = async (selectedCode: string, displayText: string) 
       // onError
       (error) => {
         console.error('提交答案失败:', error)
-        interviewLoading.value = false
+        setInterviewState({ loading: false })
       },
       // onComplete
       () => {
-        interviewLoading.value = false
+        setInterviewState({ loading: false })
       }
     )
   } catch (err) {
     console.error('提交答案异常:', err)
-    interviewLoading.value = false
+    setInterviewState({ loading: false })
   }
 }
 
@@ -1155,10 +1164,14 @@ const showDetailedReport = async (message: ChatMessage) => {
 }
 
 // 取消访谈
-const cancelInterview = () => {
-  interviewActive.value = false
-  interviewSessionId.value = null
-  interviewLoading.value = false
+const cancelInterview = async () => {
+  const sid = interviewSessionId.value
+  if (sid) {
+    interviewService.cancelInterview(sid).catch(() => {})
+  }
+  if (activeSessionId.value) {
+    interviewStates.value.delete(activeSessionId.value)
+  }
   qaService.stopStreaming()
 }
 

@@ -67,11 +67,12 @@ public interface InterviewEngine {
      * LLM驱动采集：处理一轮用户自然语言输入
      * 调用CollectionSubAgent进行语义理解，返回AgentResult供调用方通过SSE发送
      *
-     * @param sessionId 会话ID
-     * @param userInput 用户原始自然语言输入
+     * @param sessionId      会话ID
+     * @param userInput      用户原始自然语言输入
+     * @param conversationId 对话ID（用于校验会话归属，可为null）
      * @return LLM工具调用结果
      */
-    CollectionToolOutputs.AgentResult processLlmTurn(String sessionId, String userInput);
+    CollectionToolOutputs.AgentResult processLlmTurn(String sessionId, String userInput, Long conversationId);
 
     /**
      * 生成FHIR QuestionnaireResponse资源

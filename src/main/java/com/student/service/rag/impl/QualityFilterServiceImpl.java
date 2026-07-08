@@ -1,5 +1,11 @@
 package com.student.service.rag.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.student.config.RagConfig;
+import com.student.entity.DocumentChunk;
+import com.student.entity.contraindication.DrugPopulationContraindication;
+import com.student.service.document.DocumentChunkService;
 import com.student.service.rag.MedicalEntityRecognitionService;
 import com.student.service.rag.MultiRetrievalService;
 import com.student.service.rag.QualityFilterService;
@@ -8,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 质量过滤服务实现
@@ -66,9 +73,18 @@ public class QualityFilterServiceImpl implements QualityFilterService {
     private static final double CONTRADICTION_AUTHORITY_THRESHOLD = 0.7;
 
     private final MedicalEntityRecognitionService entityRecognitionService;
+    private final DocumentChunkService documentChunkService;
+    private final RagConfig ragConfig;
+    private final ObjectMapper objectMapper;
 
-    public QualityFilterServiceImpl(MedicalEntityRecognitionService entityRecognitionService) {
+    public QualityFilterServiceImpl(MedicalEntityRecognitionService entityRecognitionService,
+                                     DocumentChunkService documentChunkService,
+                                     RagConfig ragConfig,
+                                     ObjectMapper objectMapper) {
         this.entityRecognitionService = entityRecognitionService;
+        this.documentChunkService = documentChunkService;
+        this.ragConfig = ragConfig;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -98,9 +114,19 @@ public class QualityFilterServiceImpl implements QualityFilterService {
         }
 
         if (result.getDiscardedCount() > 0) {
-            log.info("质量过滤完成: 输入={}, 通过={}, 丢弃={}, 原因={}",
+            log.info("质量过滤完成(基础): 输入={}, 通过={}, 丢弃={}, 原因={}",
                     results.size(), result.getPassedCount(),
                     result.getDiscardedCount(), result.getDiscardReasons());
+        }
+
+        // 规则5：禁忌标记过滤（读取chunk预标注的contraindication信息）
+        if (ragConfig.getQualityFilter().isContraindicationRuleEnabled()) {
+            applyContraindicationFilter(result);
+        }
+
+        if (result.getDiscardedCount() > 0) {
+            log.info("质量过滤完成(含禁忌): 输入={}, 通过={}, 丢弃={}",
+                    results.size(), result.getPassedCount(), result.getDiscardedCount());
         }
         return result;
     }
@@ -200,6 +226,107 @@ public class QualityFilterServiceImpl implements QualityFilterService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // ========== 禁忌标记过滤 ==========
+
+    /** 规则5：读取chunk预标注的禁忌信息，按类型分级处理 */
+    private void applyContraindicationFilter(FilterResult result) {
+        List<MultiRetrievalService.RetrievalResult> passed = new ArrayList<>(result.getPassed());
+        result.getPassed().clear();
+
+        Set<Long> chunkIds = passed.stream()
+                .map(MultiRetrievalService.RetrievalResult::getChunkId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, DocumentChunk> chunkMap = Collections.emptyMap();
+        if (!chunkIds.isEmpty()) {
+            List<DocumentChunk> chunks = documentChunkService.listByIds(chunkIds);
+            chunkMap = chunks.stream()
+                    .collect(Collectors.toMap(DocumentChunk::getId, c -> c, (a, b) -> a));
+        }
+
+        RagConfig.QualityFilterConfig config = ragConfig.getQualityFilter();
+        int filteredCount = 0;
+        int downgradedCount = 0;
+
+        for (MultiRetrievalService.RetrievalResult r : passed) {
+            DocumentChunk chunk = chunkMap.get(r.getChunkId());
+            if (chunk == null || chunk.getHasContraindication() == null
+                    || chunk.getHasContraindication() == 0) {
+                result.pass(r);
+                continue;
+            }
+
+            List<ContraindicationMatchInfo> matches = parseContraindicationInfo(
+                    chunk.getContraindicationInfo());
+            if (matches.isEmpty()) {
+                result.pass(r);
+                continue;
+            }
+
+            ContraindicationMatchInfo worst = getWorstMatch(matches);
+            double factor = getDowngradeFactor(worst.type, config);
+
+            if (factor <= 0.0) {
+                result.discard(r, String.format("禁忌规则命中[%s]: %s-%s",
+                        worst.type, worst.drug, worst.population));
+                filteredCount++;
+            } else {
+                result.downgrade(r, factor, String.format("%s: %s-%s",
+                        worst.type, worst.drug, worst.population));
+                downgradedCount++;
+            }
+        }
+        if (filteredCount > 0 || downgradedCount > 0) {
+            log.info("禁忌标记过滤: 处理={}, 过滤={}, 降权={}",
+                    passed.size(), filteredCount, downgradedCount);
+        }
+    }
+
+    private List<ContraindicationMatchInfo> parseContraindicationInfo(String json) {
+        if (json == null || json.trim().isEmpty()) return Collections.emptyList();
+        try {
+            return objectMapper.readValue(json,
+                    new TypeReference<List<ContraindicationMatchInfo>>() {});
+        } catch (Exception e) {
+            log.warn("解析禁忌标注JSON失败", e);
+            return Collections.emptyList();
+        }
+    }
+
+    private ContraindicationMatchInfo getWorstMatch(List<ContraindicationMatchInfo> matches) {
+        return matches.stream()
+                .min(Comparator.comparingInt(m -> {
+                    if (m.type == null) return 99;
+                    return switch (m.type) {
+                        case "ABSOLUTE" -> 0;
+                        case "RELATIVE" -> 1;
+                        case "CAUTION" -> 2;
+                        default -> 3;
+                    };
+                }))
+                .orElse(matches.get(0));
+    }
+
+    private double getDowngradeFactor(String type, RagConfig.QualityFilterConfig config) {
+        if (type == null) return config.getCautionDowngradeFactor();
+        return switch (type) {
+            case "ABSOLUTE" -> config.getAbsoluteDowngradeFactor();
+            case "RELATIVE" -> config.getRelativeDowngradeFactor();
+            case "CAUTION" -> config.getCautionDowngradeFactor();
+            default -> config.getCautionDowngradeFactor();
+        };
+    }
+
+    /** 禁忌匹配信息（与ContraindicationMatch保持结构一致，用于JSON反序列化） */
+    private static class ContraindicationMatchInfo {
+        public String drug;
+        public String population;
+        public String type;
+        public String evidence;
+        public String description;
     }
 
     // ========== 矛盾检测 ==========

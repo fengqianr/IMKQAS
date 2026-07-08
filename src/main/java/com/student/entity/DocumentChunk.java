@@ -42,6 +42,12 @@ public class DocumentChunk {
     @TableField("vector_id")
     private String vectorId; // Milvus向量ID
 
+    @TableField("has_contraindication")
+    private Integer hasContraindication; // 是否命中禁忌规则（0=否 1=是）
+
+    @TableField("contraindication_info")
+    private String contraindicationInfo; // 禁忌标注详情JSON
+
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt = LocalDateTime.now();
 

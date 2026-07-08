@@ -116,6 +116,19 @@ class InterviewService {
     }
   }
 
+  // 取消访谈
+  async cancelInterview(sessionId: string): Promise<void> {
+    try {
+      await axios.post(
+        `${this.baseURL}/his/interview/${sessionId}/cancel`,
+        {},
+        { headers: this.getAuthHeaders() }
+      )
+    } catch (error: any) {
+      console.error('取消访谈失败:', error)
+    }
+  }
+
   // 获取问卷列表
   async getQuestionnaires(): Promise<QuestionnaireTemplate[]> {
     try {

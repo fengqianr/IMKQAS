@@ -40,6 +40,7 @@ import com.student.service.dataBase.MilvusService;
 import com.student.service.dataBase.MinioService;
 import com.student.service.document.DocumentChunkService;
 import com.student.service.document.DocumentService;
+import com.student.service.rag.ContraindicationDetectionService;
 import com.student.service.rag.DocumentProcessorService;
 import com.student.service.rag.EmbeddingService;
 import com.student.service.rag.KeywordRetrievalService;
@@ -64,6 +65,7 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     private final EmbeddingService embeddingService;
     private final MilvusService milvusService;
     private final KeywordRetrievalService keywordRetrievalService;
+    private final ContraindicationDetectionService contraindicationDetectionService;
     private final RagConfig ragConfig;
     private final MinioService minioService;
 
@@ -105,6 +107,15 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
             if (chunks.isEmpty()) {
                 throw new RuntimeException("文档分块失败，未生成任何分块");
             }
+
+            // 2.5. 禁忌规则检测（离线标注chunk）
+            log.info("文档处理步骤2.5-禁忌检测开始: documentId={}", documentId);
+            contraindicationDetectionService.annotateChunks(chunks);
+            long flaggedCount = chunks.stream()
+                    .filter(c -> c.getHasContraindication() != null && c.getHasContraindication() == 1)
+                    .count();
+            log.info("文档处理步骤2.5-禁忌检测完成: documentId={}, flaggedChunks={}/{}",
+                    documentId, flaggedCount, chunks.size());
 
             // 3. 保存分块到数据库
             log.info("文档处理步骤3-保存分块开始: documentId={}", documentId);

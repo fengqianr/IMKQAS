@@ -480,6 +480,19 @@ public class RagConfig {
         private boolean contradictionDetectionEnabled = true;
         /** 矛盾检测权威性阈值 */
         private double contradictionAuthorityThreshold = 0.7;
+
+        // ========== 禁忌规则检测配置 ==========
+
+        /** 是否启用禁忌规则检测（离线标注 + 在线过滤） */
+        private boolean contraindicationRuleEnabled = true;
+        /** 禁忌规则缓存TTL（秒） */
+        private int contraindicationCacheTtl = 1800;
+        /** 绝对禁忌降权因子（0.0=直接过滤，不进入LLM上下文） */
+        private double absoluteDowngradeFactor = 0.0;
+        /** 相对禁忌降权因子 */
+        private double relativeDowngradeFactor = 0.3;
+        /** 慎用降权因子 */
+        private double cautionDowngradeFactor = 0.5;
     }
 
     /** 质量过滤配置 */
@@ -596,9 +609,10 @@ public class RagConfig {
                 embedding.getModel(), embedding.getDimension());
         log.info("LLM模型: {}, 温度: {}, 最大token: {}",
                 llm.getModel(), llm.getTemperature(), llm.getMaxTokens());
-        log.info("质量过滤: 最小片段长度={}, 黑名单域名数={}, 矛盾检测={}",
+        log.info("质量过滤: 最小片段长度={}, 黑名单域名数={}, 矛盾检测={}, 禁忌规则检测={}",
                 qualityFilter.getMinFragmentLength(), qualityFilter.getBlacklistDomains().size(),
-                qualityFilter.isContradictionDetectionEnabled() ? "启用" : "禁用");
+                qualityFilter.isContradictionDetectionEnabled() ? "启用" : "禁用",
+                qualityFilter.isContraindicationRuleEnabled() ? "启用" : "禁用");
         log.info("多因子重排序: 权威权重={}, 时效权重={}, 语义权重={}",
                 multiFactorRerank.getWeights().getAuthority(),
                 multiFactorRerank.getWeights().getTimeliness(),

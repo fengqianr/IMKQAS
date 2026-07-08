@@ -44,6 +44,7 @@ public class QaServiceImpl implements QaService {
     private final IntentRouter intentRouter;
     private final InterviewEngine interviewEngine;
     private final ConversationStateManager conversationStateManager;
+    private final ContraindicationDetectionService contraindicationDetectionService;
 
     public QaServiceImpl(MultiRetrievalService multiRetrievalService,
                          MultiFactorRerankService multiFactorRerankService,
@@ -57,7 +58,8 @@ public class QaServiceImpl implements QaService {
                          SemanticCacheService semanticCacheService,
                          IntentRouter intentRouter,
                          InterviewEngine interviewEngine,
-                         ConversationStateManager conversationStateManager) {
+                         ConversationStateManager conversationStateManager,
+                         ContraindicationDetectionService contraindicationDetectionService) {
         this.multiRetrievalService = multiRetrievalService;
         this.multiFactorRerankService = multiFactorRerankService;
         this.qualityFilterService = qualityFilterService;
@@ -71,6 +73,7 @@ public class QaServiceImpl implements QaService {
         this.intentRouter = intentRouter;
         this.interviewEngine = interviewEngine;
         this.conversationStateManager = conversationStateManager;
+        this.contraindicationDetectionService = contraindicationDetectionService;
     }
 
     // 文档标题缓存（避免重复查询）
@@ -241,6 +244,12 @@ public class QaServiceImpl implements QaService {
             // MIXED：在RAG回答末尾附加问卷推荐
             if (intent == IntentType.MIXED && suggestion != null && suggestion.isMatched()) {
                 answer = answer + "\n\n---\n\n" + suggestion.getSuggestionText();
+            }
+
+            // 兜底安全提示：查询涉及药物+人群但禁忌规则表未覆盖
+            String safetyNote = contraindicationDetectionService.buildSafetyNote(query);
+            if (safetyNote != null) {
+                answer = answer + "\n\n---\n" + safetyNote;
             }
 
             double confidence = calculateConfidence(rerankedResults, answer);
@@ -474,6 +483,12 @@ public class QaServiceImpl implements QaService {
             // MIXED：末尾附加问卷推荐
             if (intent == IntentType.MIXED && suggestion != null && suggestion.isMatched()) {
                 sanitizedAnswer = sanitizedAnswer + "\n\n---\n\n" + suggestion.getSuggestionText();
+            }
+
+            // 兜底安全提示
+            String safetyNote = contraindicationDetectionService.buildSafetyNote(query);
+            if (safetyNote != null) {
+                sanitizedAnswer = sanitizedAnswer + "\n\n---\n" + safetyNote;
             }
 
             long processingTime = System.currentTimeMillis() - startTime;
