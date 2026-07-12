@@ -2,6 +2,7 @@ package com.student;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.mybatis.spring.annotation.MapperScan;
 
 /**
@@ -11,6 +12,7 @@ import org.mybatis.spring.annotation.MapperScan;
  * @version 1.0
  */
 @SpringBootApplication
+@EnableScheduling
 @MapperScan("com.student.mapper")
 public class ImkqasApplication {
     public static void main(String[] args) {

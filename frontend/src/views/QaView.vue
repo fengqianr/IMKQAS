@@ -202,6 +202,56 @@
                       {{ message.questionnaire.alertMessage }}
                     </div>
                   </div>
+                  <!-- 纯表单卡片（manual_form 降级时展示所有剩余题目） -->
+                  <div v-if="message.questionnaire?.type === 'manual_form'" class="qa-questionnaire-card qa-manual-form-card">
+                    <div class="qa-manual-form-banner">
+                      <span class="material-symbols-outlined qa-manual-form-banner-icon">info</span>
+                      <span>LLM不可用，请点击问卷答案</span>
+                    </div>
+                    <div class="qa-manual-form-title">{{ message.questionnaire.questionnaireTitle || '问卷采集' }}</div>
+                    <div class="qa-question-progress-bar">
+                      <div class="qa-question-progress-fill"
+                           :style="{ width: manualFormFillPercent + '%' }"></div>
+                    </div>
+                    <div class="qa-question-progress-text">
+                      已选择 {{ manualFormSelectedCount }} / {{ message.questionnaire.manualFormItems?.length || 0 }} 题
+                    </div>
+                    <div v-for="item in message.questionnaire.manualFormItems"
+                         :key="item.linkId"
+                         class="qa-manual-form-item">
+                      <div class="qa-manual-form-question-text">
+                        <span class="qa-manual-form-item-index">{{ item.index + 1 }}.</span>
+                        {{ item.text }}
+                      </div>
+                      <div class="qa-question-options">
+                        <button v-for="opt in item.options"
+                                :key="opt.code"
+                                @click="selectManualFormOption(message.id, item.linkId, opt.code)"
+                                :class="['qa-option-btn',
+                                  manualFormAnswers[message.id]?.[item.linkId] === opt.code
+                                    ? 'qa-option-btn-selected' : '']">
+                          <span class="qa-option-code">{{ opt.code }}</span>
+                          <span class="qa-option-display">{{ opt.display }}</span>
+                          <span v-if="manualFormAnswers[message.id]?.[item.linkId] === opt.code"
+                                class="qa-option-check material-symbols-outlined">check</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="qa-manual-form-actions">
+                      <button @click="submitAllManualFormAnswers(message)"
+                              :disabled="!isManualFormComplete(message)"
+                              class="qa-suggestion-btn qa-suggestion-btn-primary">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                        提交所有答案
+                      </button>
+                      <span v-if="!isManualFormComplete(message)" class="qa-manual-form-hint">
+                        请完成所有题目的选择
+                      </span>
+                    </div>
+                    <div v-if="manualFormSubmitting[message.id]" class="qa-manual-form-submitting">
+                      <span class="qa-thinking-text">正在提交答案...</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -356,7 +406,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
@@ -383,7 +433,7 @@ interface ChatMessage {
 }
 
 interface QuestionnaireBlock {
-  type: 'suggestion' | 'question' | 'completion' | 'safety_alert'
+  type: 'suggestion' | 'question' | 'completion' | 'safety_alert' | 'manual_form'
   suggestionText?: string
   questionnaireTitle?: string
   questionnaireId?: string
@@ -403,6 +453,15 @@ interface QuestionnaireBlock {
   reason?: string
   alertMessage?: string
   sessionId?: string
+  manualFormItems?: ManualFormItem[]
+}
+
+/** 纯表单一题的数据 */
+interface ManualFormItem {
+  index: number
+  linkId: string
+  text: string
+  options: AnswerOption[]
 }
 
 // 会话数据
@@ -424,6 +483,14 @@ const expandedSteps = ref(false)
 // 问卷访谈状态（按 conversationId 隔离，支持断点续填）
 const interviewStates = ref<Map<string, { active: boolean; loading: boolean; sessionId: string | null }>>(new Map())
 
+// 当前访谈的问卷ID（供 degradation 处理时使用）
+const currentQuestionnaireId = ref<string | null>(null)
+
+// 纯表单模式状态
+const manualFormMode = ref(false)
+const manualFormAnswers = ref<Record<string, Record<string, string>>>({})
+const manualFormSubmitting = ref<Record<string, boolean>>({})
+
 function getCurrentInterview() {
   if (!activeSessionId.value) return { active: false, loading: false, sessionId: null as string | null }
   return interviewStates.value.get(activeSessionId.value) ?? { active: false, loading: false, sessionId: null }
@@ -438,6 +505,46 @@ function setInterviewState(partial: Partial<{ active: boolean; loading: boolean;
 const interviewActive = computed(() => getCurrentInterview().active)
 const interviewLoading = computed(() => getCurrentInterview().loading)
 const interviewSessionId = computed(() => getCurrentInterview().sessionId)
+
+// 心跳保活（60s 定时更新 lastActiveAt，防止会话过期）
+let heartbeatTimer: ReturnType<typeof setInterval> | null = null
+
+function startHeartbeat() {
+  stopHeartbeat()
+  heartbeatTimer = setInterval(() => {
+    const sid = interviewSessionId.value
+    if (sid) interviewService.heartbeat(sid)
+  }, 60_000)
+}
+
+function stopHeartbeat() {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer)
+    heartbeatTimer = null
+  }
+}
+
+// 纯表单卡片计算属性
+const manualFormSelectedCount = computed(() => {
+  const formMsg = messages.value.find(m => m.questionnaire?.type === 'manual_form')
+  if (!formMsg) return 0
+  const answers = manualFormAnswers.value[formMsg.id]
+  return answers ? Object.keys(answers).length : 0
+})
+
+const manualFormFillPercent = computed(() => {
+  const formMsg = messages.value.find(m => m.questionnaire?.type === 'manual_form')
+  if (!formMsg || !formMsg.questionnaire?.manualFormItems?.length) return 0
+  return manualFormSelectedCount.value / formMsg.questionnaire.manualFormItems.length * 100
+})
+
+// 页面关闭/刷新前通知后端暂停访谈（保留MySQL数据，支持断点续填）
+function handleBeforeUnload() {
+  const sid = interviewSessionId.value
+  if (sid) {
+    interviewService.pauseInterview(sid)
+  }
+}
 
 // 词条审核面板
 const showReviewPanel = ref(false)
@@ -594,7 +701,7 @@ const loadMessages = async (sessionId: string) => {
       }
     })
 
-    // 加载该对话下的历史访谈消息，重建问卷卡片
+    // 加载该对话下的历史访谈消息，重建问卷卡片 + 自动恢复未完成访谈
     try {
       const interviewMsgs = await interviewService.getInterviewsByConversation(sessionId)
       for (const histItem of interviewMsgs) {
@@ -610,6 +717,17 @@ const loadMessages = async (sessionId: string) => {
         const bNum = Number(String(b.id).replace(/^[^0-9]+/, ''))
         return aNum - bNum
       })
+
+      // 检测可恢复的访谈：只恢复 PAUSED 状态（用户关闭页面），忽略 ABANDONED/EXPIRED
+      const pendingInterview = interviewMsgs
+        .filter(h => !h.completed && h.status === 'PAUSED')
+        .sort((a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime())[0]
+      if (pendingInterview) {
+        const resumed = await interviewService.resumeInterview(pendingInterview.sessionId)
+        if (resumed && !resumed.completed) {
+          setInterviewState({ active: true, loading: false, sessionId: pendingInterview.sessionId })
+        }
+      }
     } catch (e) {
       console.warn('加载访谈历史消息失败:', e)
     }
@@ -626,63 +744,60 @@ const loadMessages = async (sessionId: string) => {
 // 将 InterviewMessageItem 重建为问卷卡片 ChatMessage
 const buildQuestionnaireMessage = (im: InterviewMessageItem): ChatMessage | null => {
   const d = im.messageData
-  let questionnaire: QuestionnaireBlock
 
   switch (im.messageType) {
-    case 'question':
-      questionnaire = {
-        type: 'question',
-        linkId: d.linkId,
-        questionText: d.text,
-        currentIndex: d.currentIndex,
-        totalQuestions: d.totalQuestions,
-        options: d.options,
-        sessionId: im.sessionId
+    case 'question': {
+      // LLM模式下问题渲染为文本消息，与实时SSE的question事件保持一致
+      const qIdx = (d.currentIndex ?? 0) + 1
+      const qTotal = d.totalQuestions ?? 0
+      return {
+        id: 'im-' + im.id,
+        role: 'assistant',
+        content: `**问题 ${qIdx}/${qTotal}**\n\n${d.text}\n\n*请用自然语言描述您的情况，或输入选项编号*`
       }
-      break
-    case 'completion':
-      questionnaire = {
-        type: 'completion',
-        totalScore: d.totalScore,
-        maxScore: d.maxScore,
-        severity: d.severity,
-        interpretation: d.interpretation,
-        analysisSummary: d.analysisSummary,
-        analysisId: d.analysisId,
-        completionMessage: d.message
-      }
-      break
-    case 'safety_alert':
-      questionnaire = {
-        type: 'safety_alert',
-        reason: d.reason,
-        alertMessage: d.message
-      }
-      break
+    }
     case 'clarify':
-      questionnaire = {
-        type: 'question',
-        linkId: d.linkId,
-        questionText: d.text,
-        options: d.options,
-        sessionId: im.sessionId
+      // 追问也渲染为普通文本，与实时SSE的clarify事件一致
+      return {
+        id: 'im-' + im.id,
+        role: 'assistant',
+        content: d.text || ''
       }
-      break
     case 'user_message':
       return {
         id: 'um-' + im.id,
         role: 'user',
         content: typeof d.text === 'string' ? d.text : (d.display || ''),
       }
+    case 'completion':
+      return {
+        id: 'im-' + im.id,
+        role: 'assistant',
+        content: '',
+        questionnaire: {
+          type: 'completion',
+          totalScore: d.totalScore,
+          maxScore: d.maxScore,
+          severity: d.severity,
+          interpretation: d.interpretation,
+          analysisSummary: d.analysisSummary,
+          analysisId: d.analysisId,
+          completionMessage: d.message
+        }
+      }
+    case 'safety_alert':
+      return {
+        id: 'im-' + im.id,
+        role: 'assistant',
+        content: '',
+        questionnaire: {
+          type: 'safety_alert',
+          reason: d.reason,
+          alertMessage: d.message
+        }
+      }
     default:
       return null
-  }
-
-  return {
-    id: 'im-' + im.id,
-    role: 'assistant',
-    content: '',
-    questionnaire
   }
 }
 
@@ -740,6 +855,12 @@ const sendMessage = async () => {
   if (!content || !activeSessionId.value) return
 
   inputText.value = ''
+
+  // 纯表单模式下阻止通过输入框发送消息
+  if (manualFormMode.value) {
+    ElMessage.warning('请先完成问卷填写后再发送消息')
+    return
+  }
 
   // 如果访谈活跃中，路由到访谈答案流程
   if (interviewActive.value && interviewSessionId.value) {
@@ -839,23 +960,27 @@ const sendMessage = async () => {
           interviewActive: interviewActive.value,
           streamingContentLength: streamingContent.length
         })
-        // 检测问卷建议，自动开始填表流程
+        // 检测问卷建议，渲染建议卡片让用户确认后再开始
         if (pendingSuggestion) {
           const suggestion = pendingSuggestion
           pendingSuggestion = null
-          console.log('[DATA_COLLECTION] 调用startInterviewFlow:', {
+          console.log('[DATA_COLLECTION] 渲染问卷建议卡片:', {
             questionnaireId: suggestion.questionnaireId,
             questionnaireTitle: suggestion.questionnaireTitle
           })
-          try {
-            await startInterviewFlow(
-              suggestion.questionnaireId,
-              suggestion.questionnaireTitle
-            )
-            console.log('[DATA_COLLECTION] startInterviewFlow完成')
-          } catch (err) {
-            console.error('[DATA_COLLECTION] startInterviewFlow异常:', err)
-          }
+          messages.value.push({
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: '',
+            questionnaire: {
+              type: 'suggestion',
+              suggestionText: suggestion.suggestionText || '根据您的描述，系统为您匹配了合适的评估量表',
+              questionnaireId: suggestion.questionnaireId,
+              questionnaireTitle: suggestion.questionnaireTitle,
+              confidence: suggestion.confidence
+            }
+          })
+          nextTick(() => scrollToBottom())
           return
         }
         // 附加参考文献
@@ -899,6 +1024,12 @@ const sendMessage = async () => {
 const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: string) => {
   if (interviewActive.value) {
     console.warn('[DATA_COLLECTION] startInterviewFlow: 访谈已活跃,跳过')
+    ElMessage.warning('当前有正在进行的问卷访谈，请先完成或取消')
+    return
+  }
+  if (!activeSessionId.value) {
+    console.error('[DATA_COLLECTION] startInterviewFlow: 无活跃会话')
+    ElMessage.error('请先选择或创建一个对话')
     return
   }
   console.log('[DATA_COLLECTION] startInterviewFlow 开始:', {
@@ -908,6 +1039,9 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
     conversationId: activeSessionId.value || undefined
   })
   setInterviewState({ active: true, loading: true })
+  currentQuestionnaireId.value = questionnaireId
+  manualFormMode.value = false
+  startHeartbeat()
 
   try {
     console.log('[DATA_COLLECTION] 调用 interviewService.startLlmInterview...')
@@ -927,16 +1061,7 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
-              content: '',
-              questionnaire: {
-                type: 'question',
-                linkId: event.linkId,
-                questionText: event.text,
-                currentIndex: event.currentIndex,
-                totalQuestions: event.totalQuestions,
-                options: event.options,
-                sessionId: interviewSessionId.value || undefined
-              }
+              content: `**问题 ${(event.currentIndex ?? 0) + 1}/${event.totalQuestions}**\n\n${event.text}\n\n*请用自然语言描述您的情况，或输入选项编号*`
             })
             nextTick(() => scrollToBottom())
             break
@@ -975,34 +1100,44 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
-              content: event.text,
-              questionnaire: {
-                type: 'question',
-                linkId: event.linkId,
-                questionText: event.text,
-                options: event.options,
-                sessionId: interviewSessionId.value || undefined
-              }
+              content: event.text
             })
             nextTick(() => scrollToBottom())
             break
-          case 'degradation':
-            console.warn('问卷采集降级:', (event as any).level, (event as any).reason)
-            ElMessage.warning((event as any).reason || '问卷采集已降级')
+          case 'degradation': {
+            console.warn('问卷采集降级:', (event as any).level, (event as any).reason, 'scope:', (event as any).scope)
+            const dScope = (event as any).scope
+            if ((event as any).level === 'manual_form' && dScope === 'all') {
+              // LLM彻底不可用，切换全量纯表单
+              ElMessage.warning('LLM不可用，请点击问卷答案')
+              const sid = interviewSessionId.value
+              const qid = currentQuestionnaireId.value
+              if (sid && qid) initManualForm(sid, qid)
+            } else {
+              // 单题降级，仅显示警告，不截断后续 SSE 流
+              ElMessage.warning((event as any).reason || '问卷采集已降级')
+            }
             break
+          }
           case 'done':
-            // SSE流结束但访谈仍活跃，不重置状态
             break
           case 'error':
             console.error('问卷访谈错误:', (event as any).message)
             setInterviewState({ active: false, sessionId: null })
+            stopHeartbeat()
             break
+        }
+        // 全量纯表单模式下跳过后续逐题 SSE 事件
+        if (manualFormMode.value && (event.type === 'clarify' || event.type === 'question')) {
+          return
         }
       },
       // onError
       (error) => {
         console.error('[DATA_COLLECTION] 启动访谈失败(onError):', error.message, error)
+        ElMessage.error('启动问卷访谈失败：' + error.message)
         setInterviewState({ loading: false, active: false })
+        stopHeartbeat()
       },
       // onComplete
       () => {
@@ -1014,6 +1149,7 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
   } catch (err) {
     console.error('[DATA_COLLECTION] 启动访谈异常(catch):', err)
     setInterviewState({ loading: false, active: false })
+    stopHeartbeat()
   }
 }
 
@@ -1047,21 +1183,13 @@ const submitInterviewAnswer = async (selectedCode: string, displayText: string) 
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
-              content: '',
-              questionnaire: {
-                type: 'question',
-                linkId: event.linkId,
-                questionText: event.text,
-                currentIndex: event.currentIndex,
-                totalQuestions: event.totalQuestions,
-                options: event.options,
-                sessionId: interviewSessionId.value || undefined
-              }
+              content: `**问题 ${(event.currentIndex ?? 0) + 1}/${event.totalQuestions}**\n\n${event.text}\n\n*请用自然语言描述您的情况，或输入选项编号*`
             })
             nextTick(() => scrollToBottom())
             break
           case 'completion':
             setInterviewState({ active: false, sessionId: null })
+            stopHeartbeat()
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
@@ -1096,32 +1224,40 @@ const submitInterviewAnswer = async (selectedCode: string, displayText: string) 
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
-              content: event.text,
-              questionnaire: {
-                type: 'question',
-                linkId: event.linkId,
-                questionText: event.text,
-                options: event.options,
-                sessionId: interviewSessionId.value || undefined
-              }
+              content: event.text
             })
             nextTick(() => scrollToBottom())
             break
-          case 'degradation':
-            console.warn('问卷采集降级:', (event as any).level, (event as any).reason)
-            ElMessage.warning((event as any).reason || '问卷采集已降级')
+          case 'degradation': {
+            console.warn('问卷采集降级:', (event as any).level, (event as any).reason, 'scope:', (event as any).scope)
+            const dScope = (event as any).scope
+            if ((event as any).level === 'manual_form' && dScope === 'all') {
+              // LLM彻底不可用，切换全量纯表单
+              ElMessage.warning('LLM不可用，请点击问卷答案')
+              const sid = interviewSessionId.value
+              const qid = currentQuestionnaireId.value
+              if (sid && qid) initManualForm(sid, qid)
+            } else {
+              // 单题降级，仅显示警告，不截断后续 SSE 流
+              ElMessage.warning((event as any).reason || '问卷采集已降级')
+            }
             break
+          }
           case 'done':
-            // SSE流结束但访谈仍活跃，不重置状态
             break
           case 'error':
             console.error('提交答案错误:', (event as any).message)
             break
         }
+        // 全量纯表单模式下跳过后续逐题 SSE 事件
+        if (manualFormMode.value && (event.type === 'clarify' || event.type === 'question')) {
+          return
+        }
       },
       // onError
       (error) => {
         console.error('提交答案失败:', error)
+        ElMessage.error('提交答案失败：' + error.message)
         setInterviewState({ loading: false })
       },
       // onComplete
@@ -1167,12 +1303,143 @@ const showDetailedReport = async (message: ChatMessage) => {
 const cancelInterview = async () => {
   const sid = interviewSessionId.value
   if (sid) {
-    interviewService.cancelInterview(sid).catch(() => {})
+    interviewService.abandonInterview(sid).catch(() => {})
   }
   if (activeSessionId.value) {
     interviewStates.value.delete(activeSessionId.value)
   }
+  stopHeartbeat()
   qaService.stopStreaming()
+}
+
+// ==================== 纯表单模式方法 ====================
+
+/** 用户在纯表单卡片中点击选中一个选项 */
+const selectManualFormOption = (messageId: string, linkId: string, code: string) => {
+  if (!manualFormAnswers.value[messageId]) {
+    manualFormAnswers.value[messageId] = {}
+  }
+  manualFormAnswers.value[messageId][linkId] = code
+  // 触发响应式更新
+  manualFormAnswers.value = { ...manualFormAnswers.value }
+}
+
+/** 检查纯表单是否所有题目都已选择 */
+const isManualFormComplete = (message: ChatMessage): boolean => {
+  const items = message.questionnaire?.manualFormItems
+  if (!items || items.length === 0) return false
+  const answers = manualFormAnswers.value[message.id]
+  if (!answers) return false
+  return items.every(item => !!answers[item.linkId])
+}
+
+/** 提交纯表单所有答案 */
+const submitAllManualFormAnswers = async (message: ChatMessage) => {
+  const sessionId = message.questionnaire?.sessionId
+  const answers = manualFormAnswers.value[message.id]
+  if (!sessionId || !answers) return
+
+  if (!isManualFormComplete(message)) {
+    ElMessage.warning('请完成所有题目的选择后再提交')
+    return
+  }
+
+  manualFormSubmitting.value = { ...manualFormSubmitting.value, [message.id]: true }
+
+  try {
+    const response = await interviewService.batchSubmit(sessionId, answers)
+
+    // 替换 manual_form 卡片为 completion 卡片
+    const msgIndex = messages.value.findIndex(m => m.id === message.id)
+    if (msgIndex !== -1) {
+      messages.value[msgIndex] = {
+        ...message,
+        questionnaire: {
+          type: 'completion',
+          totalScore: response.totalScore,
+          maxScore: response.maxScore,
+          severity: response.severity,
+          interpretation: response.interpretation,
+          analysisSummary: response.analysisSummary,
+          analysisId: response.analysisId,
+          completionMessage: response.message
+        }
+      }
+    }
+
+    // 重置访谈状态
+    setInterviewState({ active: false, loading: false, sessionId: null })
+    stopHeartbeat()
+    manualFormMode.value = false
+    currentQuestionnaireId.value = null
+
+    delete manualFormAnswers.value[message.id]
+
+    ElMessage.success('问卷提交成功')
+    nextTick(() => scrollToBottom())
+  } catch (error: any) {
+    console.error('批量提交失败:', error)
+    ElMessage.error(error.message || '提交失败，请重试')
+  } finally {
+    manualFormSubmitting.value = { ...manualFormSubmitting.value, [message.id]: false }
+  }
+}
+
+/** 初始化纯表单模式 —— 获取完整模板，找出剩余题目，插入表单卡片 */
+const initManualForm = async (sessionId: string, questionnaireId: string) => {
+  if (manualFormMode.value) return // 防止重复初始化
+  manualFormMode.value = true
+
+  try {
+    const template = await interviewService.getQuestionnaire(questionnaireId)
+    if (!template || !template.items) {
+      ElMessage.error('无法获取问卷信息')
+      manualFormMode.value = false
+      return
+    }
+
+    // 从会话消息中提取已答题的 linkId
+    const sessionMessages = await interviewService.getSessionMessages(sessionId)
+    const answeredLinkIds = new Set<string>()
+    for (const msg of sessionMessages) {
+      if (msg.messageType === 'user_message' && msg.messageData?.linkId) {
+        answeredLinkIds.add(msg.messageData.linkId)
+      }
+    }
+
+    // 筛出剩余未答题
+    const remainingItems: ManualFormItem[] = template.items
+      .filter(item => !answeredLinkIds.has(item.linkId))
+      .map(item => ({
+        index: item.index,
+        linkId: item.linkId,
+        text: item.text,
+        options: item.options
+      }))
+
+    if (remainingItems.length === 0) return
+
+    const formMessage: ChatMessage = {
+      id: 'manual-form-' + Date.now().toString(),
+      role: 'assistant',
+      content: '',
+      questionnaire: {
+        type: 'manual_form',
+        manualFormItems: remainingItems,
+        questionnaireTitle: template.title,
+        sessionId: sessionId,
+        questionnaireId: questionnaireId
+      }
+    }
+    messages.value.push(formMessage)
+    manualFormAnswers.value[formMessage.id] = {}
+
+    nextTick(() => scrollToBottom())
+  } catch (error) {
+    console.error('初始化纯表单失败:', error)
+    ElMessage.error('初始化纯表单界面失败')
+    manualFormMode.value = false
+  }
 }
 
 // 滚动到底部
@@ -1181,9 +1448,15 @@ const scrollToBottom = () => {
   if (el) el.scrollTop = el.scrollHeight
 }
 
-// 组件挂载时加载会话列表
+// 组件挂载时加载会话列表 + 注册断连通知
 onMounted(() => {
   loadConversations()
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  stopHeartbeat()
 })
 </script>
 
@@ -1842,5 +2115,97 @@ onMounted(() => {
   color: #8d6e00;
   line-height: 1.5;
   text-align: center;
+}
+
+/* ===== 纯表单卡片 ===== */
+.qa-manual-form-card {
+  background: #fff;
+  border-color: #e8a838;
+  box-shadow: 0 1px 6px rgba(232, 168, 56, 0.15);
+}
+
+.qa-manual-form-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #fff8e1, #fff3e0);
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e65100;
+}
+
+.qa-manual-form-banner-icon {
+  font-size: 18px;
+  color: #e65100;
+}
+
+.qa-manual-form-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.qa-manual-form-item {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: #fafafa;
+  border-radius: 10px;
+  border: 1px solid #e8eaed;
+}
+
+.qa-manual-form-item:last-of-type {
+  margin-bottom: 8px;
+}
+
+.qa-manual-form-question-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.qa-manual-form-item-index {
+  color: #00478d;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.qa-manual-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e8eaed;
+}
+
+.qa-manual-form-hint {
+  font-size: 12px;
+  color: #727783;
+  font-style: italic;
+}
+
+.qa-manual-form-submitting {
+  margin-top: 12px;
+  padding: 10px;
+  text-align: center;
+}
+
+.qa-option-btn-selected {
+  background: #e8f0fe !important;
+  border-color: #00478d !important;
+  box-shadow: 0 0 0 1px #00478d;
+}
+
+.qa-option-check {
+  font-size: 16px;
+  color: #00478d;
+  margin-left: auto;
 }
 </style>

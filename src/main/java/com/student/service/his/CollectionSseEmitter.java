@@ -122,13 +122,16 @@ public class CollectionSseEmitter {
 
     /**
      * 发送降级通知
+     *
+     * @param scope "single" 表示仅当前题目降级（下题恢复LLM）；"all" 表示LLM彻底不可用，应切换全量纯表单
      */
-    public void sendDegradationNotice(SseEmitter emitter, String level, String reason) {
-        log.warn("SSE发送降级通知: level={}, reason={}", level, reason);
+    public void sendDegradationNotice(SseEmitter emitter, String level, String reason, String scope) {
+        log.warn("SSE发送降级通知: level={}, scope={}, reason={}", level, scope, reason);
         Map<String, Object> event = new LinkedHashMap<>();
         event.put("type", "degradation");
         event.put("level", level);
         event.put("reason", reason);
+        event.put("scope", scope);
         send(emitter, "degradation", event);
     }
 

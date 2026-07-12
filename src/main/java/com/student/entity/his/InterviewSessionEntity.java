@@ -55,6 +55,9 @@ public class InterviewSessionEntity {
     @TableField("completed")
     private Integer completed;
 
+    @TableField("status")
+    private String status;
+
     @TableField("collection_mode")
     private String collectionMode;
 
@@ -75,6 +78,9 @@ public class InterviewSessionEntity {
 
     @TableField("consecutive_failures")
     private Integer consecutiveFailures;
+
+    @TableField("clarification_count")
+    private Integer clarificationCount;
 
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;

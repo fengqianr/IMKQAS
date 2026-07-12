@@ -1,0 +1,8 @@
+ALTER TABLE interview_sessions
+    MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'QUESTIONING'
+    COMMENT '状态: QUESTIONING/ANSWER_RECEIVED/CLARIFYING/VALIDATING/COMPLETED/PAUSED/EXPIRED/ABANDONED';
+
+ALTER TABLE interview_sessions
+    ADD COLUMN clarification_count INT NOT NULL DEFAULT 0
+    COMMENT '当前题目的追问次数，上限3次，超限强制manual_form'
+    AFTER consecutive_failures;

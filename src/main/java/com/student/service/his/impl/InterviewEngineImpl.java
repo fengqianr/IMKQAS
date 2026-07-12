@@ -43,6 +43,7 @@ public class InterviewEngineImpl implements InterviewEngine {
 
     private static final String SESSION_KEY_PREFIX = "his:interview:";
     private static final int SESSION_TTL_SECONDS = 1800;
+    private static final int SESSION_TIMEOUT_MINUTES = 30;
 
     // 本地缓存（Redis降级时使用）
     private final Map<String, InterviewSession> localSessions = new ConcurrentHashMap<>();
@@ -178,6 +179,14 @@ public class InterviewEngineImpl implements InterviewEngine {
                 .findById(session.getQuestionnaireId())
                 .orElseThrow(() -> new IllegalStateException("问卷模板已移除"));
 
+        // linkId 校验：LLM返回的linkId必须等于当前题目
+        var currentItem = template.getItems().get(session.getCurrentQuestionIndex());
+        if (!currentItem.getLinkId().equals(linkId)) {
+            throw new IllegalStateException(String.format(
+                    "linkId不匹配: expected=%s, actual=%s (sessionId=%s)",
+                    currentItem.getLinkId(), linkId, sessionId));
+        }
+
         // 记录答案
         session.getAnswers().put(linkId, code);
         session.setCurrentScore(session.getCurrentScore() + value);
@@ -235,7 +244,6 @@ public class InterviewEngineImpl implements InterviewEngine {
         if (session == null) {
             throw new IllegalStateException("会话已过期或不存在: " + sessionId);
         }
-        // 校验 conversationId 一致性，防止跨会话消息错位
         if (conversationId != null && session.getConversationId() != null
                 && !conversationId.equals(session.getConversationId())) {
             throw new IllegalStateException("当前对话与访谈所属对话不一致");
@@ -247,21 +255,39 @@ public class InterviewEngineImpl implements InterviewEngine {
                             .build());
         }
 
+        // === 入站状态校验：只接受题目级操作状态 ===
+        String currentStatus = session.getStatus();
+        if (!InterviewStatus.isQuestionLevelState(currentStatus)) {
+            throw new IllegalStateException("当前状态不允许回答: " + currentStatus + " (sessionId=" + sessionId + ")");
+        }
+        // 防止重复提交：状态机正在处理中
+        if ("ANSWER_RECEIVED".equals(currentStatus) || "VALIDATING".equals(currentStatus)) {
+            log.info("重复提交拒绝: sessionId={}, status={}", sessionId, currentStatus);
+            return CollectionToolOutputs.AgentResult.clarify(
+                    CollectionToolOutputs.ClarifyOutput.builder()
+                            .linkId("")
+                            .clarifyingText("正在处理您上一轮的回答，请稍候...")
+                            .build());
+        }
+
         session.setLastActiveAt(LocalDateTime.now());
 
         QuestionnaireTemplate template = questionnaireRepository
                 .findById(session.getQuestionnaireId())
                 .orElseThrow(() -> new IllegalStateException("问卷模板已移除"));
 
-        // 持久化用户消息（异步，不阻塞主流程）
+        // 持久化用户消息（异步）
         persistUserMessage(session, template, userInput);
 
-        log.info("LLM轮次处理: sessionId={}, progress={}/{}, degradationLevel={}, userInput={}",
+        log.info("LLM轮次处理: sessionId={}, progress={}/{}, degradationLevel={}, status={}→ANSWER_RECEIVED, userInput={}",
                 sessionId, session.getCurrentQuestionIndex() + 1, session.getTotalQuestions(),
-                session.getDegradationLevel(),
+                session.getDegradationLevel(), currentStatus,
                 userInput.length() > 80 ? userInput.substring(0, 80) + "..." : userInput);
 
-        // 三级纯表单模式：用户输入数字编号，直接映射
+        // === 状态转换：→ ANSWER_RECEIVED，调用LLM ===
+        session.setStatus("ANSWER_RECEIVED");
+        saveSession(session);
+
         CollectionToolOutputs.AgentResult result;
         if ("manual_form".equals(session.getDegradationLevel())) {
             CollectionToolOutputs.AgentResult formResult = handleManualFormInput(
@@ -271,60 +297,57 @@ public class InterviewEngineImpl implements InterviewEngine {
                 result = formResult;
                 log.info("纯表单模式处理: sessionId={}, type={}", sessionId, result.getType());
             } else {
-                // 纯表单也无法解析，回退到正常流程
                 result = collectionSubAgent.processUserInput(session, userInput, template);
             }
         } else {
-            // 调用CollectionSubAgent进行LLM语义理解
             result = collectionSubAgent.processUserInput(session, userInput, template);
         }
 
         log.info("LLM语义理解结果: sessionId={}, type={}, latency={}ms, degradationLevel={}",
                 sessionId, result.getType(), result.getLatencyMs(), session.getDegradationLevel());
 
-        // 传播降级层级到AgentResult（供SSE层发送降级通知）
         if (result.getDegradationLevel() == null) {
             result.setDegradationLevel(session.getDegradationLevel());
         }
 
-        // 检测降级
         if (session.getDegradationLevel() != null && !"llm".equals(session.getDegradationLevel())) {
             log.warn("采集已降级: sessionId={}, level={}", sessionId, session.getDegradationLevel());
         }
 
-        // record_answer类型：自动持久化并推进到下一题
-        if (result.getType() == CollectionToolOutputs.OutputType.RECORD_ANSWER) {
-            log.info("LLM识别为答案记录，开始持久化: sessionId={}, linkId={}, code={}",
-                    sessionId, result.getRecordAnswer().getLinkId(),
-                    result.getRecordAnswer().getCode());
-            var record = result.getRecordAnswer();
-            try {
-                InterviewResponse resp = recordAnswer(sessionId,
-                        record.getLinkId(),
-                        record.getCode(),
-                        record.getDisplay(),
-                        record.getValue(),
-                        record.getRawInput() != null ? record.getRawInput() : userInput,
-                        record.getSource() != null ? record.getSource() : "llm",
-                        record.getConfidence(),
-                        record.getContextSummary() != null ? record.getContextSummary() : "");
-
-                // 优先从本地缓存重新加载（recordAnswer已同步更新本地缓存），
-                // 避免Redis异步写入竞态导致loadSession从Redis读到旧状态
-                session = localSessions.get(sessionId);
-                if (session == null) {
-                    session = loadSession(sessionId);
+        // === 状态机分支处理 ===
+        switch (result.getType()) {
+            case RECORD_ANSWER -> {
+                result = handleRecordAnswerState(session, template, result, userInput);
+                // handleRecordAnswerState内部通过recordAnswer重新加载并保存了会话，
+                // 当前session引用可能已过期（被改为VALIDATING），需刷新为最新状态
+                InterviewSession latest = localSessions.get(sessionId);
+                if (latest != null) {
+                    session = latest;
                 }
-
-                // 如果纯表单模式成功记录了答案，尝试恢复LLM模式（断路器可能已恢复）
-                if ("manual_form".equals(session.getDegradationLevel())
-                        && "manual_form".equals(record.getSource())) {
-                    session.setDegradationLevel("llm");
-                    session.setConsecutiveFailures(0);
-                    log.info("纯表单模式成功回答，恢复LLM模式: sessionId={}", sessionId);
+            }
+            case CLARIFY -> {
+                session.setClarificationCount(session.getClarificationCount() + 1);
+                if (session.getClarificationCount() >= 3) {
+                    log.warn("追问次数超限({})，强制manual_form: sessionId={}",
+                            session.getClarificationCount(), sessionId);
+                    session.setDegradationLevel("manual_form");
+                    result = buildManualFormPrompt(session, template);
+                } else {
+                    session.setStatus("CLARIFYING");
                 }
-
-                if (resp.isCompleted() && resp.getSummary() != null) {
+                persistAgentResultMessage(session, result);
+            }
+            case COMPLETE -> {
+                // 防LLM幻觉：验证是否真的全部答完
+                if (session.getCurrentQuestionIndex() < session.getTotalQuestions()) {
+                    log.warn("LLM提前返回COMPLETE，忽略并发送下一题: sessionId={}, progress={}/{}",
+                            sessionId, session.getCurrentQuestionIndex(), session.getTotalQuestions());
+                    session.setStatus("QUESTIONING");
+                    result = buildNextQuestionResult(session, template);
+                } else {
+                    session.setStatus("COMPLETED");
+                    // 已完成：触发完成流程
+                    InterviewResponse resp = buildCompletionResponse(session, template);
                     var summary = resp.getSummary();
                     result = CollectionToolOutputs.AgentResult.complete(
                             CollectionToolOutputs.CompleteOutput.builder()
@@ -339,32 +362,202 @@ public class InterviewEngineImpl implements InterviewEngine {
                                     .analysisSummary(summary.getAnalysisSummary())
                                     .analysisId(summary.getAnalysisId())
                                     .build());
-                    // 持久化完成消息
                     persistInterviewMessage(session, "completion", buildCompletionMsgData(
                             summary.getTotalScore(), summary.getMaxScore(),
                             summary.getSeverity(), summary.getInterpretation(),
                             summary.getAnalysisSummary(), summary.getAnalysisId()));
-                } else if (!resp.isCompleted() && resp.getNextQuestion() != null) {
-                    var next = resp.getNextQuestion();
-                    result = CollectionToolOutputs.AgentResult.askQuestion(
-                            CollectionToolOutputs.AskQuestionOutput.builder()
-                                    .linkId(next.getLinkId())
-                                    .text(next.getText())
-                                    .currentIndex(session.getCurrentQuestionIndex())
-                                    .totalQuestions(session.getTotalQuestions())
-                                    .options(next.getOptions())
-                                    .build());
-                    // 题目卡片由 persistAgentResultMessage 统一持久化，此处不重复调用
                 }
-            } catch (Exception e) {
-                log.error("持久化答案失败: sessionId={}, linkId={}", sessionId, record.getLinkId(), e);
+            }
+            case EMERGENCY_INTERRUPT -> {
+                session.setStatus("ABANDONED");
+                persistAgentResultMessage(session, result);
+                log.warn("紧急中断: sessionId={}, reason={}",
+                        sessionId, result.getEmergencyInterrupt().getReason());
+            }
+            default -> {
+                // ASK_QUESTION 不应来自LLM，但作为兜底：状态机自行构建
+                log.warn("LLM返回了非预期的ASK_QUESTION，状态机自行构建下一题: sessionId={}", sessionId);
+                session.setStatus("QUESTIONING");
+                result = buildNextQuestionResult(session, template);
             }
         }
 
-        // 持久化非record_answer类型的LLM结果消息
-        persistAgentResultMessage(session, result);
-
         saveSession(session);
+        return result;
+    }
+
+    /**
+     * 处理 RECORD_ANSWER 状态：校验 linkId + code 合法性后记录答案
+     */
+    private CollectionToolOutputs.AgentResult handleRecordAnswerState(
+            InterviewSession session, QuestionnaireTemplate template,
+            CollectionToolOutputs.AgentResult result, String userInput) {
+        var record = result.getRecordAnswer();
+        var currentItem = template.getItems().get(session.getCurrentQuestionIndex());
+
+        // 校验 linkId：LLM返回的linkId必须匹配当前题目
+        if (!currentItem.getLinkId().equals(record.getLinkId())) {
+            log.warn("LLM返回错误linkId: expected={}, actual={}, sessionId={}",
+                    currentItem.getLinkId(), record.getLinkId(), session.getSessionId());
+            return handleValidationFailure(session, template, currentItem,
+                    "请针对当前问题回答，选择最符合您情况的选项：");
+        }
+
+        // 校验 code 合法性：必须存在于当前题目的选项列表中
+        boolean validCode = currentItem.getOptions().stream()
+                .anyMatch(o -> o.getCode().equals(record.getCode()));
+        if (!validCode) {
+            log.warn("LLM返回无效code: linkId={}, code={}, sessionId={}",
+                    record.getLinkId(), record.getCode(), session.getSessionId());
+            return handleValidationFailure(session, template, currentItem,
+                    "抱歉，我没太理解您的选择。请从以下选项中选择一个：");
+        }
+
+        // linkId + code 校验通过 → 状态转换为 VALIDATING，记录答案
+        session.setStatus("VALIDATING");
+        log.info("校验通过: sessionId={}, linkId={}, code={}, display={}",
+                session.getSessionId(), record.getLinkId(), record.getCode(), record.getDisplay());
+
+        try {
+            InterviewResponse resp = recordAnswer(session.getSessionId(),
+                    record.getLinkId(),
+                    record.getCode(),
+                    record.getDisplay(),
+                    record.getValue(),
+                    record.getRawInput() != null ? record.getRawInput() : userInput,
+                    record.getSource() != null ? record.getSource() : "llm",
+                    record.getConfidence(),
+                    record.getContextSummary() != null ? record.getContextSummary() : "");
+
+            // 重新加载会话（recordAnswer内部已更新并保存）
+            session = localSessions.get(session.getSessionId());
+            if (session == null) {
+                session = loadSession(session.getSessionId());
+            }
+
+            // 降级恢复
+            if ("manual_form".equals(session.getDegradationLevel())
+                    && "manual_form".equals(record.getSource())) {
+                session.setDegradationLevel("llm");
+                session.setConsecutiveFailures(0);
+                log.info("纯表单模式成功回答，恢复LLM模式: sessionId={}", session.getSessionId());
+            }
+
+            // 重置追问计数
+            session.setClarificationCount(0);
+
+            if (resp.isCompleted() && resp.getSummary() != null) {
+                session.setStatus("COMPLETED");
+                var summary = resp.getSummary();
+                CollectionToolOutputs.AgentResult completeResult = CollectionToolOutputs.AgentResult.complete(
+                        CollectionToolOutputs.CompleteOutput.builder()
+                                .message(String.format("评估完成，总分%d/%d，严重程度：%s",
+                                        summary.getTotalScore(), summary.getMaxScore(),
+                                        summary.getSeverity()))
+                                .totalScore(summary.getTotalScore())
+                                .maxScore(summary.getMaxScore())
+                                .severity(summary.getSeverity())
+                                .interpretation(summary.getInterpretation() != null
+                                        ? summary.getInterpretation() : "")
+                                .analysisSummary(summary.getAnalysisSummary())
+                                .analysisId(summary.getAnalysisId())
+                                .build());
+                persistInterviewMessage(session, "completion", buildCompletionMsgData(
+                        summary.getTotalScore(), summary.getMaxScore(),
+                        summary.getSeverity(), summary.getInterpretation(),
+                        summary.getAnalysisSummary(), summary.getAnalysisId()));
+                return completeResult;
+            } else {
+                // 推进到下一题：状态机自行构建 ASK_QUESTION
+                session.setStatus("QUESTIONING");
+                return buildNextQuestionResult(session, template);
+            }
+        } catch (Exception e) {
+            log.error("持久化答案失败: sessionId={}, linkId={}", session.getSessionId(), record.getLinkId(), e);
+            // 恢复状态以便重试
+            session.setStatus("QUESTIONING");
+            return CollectionToolOutputs.AgentResult.clarify(
+                    CollectionToolOutputs.ClarifyOutput.builder()
+                            .linkId(currentItem.getLinkId())
+                            .clarifyingText("系统处理出错，请重新回答当前问题。")
+                            .build());
+        }
+    }
+
+    /**
+     * 校验失败时的统一处理：追问计数+1，超限则强制manual_form
+     */
+    private CollectionToolOutputs.AgentResult handleValidationFailure(
+            InterviewSession session, QuestionnaireTemplate template,
+            QuestionnaireTemplate.QuestionItem currentItem, String clarifyText) {
+        session.setClarificationCount(session.getClarificationCount() + 1);
+        if (session.getClarificationCount() >= 3) {
+            log.warn("追问次数超限({})，强制manual_form: sessionId={}",
+                    session.getClarificationCount(), session.getSessionId());
+            session.setDegradationLevel("manual_form");
+            return buildManualFormPrompt(session, template);
+        }
+        session.setStatus("CLARIFYING");
+        return CollectionToolOutputs.AgentResult.clarify(
+                CollectionToolOutputs.ClarifyOutput.builder()
+                        .linkId(currentItem.getLinkId())
+                        .clarifyingText(clarifyText)
+                        .options(currentItem.getOptions())
+                        .build());
+    }
+
+    /**
+     * 状态机构建下一题 ASK_QUESTION 结果
+     */
+    private CollectionToolOutputs.AgentResult buildNextQuestionResult(
+            InterviewSession session, QuestionnaireTemplate template) {
+        var nextItem = template.getItems().get(session.getCurrentQuestionIndex());
+        CollectionToolOutputs.AgentResult result = CollectionToolOutputs.AgentResult.askQuestion(
+                CollectionToolOutputs.AskQuestionOutput.builder()
+                        .linkId(nextItem.getLinkId())
+                        .text(nextItem.getText())
+                        .currentIndex(session.getCurrentQuestionIndex())
+                        .totalQuestions(session.getTotalQuestions())
+                        .options(nextItem.getOptions())
+                        .build());
+        // 持久化题目消息
+        persistInterviewMessage(session, "question", buildQuestionMsgData(
+                nextItem.getLinkId(), nextItem.getText(),
+                session.getCurrentQuestionIndex(), session.getTotalQuestions(),
+                nextItem.getOptions()));
+        result.setDegradationLevel(session.getDegradationLevel());
+        log.info("状态机构建下一题: sessionId={}, linkId={}, index={}/{}",
+                session.getSessionId(), nextItem.getLinkId(),
+                session.getCurrentQuestionIndex() + 1, session.getTotalQuestions());
+        return result;
+    }
+
+    /**
+     * 构建纯表单模式的提示（数字编号 → 选项映射）
+     */
+    private CollectionToolOutputs.AgentResult buildManualFormPrompt(
+            InterviewSession session, QuestionnaireTemplate template) {
+        session.setStatus("CLARIFYING");
+        var currentItem = template.getItems().get(session.getCurrentQuestionIndex());
+        StringBuilder formText = new StringBuilder();
+        formText.append("「").append(currentItem.getText()).append("」\n");
+        formText.append("请直接输入数字选择最符合您情况的选项：\n");
+        for (int i = 0; i < currentItem.getOptions().size(); i++) {
+            var opt = currentItem.getOptions().get(i);
+            formText.append(String.format("  %d. %s", i + 1, opt.getDisplay()));
+            if (i < currentItem.getOptions().size() - 1) {
+                formText.append("\n");
+            }
+        }
+        CollectionToolOutputs.AgentResult result = CollectionToolOutputs.AgentResult.clarify(
+                CollectionToolOutputs.ClarifyOutput.builder()
+                        .linkId(currentItem.getLinkId())
+                        .clarifyingText(formText.toString())
+                        .options(currentItem.getOptions())
+                        .build());
+        result.setDegradationLevel("manual_form");
+        log.info("构建纯表单提示: sessionId={}, linkId={}, options={}",
+                session.getSessionId(), currentItem.getLinkId(), currentItem.getOptions().size());
         return result;
     }
 
@@ -426,6 +619,14 @@ public class InterviewEngineImpl implements InterviewEngine {
         if (session.isCompleted()) {
             throw new IllegalStateException("该问卷已完成");
         }
+        String currentStatus = session.getStatus();
+        if (InterviewStatus.EXPIRED.name().equals(currentStatus)) {
+            throw new IllegalStateException("该问卷已超时过期，不可恢复");
+        }
+        if (InterviewStatus.ABANDONED.name().equals(currentStatus)) {
+            throw new IllegalStateException("该问卷已被放弃");
+        }
+        session.setStatus(InterviewStatus.QUESTIONING.name());
         session.setLastActiveAt(LocalDateTime.now());
         saveSession(session);
 
@@ -433,15 +634,43 @@ public class InterviewEngineImpl implements InterviewEngine {
             stateManager.transition(session.getConversationId(), ConversationState.QUESTIONNAIRE);
         }
 
-        log.info("恢复填表: sessionId={}, progress={}/{}",
-                sessionId, session.getCurrentQuestionIndex(), session.getTotalQuestions());
+        log.info("恢复填表: sessionId={}, status={}→QUESTIONING, progress={}/{}",
+                sessionId, currentStatus, session.getCurrentQuestionIndex(), session.getTotalQuestions());
         return session;
     }
 
     @Override
     public void cancelInterview(String sessionId) {
+        abandonInterview(sessionId);
+    }
+
+    @Override
+    public void pauseInterview(String sessionId) {
         InterviewSession session = loadSession(sessionId);
         if (session == null) return;
+        if (session.isCompleted()) return;
+
+        session.setStatus(InterviewStatus.PAUSED.name());
+        session.setLastActiveAt(LocalDateTime.now());
+        saveSession(session);
+
+        if (session.getConversationId() != null) {
+            stateManager.clear(session.getConversationId());
+        }
+        redisService.delete(SESSION_KEY_PREFIX + sessionId);
+        localSessions.remove(sessionId);
+
+        log.info("暂停填表（保留MySQL）: sessionId={}", sessionId);
+    }
+
+    @Override
+    public void abandonInterview(String sessionId) {
+        InterviewSession session = loadSession(sessionId);
+        if (session == null) return;
+
+        session.setStatus(InterviewStatus.ABANDONED.name());
+        session.setLastActiveAt(LocalDateTime.now());
+        saveSession(session);
 
         if (session.getConversationId() != null) {
             stateManager.clear(session.getConversationId());
@@ -458,7 +687,130 @@ public class InterviewEngineImpl implements InterviewEngine {
             }
         });
 
-        log.info("取消填表: sessionId={}", sessionId);
+        log.info("放弃填表: sessionId={}", sessionId);
+    }
+
+    @Override
+    public void heartbeat(String sessionId) {
+        // 仅刷新Redis TTL以保持会话活跃，不执行全量load-save循环，
+        // 避免从Redis/MySQL读到过期数据后覆盖正确状态
+        try {
+            redisService.expire(SESSION_KEY_PREFIX + sessionId, SESSION_TTL_SECONDS);
+        } catch (Exception e) {
+            log.debug("Redis心跳刷新失败: sessionId={}", sessionId);
+        }
+        // 更新本地缓存时间戳（如果存在），防止checkAndTransitionExpired误判超时
+        InterviewSession local = localSessions.get(sessionId);
+        if (local != null && !local.isCompleted()) {
+            local.setLastActiveAt(LocalDateTime.now());
+        }
+    }
+
+    @Override
+    public BatchSubmitResponse submitBatch(String sessionId, Map<String, String> answers) {
+        InterviewSession session = loadSession(sessionId);
+        if (session == null) {
+            throw new IllegalStateException("会话已过期或不存在: " + sessionId);
+        }
+        if (session.isCompleted()) {
+            throw new IllegalStateException("该问卷已完成");
+        }
+
+        QuestionnaireTemplate template = questionnaireRepository
+                .findById(session.getQuestionnaireId())
+                .orElseThrow(() -> new IllegalStateException("问卷模板已移除"));
+
+        int startIndex = session.getCurrentQuestionIndex();
+        int answeredCount = 0;
+        for (int i = startIndex; i < template.getItems().size(); i++) {
+            var item = template.getItems().get(i);
+            String selectedCode = answers.get(item.getLinkId());
+            if (selectedCode != null) {
+                var option = item.getOptions().stream()
+                        .filter(o -> o.getCode().equals(selectedCode))
+                        .findAny();
+                if (option.isPresent()) {
+                    recordAnswer(sessionId,
+                            item.getLinkId(),
+                            selectedCode,
+                            option.get().getDisplay(),
+                            option.get().getScore(),
+                            "",
+                            "manual_form",
+                            1.0,
+                            "");
+                    answeredCount++;
+                    log.info("批量提交-记录答案: sessionId={}, linkId={}, code={}, display={}, score={}",
+                            sessionId, item.getLinkId(), selectedCode,
+                            option.get().getDisplay(), option.get().getScore());
+                } else {
+                    log.warn("批量提交-无效的选项编码: linkId={}, code={}", item.getLinkId(), selectedCode);
+                }
+            } else {
+                log.info("批量提交-跳过未回答的题目: linkId={}, text={}", item.getLinkId(), item.getText());
+            }
+        }
+
+        // 重新加载会话（recordAnswer 内部已更新状态和 currentQuestionIndex）
+        InterviewSession reloaded = loadSession(sessionId);
+        if (reloaded == null) {
+            throw new IllegalStateException("批量提交后会话丢失: " + sessionId);
+        }
+
+        // 构建完成响应（统计所有答案总分）
+        InterviewResponse resp = buildCompletionResponse(reloaded, template);
+        var summary = resp.getSummary();
+
+        // 持久化完成消息
+        persistInterviewMessage(reloaded, "completion", buildCompletionMsgData(
+                summary.getTotalScore(), summary.getMaxScore(),
+                summary.getSeverity(), summary.getInterpretation(),
+                summary.getAnalysisSummary(), summary.getAnalysisId()));
+
+        // 持久化用户选择消息（用于会话恢复时重建卡片）
+        final int totalQ = reloaded.getTotalQuestions();
+        final InterviewSession finalSession = reloaded;
+        for (int i = startIndex; i < template.getItems().size(); i++) {
+            var item = template.getItems().get(i);
+            String selectedCode = answers.get(item.getLinkId());
+            if (selectedCode != null) {
+                var option = item.getOptions().stream()
+                        .filter(o -> o.getCode().equals(selectedCode))
+                        .findAny();
+                final int questionNum = i + 1;
+                option.ifPresent(opt -> {
+                    Map<String, Object> userMsgData = new LinkedHashMap<>();
+                    userMsgData.put("text", selectedCode);
+                    userMsgData.put("display", opt.getDisplay());
+                    userMsgData.put("linkId", item.getLinkId());
+                    userMsgData.put("questionText", item.getText());
+                    userMsgData.put("degradationLevel", "manual_form");
+                    userMsgData.put("progress", questionNum + "/" + totalQ);
+                    persistInterviewMessage(finalSession, "user_message", userMsgData);
+                });
+            }
+        }
+
+        reloaded.setStatus("COMPLETED");
+        reloaded.setLastActiveAt(LocalDateTime.now());
+        saveSession(reloaded);
+
+        log.info("批量提交完成: sessionId={}, answered={}/{}remaining, totalScore={}/{}",
+                sessionId, answeredCount,
+                template.getItems().size() - startIndex,
+                summary.getTotalScore(), summary.getMaxScore());
+
+        return BatchSubmitResponse.builder()
+                .completed(true)
+                .message(String.format("评估完成，总分%d/%d，严重程度：%s",
+                        summary.getTotalScore(), summary.getMaxScore(), summary.getSeverity()))
+                .totalScore(summary.getTotalScore())
+                .maxScore(summary.getMaxScore())
+                .severity(summary.getSeverity())
+                .interpretation(summary.getInterpretation())
+                .analysisSummary(summary.getAnalysisSummary())
+                .analysisId(summary.getAnalysisId())
+                .build();
     }
 
     @Override
@@ -603,8 +955,18 @@ public class InterviewEngineImpl implements InterviewEngine {
             }
         }
 
-        // 同步执行分析层
-        String analysisSummary = runSyncAnalysis(session, template, pipelineResult);
+        // 异步执行分析层（不阻塞completion响应返回）
+        final String analysisSid = session.getSessionId();
+        CompletableFuture.runAsync(() -> {
+            try {
+                InterviewSession s = loadSession(analysisSid);
+                if (s != null) {
+                    runAsyncAnalysis(s, template, pipelineResult);
+                }
+            } catch (Exception e) {
+                log.error("异步分析执行失败: sessionId={}", analysisSid, e);
+            }
+        });
 
         // 异步持久化FHIR资源（不阻塞响应返回）
         if (pipelineResult.getQuestionnaireResponse() != null) {
@@ -645,23 +1007,22 @@ public class InterviewEngineImpl implements InterviewEngine {
                         .interpretation(pipelineResult.getInterpretation())
                         .hasHistory(hasHistory)
                         .trendDescription(trendDesc)
-                        .analysisSummary(analysisSummary)
+                        .analysisSummary(null)
                         .analysisId("analysis-" + session.getSessionId())
                         .build())
                 .build();
     }
 
     /**
-     * 同步执行分析层 —— 构建AnalysisInput并调用AnalysisAgent
-     * 返回分析摘要文本，失败返回 null
+     * 异步执行分析层 —— 构建AnalysisInput并调用AnalysisAgent，完成后持久化报告
      */
-    private String runSyncAnalysis(InterviewSession session, QuestionnaireTemplate template,
+    private void runAsyncAnalysis(InterviewSession session, QuestionnaireTemplate template,
                                      TransformationPipeline.PipelineResult pipelineResult) {
-        log.info("同步执行分析: sessionId={}", session.getSessionId());
+        log.info("异步执行分析: sessionId={}", session.getSessionId());
 
         if (!analysisAgent.isAvailable()) {
             log.warn("分析Agent不可用，跳过分析: sessionId={}", session.getSessionId());
-            return null;
+            return;
         }
 
         try {
@@ -796,12 +1157,13 @@ public class InterviewEngineImpl implements InterviewEngine {
                 }
             });
 
-            return result.getSummary();
+            log.info("分析摘要已生成: sessionId={}, len={}",
+                    session.getSessionId(),
+                    result.getSummary() != null ? result.getSummary().length() : 0);
 
         } catch (Exception e) {
-            log.error("同步分析失败: sessionId={}, error={}",
+            log.error("异步分析失败: sessionId={}, error={}",
                     session.getSessionId(), e.getMessage());
-            return null;
         }
     }
 
@@ -837,28 +1199,67 @@ public class InterviewEngineImpl implements InterviewEngine {
     }
 
     private void saveSession(InterviewSession session) {
-        // 先存本地缓存兜底，确保访谈不因Redis抖动而中断
-        localSessions.put(session.getSessionId(), session);
-        // 异步写入Redis
+        // 立即序列化为快照，避免异步写入时捕获到并发修改的会话状态
+        final InterviewSession snapshot;
+        final String snapshotJson;
+        try {
+            snapshotJson = objectMapper.writeValueAsString(session);
+            snapshot = objectMapper.readValue(snapshotJson, InterviewSession.class);
+        } catch (Exception e) {
+            log.warn("会话快照序列化失败，降级为直接引用: sessionId={}", session.getSessionId());
+            // 序列化失败时仍使用直接引用作为兜底
+            localSessions.put(session.getSessionId(), session);
+            return;
+        }
+        // 存储快照到本地缓存（独立副本，避免跨线程共享可变状态）
+        localSessions.put(snapshot.getSessionId(), snapshot);
+        // 异步写入Redis（使用已序列化的JSON，不再依赖可变对象引用）
         CompletableFuture.runAsync(() -> {
             try {
-                String json = objectMapper.writeValueAsString(session);
-                redisService.set(SESSION_KEY_PREFIX + session.getSessionId(),
-                        json, (long) SESSION_TTL_SECONDS);
-                log.debug("会话已保存到Redis: sessionId={}", session.getSessionId());
+                redisService.set(SESSION_KEY_PREFIX + snapshot.getSessionId(),
+                        snapshotJson, (long) SESSION_TTL_SECONDS);
+                log.debug("会话已保存到Redis: sessionId={}", snapshot.getSessionId());
             } catch (Exception e) {
                 log.warn("Redis保存会话失败(已降级到本地缓存): sessionId={}, error={}",
-                        session.getSessionId(), e.getMessage());
+                        snapshot.getSessionId(), e.getMessage());
             }
         });
-        // 异步持久化到MySQL
+        // 异步持久化到MySQL（使用快照，确保写入的是调用时的状态）
         CompletableFuture.runAsync(() -> {
             try {
-                persistenceService.saveSession(session);
+                persistenceService.saveSession(snapshot);
             } catch (Exception e) {
-                log.warn("MySQL持久化会话失败: sessionId={}", session.getSessionId(), e);
+                log.warn("MySQL持久化会话失败: sessionId={}", snapshot.getSessionId(), e);
             }
         });
+    }
+
+    /**
+     * 检查过期并自动转换状态。
+     * 任何活跃状态（含题目级操作状态）→ PAUSED（心跳失联，可恢复）
+     * PAUSED → EXPIRED（超时不可恢复）
+     *
+     * @return null 表示会话已终结，不可使用
+     */
+    private InterviewSession checkAndTransitionExpired(InterviewSession session) {
+        if (session == null) return null;
+        if (!session.isExpired(SESSION_TIMEOUT_MINUTES)) return session;
+
+        String currentStatus = session.getStatus();
+        if (InterviewStatus.isActiveState(currentStatus)) {
+            session.setStatus(InterviewStatus.PAUSED.name());
+            log.info("会话自动暂停(超时): sessionId={}, prevStatus={}", session.getSessionId(), currentStatus);
+            saveSession(session);
+            return session;
+        }
+        if (InterviewStatus.PAUSED.name().equals(currentStatus)) {
+            session.setStatus(InterviewStatus.EXPIRED.name());
+            log.info("会话自动过期(超时): sessionId={}", session.getSessionId());
+            saveSession(session);
+            return null;
+        }
+        // EXPIRED / ABANDONED → 已终结
+        return null;
     }
 
     private InterviewSession loadSession(String sessionId) {
@@ -867,7 +1268,14 @@ public class InterviewEngineImpl implements InterviewEngine {
             Object value = redisService.get(SESSION_KEY_PREFIX + sessionId);
             if (value != null) {
                 String json = value.toString();
-                return objectMapper.readValue(json, InterviewSession.class);
+                InterviewSession session = objectMapper.readValue(json, InterviewSession.class);
+                InterviewSession checked = checkAndTransitionExpired(session);
+                if (checked == null) {
+                    redisService.delete(SESSION_KEY_PREFIX + sessionId);
+                    localSessions.remove(sessionId);
+                    return null;
+                }
+                return checked;
             }
         } catch (Exception e) {
             log.warn("Redis读取会话失败，尝试本地缓存: sessionId={}, error={}",
@@ -876,27 +1284,39 @@ public class InterviewEngineImpl implements InterviewEngine {
         // 第二层：本地缓存
         InterviewSession local = localSessions.get(sessionId);
         if (local != null) {
+            InterviewSession checked = checkAndTransitionExpired(local);
+            if (checked == null) {
+                localSessions.remove(sessionId);
+                return null;
+            }
             log.debug("从本地缓存加载会话: sessionId={}", sessionId);
-            return local;
+            return checked;
         }
         // 第三层：MySQL回退
         try {
             Optional<InterviewSession> dbSession = persistenceService.loadSession(sessionId);
             if (dbSession.isPresent()) {
                 InterviewSession session = dbSession.get();
-                localSessions.put(sessionId, session);
+                InterviewSession checked = checkAndTransitionExpired(session);
+                if (checked == null) {
+                    log.info("会话已终结(MySQL): sessionId={}, status={}",
+                            sessionId, session.getStatus());
+                    return null;
+                }
+                localSessions.put(sessionId, checked);
                 // 异步恢复到Redis
                 CompletableFuture.runAsync(() -> {
                     try {
-                        String json = objectMapper.writeValueAsString(session);
+                        String json = objectMapper.writeValueAsString(checked);
                         redisService.set(SESSION_KEY_PREFIX + sessionId, json,
                                 (long) SESSION_TTL_SECONDS);
                     } catch (Exception e) {
                         log.warn("MySQL恢复Redis缓存失败: sessionId={}", sessionId, e);
                     }
                 });
-                log.info("从MySQL恢复会话: sessionId={}", sessionId);
-                return session;
+                log.info("从MySQL恢复会话: sessionId={}, status={}",
+                        sessionId, checked.getStatus());
+                return checked;
             }
         } catch (Exception e) {
             log.warn("MySQL加载会话失败: sessionId={}", sessionId, e);
@@ -940,6 +1360,7 @@ public class InterviewEngineImpl implements InterviewEngine {
             summary.put("collectionMode", session.getCollectionMode());
             summary.put("totalScore", session.getCurrentScore());
             summary.put("completed", session.isCompleted());
+            summary.put("status", session.getStatus());
             summary.put("createdAt", session.getCreatedAt() != null
                     ? session.getCreatedAt().toString() : null);
             summary.put("lastActiveAt", session.getLastActiveAt() != null

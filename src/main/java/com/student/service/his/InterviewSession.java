@@ -53,6 +53,10 @@ public class InterviewSession {
     /** 是否已完成 */
     private boolean completed;
 
+    /** 状态: QUESTIONING/ANSWER_RECEIVED/CLARIFYING/VALIDATING/COMPLETED/PAUSED/EXPIRED/ABANDONED */
+    @Builder.Default
+    private String status = "QUESTIONING";
+
     /** 创建时间 */
     private LocalDateTime createdAt;
 
@@ -81,6 +85,10 @@ public class InterviewSession {
     /** 连续LLM失败次数（断路器计数） */
     @Builder.Default
     private int consecutiveFailures = 0;
+
+    /** 当前题目追问次数（上限3次，超限强制manual_form） */
+    @Builder.Default
+    private int clarificationCount = 0;
 
     /** 溯源信息: linkId -> 来源+置信度 */
     @Builder.Default

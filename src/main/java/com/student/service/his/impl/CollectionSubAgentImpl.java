@@ -122,15 +122,14 @@ public class CollectionSubAgentImpl implements CollectionSubAgent {
                 你是一位温暖、专业、共情的医疗健康助手，正在进行「%s」的评估采集。
 
                 === 你的角色 ===
-                你通过自然对话方式引导用户完成问卷，让用户感觉是在和关心TA的人聊天，而不是在填表。
+                你通过自然对话方式理解用户的回答，将其映射到问卷选项。你只负责语义理解，不负责推进题目。
 
                 === 采集规则 ===
-                1. 每次只问一个问题，不要一次性列出所有问题
-                2. 当用户回答后，你需要理解TA的真实含义，映射到最接近的选项
-                3. 如果用户回答模糊，可以温和地追问一次
-                4. 不要评判用户的回答，保持接纳和理解
-                5. 使用通俗易懂的语言，不要用医学术语
-                6. 如果用户表达了消极情绪，先共情再继续
+                1. 理解用户的真实含义，映射到最接近的选项
+                2. 如果用户回答模糊，可以温和地追问一次
+                3. 不要评判用户的回答，保持接纳和理解
+                4. 使用通俗易懂的语言，不要用医学术语
+                5. 如果用户表达了消极情绪，先共情再继续
 
                 === 安全规则（优先级最高）===
                 如果用户表达了自杀、自伤、或伤害他人的意图，你必须立即使用 emergency_interrupt 工具。
@@ -139,22 +138,19 @@ public class CollectionSubAgentImpl implements CollectionSubAgent {
                 === 以下工具你可以在每轮回复中调用 ===
                 根据用户当前的消息，选择合适的工具调用。你的回复必须是一个JSON对象，格式如下：
 
-                1. 需要展示问题给用户时：
-                {"tool": "ask_question", "linkId": "/q1", "text": "润色后的问题文本"}
-
-                2. 用户已回答，你能确定对应选项时：
+                1. 用户已回答，你能确定对应选项时：
                 {"tool": "record_answer", "linkId": "当前题linkId", "code": "选项code", "display": "选项显示文本", "value": 分数值, "confidence": 0.0-1.0, "context_summary": "一句话总结用户本轮的表述"}
 
-                3. 用户回答模糊，需要追问时：
+                2. 用户回答模糊，需要追问时：
                 {"tool": "clarify", "linkId": "当前题linkId", "text": "温和的追问文本"}
 
-                4. 全部问题已完成时：
+                3. 全部问题已完成时：
                 {"tool": "complete", "message": "完成寄语"}
 
-                5. 检测到危险信号时：
+                4. 检测到危险信号时：
                 {"tool": "emergency_interrupt", "reason": "触发原因"}
 
-                重要：只输出JSON，不要输出其他文本。
+                重要：只输出JSON，不要输出其他文本。不要自己决定展示下一题——这由系统处理。
                 """, questionnaire.getTitle());
     }
 
@@ -208,20 +204,10 @@ public class CollectionSubAgentImpl implements CollectionSubAgent {
     private String buildInstruction(InterviewSession session, QuestionnaireTemplate questionnaire) {
         if (session.getCurrentQuestionIndex() < session.getTotalQuestions()) {
             var currentItem = questionnaire.getItems().get(session.getCurrentQuestionIndex());
-            if (session.getAnswers().isEmpty()) {
-                // 用户正在回答首题（首题已由SSE直接发送，无需LLM再次提问）
-                return String.format(
-                        "用户正在回答第一个问题：「%s」\n" +
-                        "请理解用户的回答，将其映射到最接近的选项。\n" +
-                        "如果用户回答清晰，使用 record_answer 工具记录。\n" +
-                        "如果用户回答模糊，使用 clarify 工具温和追问。",
-                        currentItem.getText());
-            }
             return String.format(
                     "请理解用户刚才的回答，将其映射到当前问题（%s）最接近的选项。\n" +
                     "如果用户回答清晰，使用 record_answer 工具记录。\n" +
-                    "如果用户回答模糊，使用 clarify 工具追问一次。\n" +
-                    "如果确认了答案，同时用自然口语提出下一题（除非这是最后一题）。",
+                    "如果用户回答模糊，使用 clarify 工具温和追问一次。",
                     currentItem.getText());
         }
 

@@ -85,9 +85,24 @@ public interface InterviewEngine {
     InterviewSession resumeInterview(String sessionId);
 
     /**
-     * 取消当前填表
+     * 取消当前填表（委托到 abandonInterview）
      */
     void cancelInterview(String sessionId);
+
+    /**
+     * 暂停填表 —— 仅清理Redis热状态，保留MySQL用于恢复
+     */
+    void pauseInterview(String sessionId);
+
+    /**
+     * 放弃填表 —— 彻底清理所有数据
+     */
+    void abandonInterview(String sessionId);
+
+    /**
+     * 心跳保活 —— 更新最后活动时间
+     */
+    void heartbeat(String sessionId);
 
     /**
      * 查询历史填写记录，含评分趋势
@@ -113,4 +128,13 @@ public interface InterviewEngine {
      * 获取对话下的所有访谈记录摘要
      */
     List<Map<String, Object>> getInterviewsByConversation(Long conversationId);
+
+    /**
+     * 纯表单模式批量提交 —— 一次性提交所有剩余题目的答案
+     *
+     * @param sessionId 会话ID
+     * @param answers   答案映射: linkId → 选项编码
+     * @return 完成摘要
+     */
+    BatchSubmitResponse submitBatch(String sessionId, Map<String, String> answers);
 }

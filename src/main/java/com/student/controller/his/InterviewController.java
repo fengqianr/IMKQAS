@@ -199,7 +199,18 @@ public class InterviewController {
                 case "manual_form" -> "自动理解失败，已切换至手动选择模式，请直接输入数字编号";
                 default -> "已降级至" + result.getDegradationLevel();
             };
-            sseEmitter.sendDegradationNotice(emitter, result.getDegradationLevel(), reason);
+            // 判断降级范围：断路器触发(LM连续失败) → 全量纯表单；追问超限 → 仅此题
+            String scope = "single";
+            try {
+                InterviewSession session = engine.resumeInterview(sessionId);
+                if (session != null && session.getConsecutiveFailures() >= 3) {
+                    scope = "all";
+                    reason = "LLM不可用，请点击问卷答案";
+                }
+            } catch (Exception ignored) {
+                // 无法加载会话时默认 single
+            }
+            sseEmitter.sendDegradationNotice(emitter, result.getDegradationLevel(), reason, scope);
         }
 
         switch (result.getType()) {
@@ -241,11 +252,61 @@ public class InterviewController {
     }
 
     /**
-     * 取消填表
+     * 取消填表（委托到 abandon）
      */
     @PostMapping("/{sessionId}/cancel")
     public ApiResponse<Void> cancel(@PathVariable String sessionId) {
         engine.cancelInterview(sessionId);
+        return ApiResponse.success();
+    }
+
+    /**
+     * 纯表单模式批量提交 —— 前端收集所有剩余题目答案后一次性提交
+     */
+    @PostMapping("/{sessionId}/batch-submit")
+    public ApiResponse<BatchSubmitResponse> batchSubmit(
+            @PathVariable String sessionId,
+            @RequestBody BatchSubmitRequest request) {
+        if (sessionId == null || sessionId.isBlank()) {
+            return ApiResponse.error("会话ID不能为空", (BatchSubmitResponse) null);
+        }
+        if (request.getAnswers() == null || request.getAnswers().isEmpty()) {
+            return ApiResponse.error("答案不能为空", (BatchSubmitResponse) null);
+        }
+        log.info("批量提交: sessionId={}, answerCount={}", sessionId, request.getAnswers().size());
+        try {
+            BatchSubmitResponse response = engine.submitBatch(sessionId, request.getAnswers());
+            return ApiResponse.success(response);
+        } catch (Exception e) {
+            log.error("批量提交失败: sessionId={}", sessionId, e);
+            return ApiResponse.error(e.getMessage(), (BatchSubmitResponse) null);
+        }
+    }
+
+    /**
+     * 暂停填表 —— 仅清理Redis，保留MySQL用于恢复
+     */
+    @PostMapping("/{sessionId}/pause")
+    public ApiResponse<Void> pause(@PathVariable String sessionId) {
+        engine.pauseInterview(sessionId);
+        return ApiResponse.success();
+    }
+
+    /**
+     * 放弃填表 —— 彻底清理所有数据
+     */
+    @PostMapping("/{sessionId}/abandon")
+    public ApiResponse<Void> abandon(@PathVariable String sessionId) {
+        engine.abandonInterview(sessionId);
+        return ApiResponse.success();
+    }
+
+    /**
+     * 心跳保活 —— 前端定时调用，防止会话过期
+     */
+    @PostMapping("/{sessionId}/heartbeat")
+    public ApiResponse<Void> heartbeat(@PathVariable String sessionId) {
+        engine.heartbeat(sessionId);
         return ApiResponse.success();
     }
 

@@ -272,6 +272,7 @@ public class InterviewPersistenceServiceImpl implements InterviewPersistenceServ
                 .answers(toJson(session.getAnswers()))
                 .currentScore(session.getCurrentScore())
                 .completed(session.isCompleted() ? 1 : 0)
+                .status(session.getStatus())
                 .collectionMode(session.getCollectionMode())
                 .degradationLevel(session.getDegradationLevel())
                 .rawInputs(toJson(session.getRawInputs()))
@@ -279,6 +280,7 @@ public class InterviewPersistenceServiceImpl implements InterviewPersistenceServ
                 .contextSummary(session.getContextSummary())
                 .provenance(toJson(session.getProvenance()))
                 .consecutiveFailures(session.getConsecutiveFailures())
+                .clarificationCount(session.getClarificationCount())
                 .createdAt(session.getCreatedAt())
                 .lastActiveAt(session.getLastActiveAt())
                 .build();
@@ -300,6 +302,7 @@ public class InterviewPersistenceServiceImpl implements InterviewPersistenceServ
                     .currentScore(entity.getCurrentScore() != null
                             ? entity.getCurrentScore() : 0)
                     .completed(entity.getCompleted() != null && entity.getCompleted() == 1)
+                    .status(entity.getStatus() != null ? entity.getStatus() : "QUESTIONING")
                     .collectionMode(entity.getCollectionMode() != null
                             ? entity.getCollectionMode() : "manual_form")
                     .degradationLevel(entity.getDegradationLevel() != null
@@ -310,6 +313,8 @@ public class InterviewPersistenceServiceImpl implements InterviewPersistenceServ
                     .provenance(parseProvenanceMap(entity.getProvenance()))
                     .consecutiveFailures(entity.getConsecutiveFailures() != null
                             ? entity.getConsecutiveFailures() : 0)
+                    .clarificationCount(entity.getClarificationCount() != null
+                            ? entity.getClarificationCount() : 0)
                     .createdAt(entity.getCreatedAt())
                     .lastActiveAt(entity.getLastActiveAt())
                     .build();

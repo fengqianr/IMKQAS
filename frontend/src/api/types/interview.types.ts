@@ -115,6 +115,8 @@ export interface DegradationEvent {
   type: 'degradation'
   level: string
   reason: string
+  /** "single" = 仅此题降级（下题恢复LLM）；"all" = LLM不可用，应切换全量纯表单 */
+  scope?: string
 }
 
 export interface DoneEvent {
@@ -232,8 +234,28 @@ export interface InterviewHistoryItem {
   collectionMode: string
   totalScore: number
   completed: boolean
+  status?: string
   severity?: string
   hasAnalysis: boolean
   createdAt: string
   lastActiveAt: string
+}
+
+// ==================== 纯表单模式批量提交 ====================
+
+/** 批量提交请求 */
+export interface BatchSubmitRequest {
+  answers: Record<string, string>  // linkId -> code
+}
+
+/** 批量提交响应 */
+export interface BatchSubmitResponse {
+  completed: boolean
+  message: string
+  totalScore: number
+  maxScore: number
+  severity: string
+  interpretation: string
+  analysisSummary?: string
+  analysisId?: string
 }

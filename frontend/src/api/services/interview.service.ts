@@ -9,7 +9,9 @@ import type {
   SubmitAnswerRequest,
   AnalysisReport,
   InterviewMessageItem,
-  InterviewHistoryItem
+  InterviewHistoryItem,
+  InterviewSession,
+  BatchSubmitResponse
 } from '../types/interview.types'
 
 class InterviewService {
@@ -116,16 +118,57 @@ class InterviewService {
     }
   }
 
-  // 取消访谈
-  async cancelInterview(sessionId: string): Promise<void> {
+  // 暂停访谈（sendBeacon，用于页面关闭/刷新时保留数据）
+  pauseInterview(sessionId: string): void {
+    navigator.sendBeacon(
+      `${this.baseURL}/his/interview/${sessionId}/pause`,
+      new Blob(['{}'], { type: 'application/json' })
+    )
+  }
+
+  // 主动放弃访谈（彻底清理）
+  async abandonInterview(sessionId: string): Promise<void> {
     try {
       await axios.post(
-        `${this.baseURL}/his/interview/${sessionId}/cancel`,
+        `${this.baseURL}/his/interview/${sessionId}/abandon`,
         {},
         { headers: this.getAuthHeaders() }
       )
     } catch (error: any) {
-      console.error('取消访谈失败:', error)
+      console.error('放弃访谈失败:', error)
+    }
+  }
+
+  // 取消访谈（委托到 abandon）
+  async cancelInterview(sessionId: string): Promise<void> {
+    return this.abandonInterview(sessionId)
+  }
+
+  // 恢复中断的访谈
+  async resumeInterview(sessionId: string): Promise<InterviewSession | null> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/his/interview/${sessionId}/resume`,
+        {},
+        { headers: this.getAuthHeaders() }
+      )
+      return response.data.data as InterviewSession
+    } catch (error: any) {
+      console.error('恢复访谈失败:', error)
+      return null
+    }
+  }
+
+  // 心跳保活
+  async heartbeat(sessionId: string): Promise<void> {
+    try {
+      await axios.post(
+        `${this.baseURL}/his/interview/${sessionId}/heartbeat`,
+        {},
+        { headers: this.getAuthHeaders() }
+      )
+    } catch {
+      // 心跳失败不报错
     }
   }
 
@@ -196,6 +239,21 @@ class InterviewService {
     } catch (error: any) {
       console.error('获取访谈记录失败:', error)
       return []
+    }
+  }
+
+  // 纯表单模式批量提交
+  async batchSubmit(sessionId: string, answers: Record<string, string>): Promise<BatchSubmitResponse> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/his/interview/${sessionId}/batch-submit`,
+        { answers },
+        { headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() } }
+      )
+      return response.data.data as BatchSubmitResponse
+    } catch (error: any) {
+      console.error('批量提交失败:', error)
+      throw new Error(error.response?.data?.message || '批量提交失败')
     }
   }
 
