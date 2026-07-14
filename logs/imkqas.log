@@ -16081,3 +16081,1273 @@ Caused by: io.lettuce.core.RedisCommandTimeoutException: Command timed out after
 2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
 2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T16:30:02.015940100(LocalDateTime)
 2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=10
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1&contraindicationType=ABSOLUTE
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:04:47 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:04:47 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:04:47 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0 AND (contraindication_type = ?)
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: ABSOLUTE(String)
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 AND (contraindication_type = ?) ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - ==> Parameters: ABSOLUTE(String), 1(Long)
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==> Parameters: 1(Long)
+2026-07-14 17:04:47 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:04:47 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList - <==      Total: 10
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/documents, query=current=1&size=100
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:04:49 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM documents WHERE deleted = 0
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.mapper.DocumentMapper.selectList - ==>  Preparing: SELECT id,title,category,file_path,chunk_count,status,uploaded_by,created_at,updated_at,deleted FROM documents WHERE deleted=0 LIMIT ?
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.mapper.DocumentMapper.selectList - ==> Parameters: 100(Long)
+2026-07-14 17:04:49 [http-nio-8080-exec-2] DEBUG c.s.mapper.DocumentMapper.selectList - <==      Total: 1
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:04:51 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:04:51 [http-nio-8080-exec-5] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 2
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2073648773575843842, query=null
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:04:51 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2073648773575843842(Long), 10(Long)
+2026-07-14 17:04:51 [http-nio-8080-exec-4] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 4
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2073648773575843842, query=null
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:04:51 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:04:51 [http-nio-8080-exec-6] DEBUG c.s.m.h.I.selectList - <==      Total: 0
+2026-07-14 17:05:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:05:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:05:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:05:02 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:05:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:05:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T16:35:02.082624200(LocalDateTime)
+2026-07-14 17:05:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:05:24 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 17:05:24 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 17:05:24 [scheduling-1] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:05:24 [scheduling-1] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:05:24 [scheduling-1] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:05:24 [scheduling-1] INFO  c.s.s.r.i.SynonymExpansionServiceImpl - 同义词扩展统计: 总查询=0, 本地命中=0, Redis缓存命中=0, SNOMED命中=0, LLM实时命中=0, 未映射=0, 未映射率=0.00%, 待审核=1, 告警=正常
+2026-07-14 17:05:24 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 17:10:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:10:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:10:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:10:02 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:10:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:10:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T16:40:02.135922700(LocalDateTime)
+2026-07-14 17:10:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:13:00 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 17:13:00 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=10
+2026-07-14 17:13:00 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1&contraindicationType=ABSOLUTE
+2026-07-14 17:13:00 [http-nio-8080-exec-3] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1
+2026-07-14 17:13:00 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:00 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:00 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:00 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:00 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:00 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:00 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:00 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:00 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:00 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:00 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:00 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:00 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:00 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:00 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:00 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:00 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:00 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:00 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:00 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:00 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:01 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 17:13:01 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:01 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:13:01 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:13:01 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:01 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:01 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:01 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:01 [http-nio-8080-exec-3] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:01 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:01 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:13:01 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:13:01 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:01 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:13:01 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0 AND (contraindication_type = ?)
+2026-07-14 17:13:01 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: ABSOLUTE(String)
+2026-07-14 17:13:01 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:01 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:01 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:01 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:01 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - ==> Parameters: 1(Long)
+2026-07-14 17:13:01 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList - <==      Total: 10
+2026-07-14 17:13:01 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:01 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 AND (contraindication_type = ?) ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:01 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==> Parameters: ABSOLUTE(String), 1(Long)
+2026-07-14 17:13:01 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:13:01 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:13:01 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:02 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:02 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:02 [http-nio-8080-exec-2] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:13:02 [http-nio-8080-exec-9] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:13:02 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:13:02 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=10
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1&contraindicationType=ABSOLUTE
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:05 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:05 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:05 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0 AND (contraindication_type = ?)
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: ABSOLUTE(String)
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList - ==> Parameters: 1(Long)
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 AND (contraindication_type = ?) ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList - ==> Parameters: ABSOLUTE(String), 1(Long)
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.m.D.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:13:05 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:13:05 [http-nio-8080-exec-5] DEBUG c.s.m.D.selectList - <==      Total: 10
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:06 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:06 [http-nio-8080-exec-1] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:13:06 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:06 [http-nio-8080-exec-8] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:13:06 [http-nio-8080-exec-8] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:13:06 [http-nio-8080-exec-1] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=10
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1&contraindicationType=ABSOLUTE
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:09 [http-nio-8080-exec-3] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:09 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==> Parameters: 1(Long)
+2026-07-14 17:13:09 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0 AND (contraindication_type = ?)
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: ABSOLUTE(String)
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - <==      Total: 10
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 AND (contraindication_type = ?) ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - ==> Parameters: ABSOLUTE(String), 1(Long)
+2026-07-14 17:13:09 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:13:09 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:13:10 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:13:10 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:13:11 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:11 [http-nio-8080-exec-2] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:13:11 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:13:11 [http-nio-8080-exec-9] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:13:11 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:13:11 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:15:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:15:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:15:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:15:02 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:15:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:15:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T16:45:02.180723500(LocalDateTime)
+2026-07-14 17:15:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:15:20 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:15:20 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:20 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:20 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:20 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:20 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:20 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 17:15:20 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:20 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:20 [http-nio-8080-exec-5] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:15:20 [http-nio-8080-exec-4] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:15:20 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:20 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:20 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:20 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:15:20 [http-nio-8080-exec-4] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:15:20 [http-nio-8080-exec-5] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:15:20 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=10
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1&contraindicationType=ABSOLUTE
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:21 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:15:21 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:21 [http-nio-8080-exec-3] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0 AND (contraindication_type = ?)
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: ABSOLUTE(String)
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 AND (contraindication_type = ?) ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - ==> Parameters: 1(Long)
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - ==> Parameters: ABSOLUTE(String), 1(Long)
+2026-07-14 17:15:21 [http-nio-8080-exec-1] DEBUG c.s.m.D.selectList - <==      Total: 10
+2026-07-14 17:15:21 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:15:21 [http-nio-8080-exec-3] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:23 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:23 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:23 [http-nio-8080-exec-9] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:15:23 [http-nio-8080-exec-10] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:15:23 [http-nio-8080-exec-10] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:15:23 [http-nio-8080-exec-9] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:15:24 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 17:15:24 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 17:15:24 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 17:15:25 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:15:25 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:25 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:25 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:25 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:25 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:25 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 17:15:25 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:25 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:25 [http-nio-8080-exec-4] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:15:25 [http-nio-8080-exec-6] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:15:25 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-6] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:15:25 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:25 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:25 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:15:25 [http-nio-8080-exec-4] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:15:25 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:27 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:15:27 [http-nio-8080-exec-8] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 2
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2073648773575843842, query=null
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:27 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2073648773575843842(Long), 10(Long)
+2026-07-14 17:15:27 [http-nio-8080-exec-1] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 4
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2073648773575843842, query=null
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:27 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:15:27 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - <==      Total: 0
+2026-07-14 17:15:29 [http-nio-8080-exec-3] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/documents, query=current=1&size=100
+2026-07-14 17:15:29 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:29 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:29 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:29 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:29 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:29 [http-nio-8080-exec-3] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:29 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM documents WHERE deleted = 0
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:29 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.mapper.DocumentMapper.selectList - ==>  Preparing: SELECT id,title,category,file_path,chunk_count,status,uploaded_by,created_at,updated_at,deleted FROM documents WHERE deleted=0 LIMIT ?
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.mapper.DocumentMapper.selectList - ==> Parameters: 100(Long)
+2026-07-14 17:15:29 [http-nio-8080-exec-10] DEBUG c.s.mapper.DocumentMapper.selectList - <==      Total: 1
+2026-07-14 17:15:29 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:29 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:29 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:29 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:29 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:29 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=10
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1&contraindicationType=ABSOLUTE
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:30 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:15:30 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:30 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0 AND (contraindication_type = ?)
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: ABSOLUTE(String)
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList - ==> Parameters: 1(Long)
+2026-07-14 17:15:30 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList - <==      Total: 10
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 AND (contraindication_type = ?) ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList - ==> Parameters: ABSOLUTE(String), 1(Long)
+2026-07-14 17:15:30 [http-nio-8080-exec-6] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:15:30 [http-nio-8080-exec-4] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:15:32 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:32 [http-nio-8080-exec-5] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:15:32 [http-nio-8080-exec-5] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:15:32 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:15:32 [http-nio-8080-exec-8] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:15:32 [http-nio-8080-exec-8] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:34 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:16:34 [http-nio-8080-exec-1] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 2
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2073648773575843842, query=null
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:34 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2073648773575843842(Long), 10(Long)
+2026-07-14 17:16:34 [http-nio-8080-exec-7] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 4
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2073648773575843842, query=null
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:34 [http-nio-8080-exec-3] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:16:34 [http-nio-8080-exec-3] DEBUG c.s.m.h.I.selectList - <==      Total: 0
+2026-07-14 17:16:36 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms, query=page=1&size=20&status=PENDING
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/unmapped-terms/stats, query=null
+2026-07-14 17:16:36 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:36 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:36 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:36 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:36 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:36 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:36 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:36 [http-nio-8080-exec-2] INFO  c.s.controller.rag.AdminController - 管理员查询审核统计
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:16:36 [http-nio-8080-exec-9] INFO  c.s.controller.rag.AdminController - 管理员查询待审核词条: page=1, size=20, status=PENDING
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - ==>  Preparing: SELECT * FROM unmapped_term_queue WHERE status = ? AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - ==> Parameters: PENDING(String)
+2026-07-14 17:16:36 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-9] DEBUG c.s.m.U.selectPageByStatus - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - ==> Parameters: 
+2026-07-14 17:16:36 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.countApprovedToday - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
+2026-07-14 17:16:36 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:36 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:36 [http-nio-8080-exec-2] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:36 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:37 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:38 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:16:38 [http-nio-8080-exec-4] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 2
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2073648773575843842, query=null
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:38 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2073648773575843842(Long), 10(Long)
+2026-07-14 17:16:38 [http-nio-8080-exec-5] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 4
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2073648773575843842, query=null
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:38 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:16:38 [http-nio-8080-exec-8] DEBUG c.s.m.h.I.selectList - <==      Total: 0
+2026-07-14 17:16:39 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/documents, query=current=1&size=100
+2026-07-14 17:16:39 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:39 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:39 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:39 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:39 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:39 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:39 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM documents WHERE deleted = 0
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:16:39 [http-nio-8080-exec-3] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.mapper.DocumentMapper.selectList - ==>  Preparing: SELECT id,title,category,file_path,chunk_count,status,uploaded_by,created_at,updated_at,deleted FROM documents WHERE deleted=0 LIMIT ?
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.mapper.DocumentMapper.selectList - ==> Parameters: 100(Long)
+2026-07-14 17:16:39 [http-nio-8080-exec-7] DEBUG c.s.mapper.DocumentMapper.selectList - <==      Total: 1
+2026-07-14 17:16:39 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:39 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:39 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:39 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:39 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:39 [http-nio-8080-exec-3] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=10
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/admin/contraindications, query=page=1&size=1&contraindicationType=ABSOLUTE
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:40 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:40 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:16:40 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM drug_population_contraindication WHERE deleted = 0 AND (contraindication_type = ?)
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - ==> Parameters: ABSOLUTE(String)
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList - ==>  Preparing: SELECT id,drug_name,population_name,contraindication_type,evidence_level,description,source,is_active,created_at,updated_at,deleted FROM drug_population_contraindication WHERE deleted=0 AND (contraindication_type = ?) ORDER BY updated_at DESC LIMIT ?
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList - ==> Parameters: 1(Long)
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList - ==> Parameters: ABSOLUTE(String), 1(Long)
+2026-07-14 17:16:40 [http-nio-8080-exec-10] DEBUG c.s.m.D.selectList - <==      Total: 10
+2026-07-14 17:16:40 [http-nio-8080-exec-2] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:16:40 [http-nio-8080-exec-9] DEBUG c.s.m.D.selectList - <==      Total: 1
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:42 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:16:42 [http-nio-8080-exec-6] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 2
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2073648773575843842, query=null
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:42 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2073648773575843842(Long), 10(Long)
+2026-07-14 17:16:42 [http-nio-8080-exec-4] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 4
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2073648773575843842, query=null
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:42 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:16:42 [http-nio-8080-exec-5] DEBUG c.s.m.h.I.selectList - <==      Total: 0
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2076225456552095746, query=null
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:44 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2076225456552095746(Long)
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2076225456552095746(Long), 10(Long)
+2026-07-14 17:16:44 [http-nio-8080-exec-8] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 1
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2076225456552095746, query=null
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:44 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2076225456552095746(Long)
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.m.h.I.selectList - <==      Total: 1
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.m.h.A.selectList - ==>  Preparing: SELECT id,analysis_id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,total_score,max_score,severity,interpretation,summary,risk_assessment,detail_analysis,recommendations,follow_up,disclaimer,latency_ms,raw_llm_response,created_at,updated_at,deleted FROM analysis_reports WHERE deleted=0 AND (session_id = ?) ORDER BY created_at DESC LIMIT 1
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.m.h.A.selectList - ==> Parameters: b949663fc0ed(String)
+2026-07-14 17:16:44 [http-nio-8080-exec-1] DEBUG c.s.m.h.A.selectList - <==      Total: 1
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/b949663fc0ed/messages, query=null
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:16:44 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,conversation_id,session_id,user_id,message_type,sequence_num,questionnaire_id,questionnaire_title,message_data,created_at,updated_at,deleted FROM interview_messages WHERE deleted=0 AND (session_id = ?) ORDER BY sequence_num ASC
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - ==> Parameters: b949663fc0ed(String)
+2026-07-14 17:16:44 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - <==      Total: 15
+2026-07-14 17:20:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:20:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:20:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:20:02 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:20:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:20:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T16:50:02.239528100(LocalDateTime)
+2026-07-14 17:20:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:25:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:25:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:25:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:25:02 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:25:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:25:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T16:55:02.284260600(LocalDateTime)
+2026-07-14 17:25:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:25:24 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 17:25:24 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 17:25:24 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 17:30:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:30:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:30:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:30:02 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:30:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:30:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T17:00:02.351383200(LocalDateTime)
+2026-07-14 17:30:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:42:14 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@573cb3f8 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 17:42:17 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@2c444475 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 17:42:20 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@1e559176 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 17:42:20 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=10m58s911ms477µs500ns).
+2026-07-14 17:42:23 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4967385f (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 17:42:26 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@7b4385d9 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 17:42:38 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:42:38 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T17:12:39.013297(LocalDateTime)
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:42:39 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 17:42:39 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 17:42:39 [scheduling-1] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 17:42:39 [scheduling-1] INFO  c.s.s.r.i.SynonymExpansionServiceImpl - 同义词扩展统计: 总查询=0, 本地命中=0, Redis缓存命中=0, SNOMED命中=0, LLM实时命中=0, 未映射=0, 未映射率=0.00%, 待审核=1, 告警=正常
+2026-07-14 17:42:39 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 17:47:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:47:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:47:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:47:39 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:47:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:47:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T17:17:39.058605900(LocalDateTime)
+2026-07-14 17:47:39 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:52:39 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 17:52:39 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 17:52:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:52:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:52:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:52:39 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:52:39 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 17:52:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:52:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T17:22:39.139993900(LocalDateTime)
+2026-07-14 17:52:39 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 17:52:41 [term-change-checker] ERROR com.student.service.RedisService - 获取缓存失败: key=sem:term:mapping-hash
+org.springframework.dao.QueryTimeoutException: Redis command timed out
+	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:68)
+	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:41)
+	at org.springframework.data.redis.PassThroughExceptionTranslationStrategy.translate(PassThroughExceptionTranslationStrategy.java:40)
+	at org.springframework.data.redis.FallbackExceptionTranslationStrategy.translate(FallbackExceptionTranslationStrategy.java:38)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.convertLettuceAccessException(LettuceConnection.java:308)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.await(LettuceConnection.java:1026)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.lambda$doInvoke$3(LettuceConnection.java:445)
+	at org.springframework.data.redis.connection.lettuce.LettuceInvoker$Synchronizer.invoke(LettuceInvoker.java:665)
+	at org.springframework.data.redis.connection.lettuce.LettuceInvoker.just(LettuceInvoker.java:94)
+	at org.springframework.data.redis.connection.lettuce.LettuceStringCommands.get(LettuceStringCommands.java:54)
+	at org.springframework.data.redis.connection.DefaultedRedisConnection.get(DefaultedRedisConnection.java:284)
+	at org.springframework.data.redis.core.DefaultValueOperations$1.inRedis(DefaultValueOperations.java:54)
+	at org.springframework.data.redis.core.AbstractOperations$ValueDeserializingRedisCallback.doInRedis(AbstractOperations.java:61)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:396)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:363)
+	at org.springframework.data.redis.core.AbstractOperations.execute(AbstractOperations.java:97)
+	at org.springframework.data.redis.core.DefaultValueOperations.get(DefaultValueOperations.java:50)
+	at com.student.service.RedisService.get(RedisService.java:59)
+	at com.student.service.rag.impl.TermChangeListenerImpl.getTermMappingHash(TermChangeListenerImpl.java:138)
+	at com.student.service.rag.impl.TermChangeListenerImpl.scheduledVersionCheck(TermChangeListenerImpl.java:109)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: io.lettuce.core.RedisCommandTimeoutException: Command timed out after 2 second(s)
+	at io.lettuce.core.internal.ExceptionFactory.createTimeoutException(ExceptionFactory.java:59)
+	at io.lettuce.core.internal.Futures.awaitOrCancel(Futures.java:246)
+	at io.lettuce.core.LettuceFutures.awaitOrCancel(LettuceFutures.java:74)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.await(LettuceConnection.java:1024)
+	... 20 common frames omitted
+2026-07-14 17:52:41 [term-change-checker] DEBUG c.s.s.r.impl.TermChangeListenerImpl - 术语映射表未变更: hash=d1907c48fdc9f2f7d2883510da929ce7, 检查次数=3
+2026-07-14 17:52:58 [lettuce-eventExecutorLoop-1-3] INFO  i.l.core.protocol.ConnectionWatchdog - Reconnecting, last destination was /8.138.40.200:6379
+2026-07-14 17:52:58 [lettuce-nioEventLoop-4-4] INFO  i.l.c.protocol.ReconnectionHandler - Reconnected to 8.138.40.200/<unresolved>:6379
+2026-07-14 17:55:55 [http-nio-8080-exec-3] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-07-14 17:55:55 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:55:55 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:55:55 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:55:55 [http-nio-8080-exec-3] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:55:55 [http-nio-8080-exec-3] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:55:55 [http-nio-8080-exec-10] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:55:55 [http-nio-8080-exec-3] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-07-14 17:55:55 [http-nio-8080-exec-9] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 17:55:55 [http-nio-8080-exec-10] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 2
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2073648773575843842, query=null
+2026-07-14 17:55:55 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:55:55 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:55:55 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:55:55 [http-nio-8080-exec-9] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:55:55 [http-nio-8080-exec-9] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:55:55 [http-nio-8080-exec-9] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:55:55 [http-nio-8080-exec-2] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2073648773575843842(Long), 10(Long)
+2026-07-14 17:55:55 [http-nio-8080-exec-2] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 4
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2073648773575843842, query=null
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 17:55:55 [http-nio-8080-exec-6] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 17:55:55 [http-nio-8080-exec-6] DEBUG c.s.m.h.I.selectList - <==      Total: 0
+2026-07-14 17:57:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:57:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:57:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:57:39 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:57:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:57:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T17:27:39.181430700(LocalDateTime)
+2026-07-14 17:57:39 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 18:02:39 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 18:02:39 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 18:02:39 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 18:02:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 18:02:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 18:02:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 18:02:39 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 18:02:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 18:02:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T17:32:39.228534800(LocalDateTime)
+2026-07-14 18:02:39 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 18:07:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 18:07:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 18:07:39 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 18:07:39 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 18:07:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 18:07:39 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T17:37:39.368800900(LocalDateTime)
+2026-07-14 18:07:39 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 20:44:06 [scheduling-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@5b22219d (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 20:44:06 [scheduling-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@c5b0382 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 20:44:06 [scheduling-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@6c583598 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 20:44:06 [scheduling-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@26bcdf47 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 20:44:06 [scheduling-1] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@65c3aa0d (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 20:44:06 [scheduling-1] INFO  c.s.s.r.i.SynonymExpansionServiceImpl - 同义词扩展统计: 总查询=0, 本地命中=0, Redis缓存命中=0, SNOMED命中=0, LLM实时命中=0, 未映射=0, 未映射率=0.00%, 待审核=1, 告警=正常
+2026-07-14 20:44:06 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 20:44:06 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 20:44:06 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:14:06.924007900(LocalDateTime)
+2026-07-14 20:44:06 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 20:44:16 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2h33m55s613ms836µs800ns).
+2026-07-14 20:49:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 20:49:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 20:49:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 20:49:06 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 20:49:06 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 20:49:06 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:19:06.984022300(LocalDateTime)
+2026-07-14 20:49:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 20:54:06 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 20:54:06 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 20:54:06 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 20:54:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 20:54:06 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 20:54:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 20:54:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 20:54:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 20:54:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:24:07.032287200(LocalDateTime)
+2026-07-14 20:54:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 20:57:32 [http-nio-8080-exec-4] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/validate, query=null
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/conversations, query=null
+2026-07-14 20:57:32 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 20:57:32 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 20:57:32 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 20:57:32 [http-nio-8080-exec-4] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 20:57:32 [http-nio-8080-exec-4] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 20:57:32 [http-nio-8080-exec-4] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 20:57:32 [http-nio-8080-exec-5] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.m.C.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM conversations WHERE deleted = 0
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.m.C.selectList_mpCount - ==> Parameters: 
+2026-07-14 20:57:32 [http-nio-8080-exec-8] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/auth/me, query=null
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.m.C.selectList_mpCount - <==      Total: 1
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.m.ConversationMapper.selectList - ==>  Preparing: SELECT id,user_id,title,created_at,updated_at,deleted FROM conversations WHERE deleted=0 LIMIT ?
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.m.ConversationMapper.selectList - ==> Parameters: 10(Long)
+2026-07-14 20:57:32 [http-nio-8080-exec-5] DEBUG c.s.m.ConversationMapper.selectList - <==      Total: 2
+2026-07-14 20:57:32 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 20:57:32 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 20:57:32 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 20:57:32 [http-nio-8080-exec-8] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 20:57:32 [http-nio-8080-exec-8] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/messages/by-conversation/2073648773575843842, query=null
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 20:57:32 [http-nio-8080-exec-8] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 20:57:32 [http-nio-8080-exec-1] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.m.M.selectList_mpCount - ==>  Preparing: SELECT COUNT(*) AS total FROM messages WHERE deleted = 0 AND (conversation_id = ?)
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.m.M.selectList_mpCount - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.m.M.selectList_mpCount - <==      Total: 1
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.mapper.MessageMapper.selectList - ==>  Preparing: SELECT id,conversation_id,role,content,source_references,created_at,updated_at,deleted FROM messages WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at ASC LIMIT ?
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.mapper.MessageMapper.selectList - ==> Parameters: 2073648773575843842(Long), 10(Long)
+2026-07-14 20:57:32 [http-nio-8080-exec-1] DEBUG c.s.mapper.MessageMapper.selectList - <==      Total: 4
+2026-07-14 20:57:32 [http-nio-8080-exec-7] DEBUG c.s.filter.JwtAuthenticationFilter - 请求进入过滤器: method=GET, uri=/api/his/interview/by-conversation/2073648773575843842, query=null
+2026-07-14 20:57:32 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 加载用户详情: username=admin
+2026-07-14 20:57:32 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==>  Preparing: SELECT id,username,phone,role,password,health_profile,created_at,updated_at,deleted FROM users WHERE deleted=0 AND (username = ? AND deleted = ?)
+2026-07-14 20:57:32 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - ==> Parameters: admin(String), 0(Integer)
+2026-07-14 20:57:32 [http-nio-8080-exec-7] DEBUG c.s.mapper.UserMapper.selectList - <==      Total: 1
+2026-07-14 20:57:32 [http-nio-8080-exec-7] DEBUG c.s.s.c.impl.UserDetailsServiceImpl - 用户加载成功: username=admin, role=ADMIN
+2026-07-14 20:57:33 [http-nio-8080-exec-7] INFO  c.s.filter.JwtAuthenticationFilter - JWT认证成功: username=admin, authorities=[ROLE_ADMIN]
+2026-07-14 20:57:33 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - ==>  Preparing: SELECT id,session_id,questionnaire_id,questionnaire_title,user_id,conversation_id,current_question_index,total_questions,answers,current_score,completed,status,collection_mode,degradation_level,raw_inputs,safety_flags,context_summary,provenance,consecutive_failures,clarification_count,created_at,last_active_at,updated_at,deleted FROM interview_sessions WHERE deleted=0 AND (conversation_id = ?) ORDER BY created_at DESC
+2026-07-14 20:57:33 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - ==> Parameters: 2073648773575843842(Long)
+2026-07-14 20:57:33 [http-nio-8080-exec-7] DEBUG c.s.m.h.I.selectList - <==      Total: 0
+2026-07-14 20:59:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 20:59:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 20:59:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 20:59:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 20:59:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 20:59:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:29:07.099949500(LocalDateTime)
+2026-07-14 20:59:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:04:06 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 21:04:06 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 21:04:06 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 21:04:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:04:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:04:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:04:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:04:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:04:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:34:07.138652300(LocalDateTime)
+2026-07-14 21:04:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:09:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:09:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:09:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:09:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:09:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:09:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:39:07.172426600(LocalDateTime)
+2026-07-14 21:09:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:14:06 [scheduling-1] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 21:14:06 [scheduling-1] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 21:14:07 [scheduling-1] INFO  c.s.s.r.i.SynonymExpansionServiceImpl - 同义词扩展统计: 总查询=0, 本地命中=0, Redis缓存命中=0, SNOMED命中=0, LLM实时命中=0, 未映射=0, 未映射率=0.00%, 待审核=1, 告警=正常
+2026-07-14 21:14:07 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 21:14:07 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 21:14:07 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:44:07.439466100(LocalDateTime)
+2026-07-14 21:14:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:16:45 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@6003cc59 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 21:16:48 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@617c3188 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 21:19:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:19:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:19:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:19:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:19:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:19:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:49:07.474870400(LocalDateTime)
+2026-07-14 21:19:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:24:07 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 21:24:07 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 21:24:07 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 21:24:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:24:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:24:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:24:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:24:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:24:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:54:07.514134(LocalDateTime)
+2026-07-14 21:24:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:26:10 [term-change-checker] ERROR com.student.service.RedisService - 获取缓存失败: key=sem:term:mapping-hash
+org.springframework.dao.QueryTimeoutException: Redis command timed out
+	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:68)
+	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:41)
+	at org.springframework.data.redis.PassThroughExceptionTranslationStrategy.translate(PassThroughExceptionTranslationStrategy.java:40)
+	at org.springframework.data.redis.FallbackExceptionTranslationStrategy.translate(FallbackExceptionTranslationStrategy.java:38)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.convertLettuceAccessException(LettuceConnection.java:308)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.await(LettuceConnection.java:1026)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.lambda$doInvoke$3(LettuceConnection.java:445)
+	at org.springframework.data.redis.connection.lettuce.LettuceInvoker$Synchronizer.invoke(LettuceInvoker.java:665)
+	at org.springframework.data.redis.connection.lettuce.LettuceInvoker.just(LettuceInvoker.java:94)
+	at org.springframework.data.redis.connection.lettuce.LettuceStringCommands.get(LettuceStringCommands.java:54)
+	at org.springframework.data.redis.connection.DefaultedRedisConnection.get(DefaultedRedisConnection.java:284)
+	at org.springframework.data.redis.core.DefaultValueOperations$1.inRedis(DefaultValueOperations.java:54)
+	at org.springframework.data.redis.core.AbstractOperations$ValueDeserializingRedisCallback.doInRedis(AbstractOperations.java:61)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:396)
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:363)
+	at org.springframework.data.redis.core.AbstractOperations.execute(AbstractOperations.java:97)
+	at org.springframework.data.redis.core.DefaultValueOperations.get(DefaultValueOperations.java:50)
+	at com.student.service.RedisService.get(RedisService.java:59)
+	at com.student.service.rag.impl.TermChangeListenerImpl.getTermMappingHash(TermChangeListenerImpl.java:138)
+	at com.student.service.rag.impl.TermChangeListenerImpl.scheduledVersionCheck(TermChangeListenerImpl.java:109)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: io.lettuce.core.RedisCommandTimeoutException: Command timed out after 2 second(s)
+	at io.lettuce.core.internal.ExceptionFactory.createTimeoutException(ExceptionFactory.java:59)
+	at io.lettuce.core.internal.Futures.awaitOrCancel(Futures.java:246)
+	at io.lettuce.core.LettuceFutures.awaitOrCancel(LettuceFutures.java:74)
+	at org.springframework.data.redis.connection.lettuce.LettuceConnection.await(LettuceConnection.java:1024)
+	... 20 common frames omitted
+2026-07-14 21:26:10 [term-change-checker] DEBUG c.s.s.r.impl.TermChangeListenerImpl - 术语映射表未变更: hash=d1907c48fdc9f2f7d2883510da929ce7, 检查次数=4
+2026-07-14 21:26:28 [lettuce-eventExecutorLoop-1-4] INFO  i.l.core.protocol.ConnectionWatchdog - Reconnecting, last destination was /8.138.40.200:6379
+2026-07-14 21:26:28 [lettuce-nioEventLoop-4-5] INFO  i.l.c.protocol.ReconnectionHandler - Reconnected to 8.138.40.200/<unresolved>:6379
+2026-07-14 21:29:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:29:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:29:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:29:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:29:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:29:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T20:59:07.548825100(LocalDateTime)
+2026-07-14 21:29:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:34:07 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 21:34:07 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 21:34:07 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 21:34:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:34:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:34:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:34:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:34:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:34:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T21:04:07.590127200(LocalDateTime)
+2026-07-14 21:34:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:39:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:39:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:39:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:39:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:39:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:39:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T21:09:07.628570600(LocalDateTime)
+2026-07-14 21:39:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.U.countPending - ==>  Preparing: SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.U.countPending - ==> Parameters: 
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.U.countPending - <==      Total: 1
+2026-07-14 21:44:07 [scheduling-1] INFO  c.s.s.r.i.SynonymExpansionServiceImpl - 同义词扩展统计: 总查询=0, 本地命中=0, Redis缓存命中=0, SNOMED命中=0, LLM实时命中=0, 未映射=0, 未映射率=0.00%, 待审核=1, 告警=正常
+2026-07-14 21:44:07 [scheduling-1] WARN  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置词库
+2026-07-14 21:44:07 [scheduling-1] INFO  c.s.s.r.i.MedicalEntityRecognitionServiceImpl - 内置医学词库加载完成: 条目数=84
+2026-07-14 21:44:07 [scheduling-1] WARN  c.s.s.r.i.QueryRewriteServiceImplRefactored - THUOCL词库文件不存在: /data/dict/thuocl_medical.txt，使用内置医学术语
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T21:14:07.659783300(LocalDateTime)
+2026-07-14 21:44:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 21:49:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 21:49:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 21:49:07 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 21:49:07 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 21:49:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 21:49:07 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T21:19:07.719386500(LocalDateTime)
+2026-07-14 21:49:07 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
+2026-07-14 22:03:27 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@5b3876cb (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 22:03:27 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=11m8s946ms856µs100ns).
+2026-07-14 22:03:30 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@686f94d1 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 22:03:33 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@1b349dc8 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-07-14 22:03:36 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4cf8e1c2 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.

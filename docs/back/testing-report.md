@@ -492,7 +492,7 @@ src/test/
 
 ### 9.3 相关文档
 
-- [项目设计文档](2026-04-04-IMKQAS-design.md)
+- [项目设计文档](IMKQAS系统设计方案)
 - [阶段2执行计划](implementation/phase2-implementation-plan.md)
 - [项目进度报告](project-progress-report.md)
 - [CLAUDE.md](../../CLAUDE.md) - 项目开发规范

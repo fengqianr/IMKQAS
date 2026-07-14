@@ -274,7 +274,7 @@
 - **里程碑更新**: 阶段完成时更新完成度和总结
 
 ### 相关文档
-- [项目设计文档](2026-04-04-IMKQAS-design.md)
+- [项目设计文档](IMKQAS系统设计方案)
 - [阶段2执行计划](implementation/phase2-implementation-plan.md)
 - [测试报告](testing-report.md) - 项目测试状态与覆盖率
 - [RAG管线优化方案 v2](../rag-pipeline-optimization-v2.md) - 检索质量+缓存架构提升

@@ -464,7 +464,7 @@ onMounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f3f4f5; /* surface-container-low */
+  background-color: #f8f9fa; /* surface / background */
 }
 
 /* ===== 顶部导航栏：匹配原型 backdrop-blur + shadow ===== */
