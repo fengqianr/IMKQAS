@@ -16074,3 +16074,10 @@ Caused by: io.lettuce.core.RedisCommandTimeoutException: Command timed out after
 2026-07-14 16:58:57 [http-nio-8080-exec-3] DEBUG c.s.m.U.findTopUnmappedTerms - ==>  Preparing: SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT ?
 2026-07-14 16:58:57 [http-nio-8080-exec-3] DEBUG c.s.m.U.findTopUnmappedTerms - ==> Parameters: 5(Integer)
 2026-07-14 16:58:57 [http-nio-8080-exec-3] DEBUG c.s.m.U.findTopUnmappedTerms - <==      Total: 1
+2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==>  Preparing: SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0
+2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - ==> Parameters: 
+2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.M.findAllApproved - <==      Total: 71
+2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.s.r.i.SynonymExpansionServiceImpl - 本地映射缓存刷新完成: 条目数=71
+2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==>  Preparing: UPDATE interview_sessions SET status=? WHERE deleted=0 AND (status = ? AND last_active_at <= ?)
+2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.h.I.update - ==> Parameters: EXPIRED(String), PAUSED(String), 2026-07-14T16:30:02.015940100(LocalDateTime)
+2026-07-14 17:00:02 [scheduling-1] DEBUG c.s.m.h.I.update - <==    Updates: 0
