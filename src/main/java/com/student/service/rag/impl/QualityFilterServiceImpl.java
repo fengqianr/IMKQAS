@@ -6,6 +6,7 @@ import com.student.config.RagConfig;
 import com.student.entity.DocumentChunk;
 import com.student.entity.contraindication.DrugPopulationContraindication;
 import com.student.service.document.DocumentChunkService;
+import com.student.service.rag.ContraindicationDetectionService;
 import com.student.service.rag.MedicalEntityRecognitionService;
 import com.student.service.rag.MultiRetrievalService;
 import com.student.service.rag.QualityFilterService;
@@ -71,18 +72,23 @@ public class QualityFilterServiceImpl implements QualityFilterService {
 
     /** 矛盾检测需要的最低权威性阈值 */
     private static final double CONTRADICTION_AUTHORITY_THRESHOLD = 0.7;
+    /** 权威性差距阈值：差距 ≥ 此值时由高权威方裁决，< 此值时交LLM综合判断 */
+    private static final double AUTHORITY_GAP_THRESHOLD = 0.15;
 
     private final MedicalEntityRecognitionService entityRecognitionService;
     private final DocumentChunkService documentChunkService;
+    private final ContraindicationDetectionService contraindicationDetectionService;
     private final RagConfig ragConfig;
     private final ObjectMapper objectMapper;
 
     public QualityFilterServiceImpl(MedicalEntityRecognitionService entityRecognitionService,
                                      DocumentChunkService documentChunkService,
+                                     ContraindicationDetectionService contraindicationDetectionService,
                                      RagConfig ragConfig,
                                      ObjectMapper objectMapper) {
         this.entityRecognitionService = entityRecognitionService;
         this.documentChunkService = documentChunkService;
+        this.contraindicationDetectionService = contraindicationDetectionService;
         this.ragConfig = ragConfig;
         this.objectMapper = objectMapper;
     }
@@ -250,18 +256,30 @@ public class QualityFilterServiceImpl implements QualityFilterService {
         RagConfig.QualityFilterConfig config = ragConfig.getQualityFilter();
         int filteredCount = 0;
         int downgradedCount = 0;
+        int realtimeCompensated = 0;
 
         for (MultiRetrievalService.RetrievalResult r : passed) {
             DocumentChunk chunk = chunkMap.get(r.getChunkId());
-            if (chunk == null || chunk.getHasContraindication() == null
-                    || chunk.getHasContraindication() == 0) {
-                result.pass(r);
-                continue;
+
+            // 快速路径：读取离线预标注
+            List<ContraindicationMatchInfo> matches = null;
+            if (chunk != null && chunk.getHasContraindication() != null
+                    && chunk.getHasContraindication() == 1) {
+                matches = parseContraindicationInfo(chunk.getContraindicationInfo());
             }
 
-            List<ContraindicationMatchInfo> matches = parseContraindicationInfo(
-                    chunk.getContraindicationInfo());
-            if (matches.isEmpty()) {
+            // 补偿路径：预标注未命中时在线实时检测
+            if ((matches == null || matches.isEmpty())
+                    && config.isRealtimeContraindicationEnabled()) {
+                List<ContraindicationDetectionService.ContraindicationMatch> realtimeMatches =
+                        contraindicationDetectionService.detectChunk(r.getContent());
+                if (!realtimeMatches.isEmpty()) {
+                    matches = toMatchInfoList(realtimeMatches);
+                    realtimeCompensated++;
+                }
+            }
+
+            if (matches == null || matches.isEmpty()) {
                 result.pass(r);
                 continue;
             }
@@ -279,9 +297,9 @@ public class QualityFilterServiceImpl implements QualityFilterService {
                 downgradedCount++;
             }
         }
-        if (filteredCount > 0 || downgradedCount > 0) {
-            log.info("禁忌标记过滤: 处理={}, 过滤={}, 降权={}",
-                    passed.size(), filteredCount, downgradedCount);
+        if (filteredCount > 0 || downgradedCount > 0 || realtimeCompensated > 0) {
+            log.info("禁忌标记过滤: 处理={}, 过滤={}, 降权={}, 在线补偿命中={}",
+                    passed.size(), filteredCount, downgradedCount, realtimeCompensated);
         }
     }
 
@@ -318,6 +336,20 @@ public class QualityFilterServiceImpl implements QualityFilterService {
             case "CAUTION" -> config.getCautionDowngradeFactor();
             default -> config.getCautionDowngradeFactor();
         };
+    }
+
+    /** 将实时匹配结果转为内部 MatchInfo */
+    private List<ContraindicationMatchInfo> toMatchInfoList(
+            List<ContraindicationDetectionService.ContraindicationMatch> matches) {
+        return matches.stream().map(m -> {
+            ContraindicationMatchInfo info = new ContraindicationMatchInfo();
+            info.drug = m.drug();
+            info.population = m.population();
+            info.type = m.type();
+            info.evidence = m.evidence();
+            info.description = m.description();
+            return info;
+        }).collect(Collectors.toList());
     }
 
     /** 禁忌匹配信息（与ContraindicationMatch保持结构一致，用于JSON反序列化） */
@@ -380,20 +412,39 @@ public class QualityFilterServiceImpl implements QualityFilterService {
             }
         }
 
-        // 双方都存在且权威性均 > 阈值 → 矛盾
+        // 双方都存在且权威性均 > 阈值 → 按权威差距分级裁决
         if (positiveAssertion != null && negativeAssertion != null
                 && positiveAssertion.authority > CONTRADICTION_AUTHORITY_THRESHOLD
                 && negativeAssertion.authority > CONTRADICTION_AUTHORITY_THRESHOLD) {
 
             String pair = drug + "-" + population;
-            String detail = String.format(
-                    "正向断言(%.2f): '%s', 负向断言(%.2f): '%s'",
-                    positiveAssertion.authority, positiveAssertion.pattern,
-                    negativeAssertion.authority, negativeAssertion.pattern);
-            double maxAuth = Math.max(positiveAssertion.authority, negativeAssertion.authority);
+            double posAuth = positiveAssertion.authority;
+            double negAuth = negativeAssertion.authority;
+            double authorityGap = Math.abs(posAuth - negAuth);
 
-            log.warn("矛盾检测命中: pair={}, detail={}", pair, detail);
-            return ContradictionResult.conflict(pair, detail, maxAuth);
+            String detail = String.format(
+                    "正向断言(%.2f): '%s', 负向断言(%.2f): '%s', 权威差距=%.2f",
+                    posAuth, positiveAssertion.pattern,
+                    negAuth, negativeAssertion.pattern,
+                    authorityGap);
+
+            if (authorityGap >= AUTHORITY_GAP_THRESHOLD) {
+                // 权威性有差异 → 以高权威表述为准
+                boolean higherIsPositive = posAuth > negAuth;
+                double winnerAuth = Math.max(posAuth, negAuth);
+                log.info("矛盾检测-已裁决: pair={}, 高权威方={}({:.2f}), 低权威方={}({:.2f}), 差距={:.2f}",
+                        pair,
+                        higherIsPositive ? "正向(可用)" : "负向(禁用)", winnerAuth,
+                        higherIsPositive ? "负向(禁用)" : "正向(可用)", Math.min(posAuth, negAuth),
+                        authorityGap);
+                return ContradictionResult.resolved(pair, detail, winnerAuth, higherIsPositive);
+            } else {
+                // 权威性相当 → 交LLM综合判断
+                double maxAuth = Math.max(posAuth, negAuth);
+                log.warn("矛盾检测-未裁决: pair={}, 权威性相当(差距={:.2f}<{:.2f}), 交LLM判断",
+                        pair, authorityGap, AUTHORITY_GAP_THRESHOLD);
+                return ContradictionResult.unresolved(pair, detail, maxAuth);
+            }
         }
 
         return ContradictionResult.noContradiction();

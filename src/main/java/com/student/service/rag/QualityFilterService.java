@@ -69,23 +69,71 @@ public interface QualityFilterService {
 
     /** 矛盾检测结果 */
     class ContradictionResult {
+
+        /** 裁决类型 */
+        public enum ResolutionType {
+            /** 无矛盾 */
+            NONE,
+            /** 权威性有差异 → 以高权威表述为准，过滤低权威结果 */
+            RESOLVED,
+            /** 权威性相当 → 交LLM综合判断，附加冲突说明 */
+            UNRESOLVED
+        }
+
         private final boolean hasContradiction;
         private final String drugPopulationPair;
         private final String detail;
         private final double maxAuthority;
+        /** 裁决类型 */
+        private final ResolutionType resolutionType;
+        /** RESOLVED 时：胜出方的权威分数 */
+        private final double winnerAuthority;
+        /** RESOLVED 时：胜出方的断言方向（true=正向/可用, false=负向/禁用） */
+        private final boolean winnerDirectionPositive;
 
         public ContradictionResult(boolean hasContradiction, String drugPopulationPair,
                                    String detail, double maxAuthority) {
+            this(hasContradiction, drugPopulationPair, detail, maxAuthority,
+                 ResolutionType.NONE, 0.0, false);
+        }
+
+        public ContradictionResult(boolean hasContradiction, String drugPopulationPair,
+                                   String detail, double maxAuthority,
+                                   ResolutionType resolutionType, double winnerAuthority,
+                                   boolean winnerDirectionPositive) {
             this.hasContradiction = hasContradiction;
             this.drugPopulationPair = drugPopulationPair;
             this.detail = detail;
             this.maxAuthority = maxAuthority;
+            this.resolutionType = resolutionType;
+            this.winnerAuthority = winnerAuthority;
+            this.winnerDirectionPositive = winnerDirectionPositive;
         }
 
         public static ContradictionResult noContradiction() {
-            return new ContradictionResult(false, null, null, 0.0);
+            return new ContradictionResult(false, null, null, 0.0,
+                    ResolutionType.NONE, 0.0, false);
         }
 
+        /**
+         * 权威性有差异 → 以高权威表述为准
+         */
+        public static ContradictionResult resolved(String pair, String detail,
+                                                    double winnerAuth, boolean winnerPositive) {
+            return new ContradictionResult(true, pair, detail,
+                    winnerAuth, ResolutionType.RESOLVED, winnerAuth, winnerPositive);
+        }
+
+        /**
+         * 权威性相当 → 交LLM综合判断
+         */
+        public static ContradictionResult unresolved(String pair, String detail, double maxAuth) {
+            return new ContradictionResult(true, pair, detail, maxAuth,
+                    ResolutionType.UNRESOLVED, 0.0, false);
+        }
+
+        /** @deprecated 使用 resolved() 或 unresolved() 替代 */
+        @Deprecated
         public static ContradictionResult conflict(String pair, String detail, double authority) {
             return new ContradictionResult(true, pair, detail, authority);
         }
@@ -94,5 +142,8 @@ public interface QualityFilterService {
         public String getDrugPopulationPair() { return drugPopulationPair; }
         public String getDetail() { return detail; }
         public double getMaxAuthority() { return maxAuthority; }
+        public ResolutionType getResolutionType() { return resolutionType; }
+        public double getWinnerAuthority() { return winnerAuthority; }
+        public boolean isWinnerDirectionPositive() { return winnerDirectionPositive; }
     }
 }

@@ -22,6 +22,11 @@
               class="text-secondary hover:text-brand transition-colors font-semibold px-3 py-1.5 rounded-full"
               :class="{ 'bg-brand text-on-brand': $route.path === '/knowledge' }"
             >知识库</router-link>
+            <router-link
+              to="/contraindication-rules"
+              class="text-secondary hover:text-brand transition-colors font-semibold px-3 py-1.5 rounded-full"
+              :class="{ 'bg-brand text-on-brand': $route.path === '/contraindication-rules' }"
+            >禁忌规则</router-link>
           </div>
         </div>
         <div class="flex items-center gap-4">

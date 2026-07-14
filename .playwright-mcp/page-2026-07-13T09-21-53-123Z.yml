@@ -1,0 +1,69 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: Clinical Precision RAG
+      - navigation [ref=e8]:
+        - link "智能问答" [ref=e9] [cursor=pointer]:
+          - /url: /qa
+        - link "知识库" [ref=e10] [cursor=pointer]:
+          - /url: /knowledge
+    - generic [ref=e11]:
+      - button "notifications" [ref=e12] [cursor=pointer]
+      - button "settings" [ref=e13] [cursor=pointer]
+      - img "User Profile" [ref=e14]
+  - generic [ref=e15]:
+    - banner [ref=e16]:
+      - heading "知识库管理" [level=1] [ref=e17]
+      - paragraph [ref=e18]: 集中化管理医疗文献、病历记录与诊疗指南。利用 RAG 技术实现精准的临床辅助决策。
+    - generic [ref=e19]:
+      - button "文档管理" [ref=e20]
+      - button "禁忌规则" [active] [ref=e21]
+    - generic [ref=e113]:
+      - banner [ref=e114]:
+        - generic [ref=e115]:
+          - generic [ref=e116]:
+            - heading "禁忌规则管理" [level=1] [ref=e117]
+            - paragraph [ref=e118]: 管理药物-人群禁忌规则，支持增删改查、批量导入。规则变更后需刷新缓存即时生效。
+          - button "add 新增规则" [ref=e119]:
+            - generic [ref=e120]: add
+            - text: 新增规则
+      - generic [ref=e121]:
+        - textbox "药物名称..." [ref=e122]
+        - textbox "人群名称..." [ref=e123]
+        - combobox [ref=e124]:
+          - option "全部类型" [selected]
+          - option "绝对禁用"
+          - option "相对禁忌"
+          - option "慎用"
+          - option "尚不明确"
+        - combobox [ref=e125]:
+          - option "全部状态" [selected]
+          - option "已启用"
+          - option "已禁用"
+        - button "upload 批量导入" [ref=e126]:
+          - generic [ref=e127]: upload
+          - text: 批量导入
+        - button "cached 刷新缓存" [ref=e128]:
+          - generic [ref=e129]: cached
+          - text: 刷新缓存
+      - generic [ref=e130]:
+        - table [ref=e132]:
+          - rowgroup [ref=e133]:
+            - row [ref=e134]:
+              - columnheader "药物名称" [ref=e135]
+              - columnheader "人群名称" [ref=e136]
+              - columnheader "禁忌类型" [ref=e137]
+              - columnheader "证据等级" [ref=e138]
+              - columnheader "描述" [ref=e139]
+              - columnheader "状态" [ref=e140]
+              - columnheader "更新时间" [ref=e141]
+              - columnheader "操作" [ref=e142]
+          - rowgroup [ref=e143]:
+            - row [ref=e144]:
+              - cell [ref=e145]:
+                - paragraph [ref=e146]: 暂无禁忌规则数据
+        - generic [ref=e147]:
+          - generic [ref=e148]: 共 0 条记录，第 1 / 0 页
+          - generic [ref=e149]:
+            - button "上一页" [disabled] [ref=e150]
+            - button "下一页" [disabled] [ref=e151]

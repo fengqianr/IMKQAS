@@ -1,0 +1,326 @@
+<!DOCTYPE html><html lang="zh-CN" style=""><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@500;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{try{
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#00468c",
+                    "on-primary-fixed": "#001b3d",
+                    "secondary-fixed": "#d6e3ff",
+                    "surface-container-low": "#f3f4f5",
+                    "on-background": "#191c1d",
+                    "inverse-on-surface": "#f0f1f2",
+                    "on-tertiary-fixed-variant": "#793100",
+                    "on-error": "#ffffff",
+                    "secondary": "#4a5f83",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "surface-bright": "#f8f9fa",
+                    "surface-tint": "#005db6",
+                    "surface-container-high": "#e7e8e9",
+                    "background": "#f8f9fa",
+                    "inverse-primary": "#a9c7ff",
+                    "on-secondary-container": "#475c80",
+                    "secondary-container": "#c0d5ff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#341100",
+                    "on-tertiary-container": "#ffcfb9",
+                    "inverse-surface": "#2e3132",
+                    "primary-container": "#005eb8",
+                    "tertiary-fixed": "#ffdbcb",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e1e3e4",
+                    "surface": "#f8f9fa",
+                    "outline": "#727783",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#793100",
+                    "outline-variant": "#c2c6d4",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e1e3e4",
+                    "on-secondary-fixed-variant": "#32476a",
+                    "surface-container": "#edeeef",
+                    "on-secondary-fixed": "#021b3c",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#a9c7ff",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#9f4300",
+                    "secondary-fixed-dim": "#b2c7f0",
+                    "surface-dim": "#d9dadb",
+                    "primary-fixed": "#d6e3ff",
+                    "on-surface": "#191c1d",
+                    "on-surface-variant": "#424752",
+                    "primary": "#00478d",
+                    "on-primary-container": "#c8daff"
+                },
+                "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "1.5rem"
+                },
+                "fontFamily": {
+                    "headline": ["Manrope"],
+                    "display": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+                }
+            }
+        }
+    }
+}catch(_e){}}catch(_e){}</script><meta charset="utf-8"></head><body class="text-on-surface bg-background">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-[0_12px_40px_rgba(0,71,141,0.06)] border-b border-outline-variant/15">
+    <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-8">
+            <span class="text-xl font-bold tracking-tighter text-blue-800 dark:text-blue-300 font-manrope">MedPrecision RAG</span>
+            <nav class="hidden md:flex items-center gap-6 font-manrope text-sm font-medium tracking-tight">
+                <a href="#" class="text-slate-500 hover:text-blue-600 transition-colors">智能问答</a>
+                <a href="#" class="text-slate-500 hover:text-blue-600 transition-colors">知识库</a>
+                <a href="#" class="text-blue-700 font-bold border-b-2 border-blue-700 pb-2">禁忌规则</a>
+
+
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="relative hidden lg:block">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+                <input type="text" placeholder="搜索规则或药物..." class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all">
+            </div>
+            <button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+                <span class="material-symbols-outlined" data-original-icon="notifications">notifications</span>
+            </button>
+            <button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+            <div class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden border border-outline-variant/20">
+                <img class="w-full h-full object-cover" data-alt="A professional close-up headshot of a clinical medical researcher in a modern office environment, soft cinematic lighting, high-end commercial photography style, representing expertise and precision in the medical field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt8W5AagqpIucTMGaHFlhi1E7c_LTF5WRBFsDWarVnMfs0FQ--zrAdqhzVe0SwKmgADdGXIsuS93SIdga1EGmizbwcr4dADjyX4RznH5X9m9uFvRxDLu12g-Mis0kC7sogMNXUjwUhuLMAyxIfZJD-r5f8j3stkOBF9c2ef1HTUV5Nu8qBalGa4OctaKGlJnQzPP2kFODffIhlo24tsUrSU21lKX9-4BEKKqb8inmmaYYcwGB_iS_a3gP7GpZCiUl4HTwHGBOz28I">
+            </div>
+        </div>
+    </div>
+</header>
+<main class="pt-24 pb-12 px-8 max-w-screen-2xl mx-auto bg-surface-container-low/30">
+    <!-- -->
+
+    <!-- Stats Overview (Asymmetric Bento) -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="md:col-span-1 bg-surface-container-lowest p-6 rounded-xl clinical-shadow border border-outline-variant/5">
+            <p class="text-sm font-medium text-on-surface-variant mb-1">活跃规则总数</p>
+            <h3 class="text-2xl font-bold font-manrope text-primary">1,284</h3>
+            <div class="mt-4 flex items-center gap-1 text-xs text-green-600">
+                <span class="material-symbols-outlined text-sm">trending_up</span>
+                <span class="">本月新增 12 条</span>
+            </div>
+        </div>
+        <div class="md:col-span-1 bg-surface-container-lowest p-6 rounded-xl clinical-shadow border border-outline-variant/5">
+            <p class="text-sm font-medium text-on-surface-variant mb-1">禁用等级规则</p>
+            <h3 class="text-2xl font-bold font-manrope text-error">432</h3>
+            <div class="mt-4 flex items-center gap-1 text-xs text-on-surface-variant">
+                <span class="">占比规则库 33.6%</span>
+            </div>
+        </div>
+
+        <div class="md:col-span-2 flex items-start justify-end gap-3 pt-1">
+            <button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-low text-on-secondary-fixed-variant font-semibold rounded-full hover:bg-surface-container-high transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[20px]" data-original-icon="upload_file">upload_file</span>
+                <span class="">批量导入</span>
+            </button>
+            <button class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-primary-container text-white font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                <span class="">新增规则</span>
+            </button>
+        </div></section>
+    <!-- Filter Bar -->
+    <section class="bg-surface-container-lowest rounded-xl clinical-shadow p-4 mb-6 flex flex-wrap items-center gap-4 border border-outline-variant/5">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1 ml-1">药物名称</label>
+            <input class="w-full bg-surface-container-low border-none rounded-lg text-sm px-4 py-2 focus:ring-1 focus:ring-primary" placeholder="输入通用名或商品名" type="text">
+        </div>
+        <div class="w-48">
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1 ml-1">适用人群</label>
+            <select class="w-full bg-surface-container-low border-none rounded-lg text-sm px-4 py-2 focus:ring-1 focus:ring-primary appearance-none">
+                <option>全部人群</option>
+                <option>妊娠期女性</option>
+                <option>老年患者</option>
+                <option>肝功能受损</option>
+                <option>肾功能受损</option>
+                <option>哺乳期</option>
+            </select>
+        </div>
+        <div class="w-40">
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1 ml-1">严重程度</label>
+            <select class="w-full bg-surface-container-low border-none rounded-lg text-sm px-4 py-2 focus:ring-1 focus:ring-primary appearance-none">
+                <option>所有等级</option>
+                <option>禁用 (Absolute)</option>
+                <option>慎用 (Relative)</option>
+            </select>
+        </div>
+        <div class="self-end pb-0.5">
+            <button class="px-6 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-container transition-colors">
+                应用筛选
+            </button>
+        </div>
+        <button class="self-end pb-2.5 px-2 text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">
+            重置
+        </button>
+    </section>
+    <!-- Rules Table -->
+    <div class="bg-surface-container-lowest rounded-xl clinical-shadow overflow-hidden border border-outline-variant/5">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low/50">
+            <tr>
+                <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">药物名称</th>
+                <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">目标人群</th>
+                <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">禁忌类型</th>
+                <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">风险描述</th>
+                <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">证据等级</th>
+                <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">最后更新</th>
+                <th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">状态</th><th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider text-right">操作</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10">
+            <!-- Row 1 -->
+            <tr class="hover:bg-surface-container-low/30 transition-colors">
+                <td class="px-6 py-5">
+                    <div class="font-semibold text-on-surface">华法林 (Warfarin)</div>
+                    <div class="text-xs text-on-surface-variant">ATC: B01AA03</div>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed text-xs font-medium">妊娠期 (T1)</span>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="status-pill bg-error/10 text-error">禁用</span>
+                </td>
+                <td class="px-6 py-5 max-w-xs">
+                    <p class="text-sm line-clamp-2 text-on-surface-variant">具有强致畸风险，可能导致华法林胚胎病（鼻发育不良、点状骨骺等）。</p>
+                </td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed text-xs font-medium">Grade A</span></td>
+                <td class="px-6 py-5 text-sm text-on-surface-variant">2023-10-12</td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-green-600/10 text-green-600 text-xs font-medium">已发布</span></td><td class="px-6 py-5 text-right space-x-2 flex justify-end">
+                <button class="p-2 hover:bg-primary/10 text-primary rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 hover:bg-error/10 text-error rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+            </td>
+            </tr>
+            <!-- Row 2 -->
+            <tr class="hover:bg-surface-container-low/30 transition-colors">
+                <td class="px-6 py-5">
+                    <div class="font-semibold text-on-surface">布洛芬 (Ibuprofen)</div>
+                    <div class="text-xs text-on-surface-variant">ATC: M01AE01</div>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-tertiary-fixed text-on-tertiary-fixed text-xs font-medium">严重肾功能不全</span>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="status-pill bg-tertiary/10 text-tertiary">慎用</span>
+                </td>
+                <td class="px-6 py-5 max-w-xs">
+                    <p class="text-sm line-clamp-2 text-on-surface-variant">NSAIDs可能导致前列腺素合成减少，进一步降低肾血流量，加重肾损伤。</p>
+                </td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed text-xs font-medium">Level 1</span></td>
+                <td class="px-6 py-5 text-sm text-on-surface-variant">2023-11-05</td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant text-xs font-medium">草稿</span></td><td class="px-6 py-5 text-right space-x-2 flex justify-end">
+                <button class="p-2 hover:bg-primary/10 text-primary rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 hover:bg-error/10 text-error rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+            </td>
+            </tr>
+            <!-- Row 3 -->
+            <tr class="hover:bg-surface-container-low/30 transition-colors">
+                <td class="px-6 py-5">
+                    <div class="font-semibold text-on-surface">阿托伐他汀 (Atorvastatin)</div>
+                    <div class="text-xs text-on-surface-variant">ATC: C10AA05</div>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed text-xs font-medium">活动性肝病</span>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="status-pill bg-error/10 text-error">禁用</span>
+                </td>
+                <td class="px-6 py-5 max-w-xs">
+                    <p class="text-sm line-clamp-2 text-on-surface-variant">可能引起转氨酶升高，在活动性肝损伤状态下可能诱发严重肝功能衰竭。</p>
+                </td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed text-xs font-medium">Class I</span></td>
+                <td class="px-6 py-5 text-sm text-on-surface-variant">2023-12-01</td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-tertiary/10 text-tertiary text-xs font-medium">审核中</span></td><td class="px-6 py-5 text-right space-x-2 flex justify-end">
+                <button class="p-2 hover:bg-primary/10 text-primary rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 hover:bg-error/10 text-error rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+            </td>
+            </tr>
+            <!-- Row 4 -->
+            <tr class="hover:bg-surface-container-low/30 transition-colors">
+                <td class="px-6 py-5">
+                    <div class="font-semibold text-on-surface">左氧氟沙星 (Levofloxacin)</div>
+                    <div class="text-xs text-on-surface-variant">ATC: J01MA12</div>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed text-xs font-medium">18岁以下儿童</span>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="status-pill bg-error/10 text-error">禁用</span>
+                </td>
+                <td class="px-6 py-5 max-w-xs">
+                    <p class="text-sm line-clamp-2 text-on-surface-variant">可能对发育中的软骨造成损害（动物实验证据显著）。</p>
+                </td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-fixed text-on-secondary-fixed text-xs font-medium">Grade B</span></td>
+                <td class="px-6 py-5 text-sm text-on-surface-variant">2024-01-15</td>
+                <td class="px-6 py-5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-green-600/10 text-green-600 text-xs font-medium">已发布</span></td><td class="px-6 py-5 text-right space-x-2 flex justify-end">
+                <button class="p-2 hover:bg-primary/10 text-primary rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 hover:bg-error/10 text-error rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+            </td>
+            </tr>
+            </tbody>
+        </table>
+        <!-- Pagination Footer -->
+        <footer class="px-6 py-4 bg-surface-container-low/30 flex items-center justify-between">
+            <span class="text-sm text-on-surface-variant font-medium">显示 1 到 10 条，共 1,284 条规则</span>
+            <div class="flex items-center gap-1">
+                <button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded transition-colors disabled:opacity-30" disabled="">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white text-xs font-bold">1</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors">2</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors">3</button>
+                <span class="px-1 text-on-surface-variant">...</span>
+                <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high text-on-surface-variant text-xs font-medium transition-colors">129</button>
+                <button class="p-1 text-on-surface-variant hover:bg-surface-container-high rounded transition-colors">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</main>
+<!---->
+<div class="fixed top-0 right-0 -z-10 opacity-20 pointer-events-none">
+    <div class="w-[800px] h-[800px] bg-gradient-to-bl from-primary-fixed to-transparent rounded-full blur-[120px]"></div>
+</div>
+<div class="fixed bottom-0 left-0 -z-10 opacity-10 pointer-events-none">
+    <div class="w-[600px] h-[600px] bg-gradient-to-tr from-secondary-fixed to-transparent rounded-full blur-[100px]"></div>
+</div>
+<!-- Micro-interaction Scripts -->
+<script class="">
+    // Simple search animation feedback
+    const searchInput = document.querySelector('input[type="text"]');
+    searchInput.addEventListener('focus', () => {
+        searchInput.parentElement.classList.add('ring-2', 'ring-primary/20');
+    });
+    searchInput.addEventListener('blur', () => {
+        searchInput.parentElement.classList.remove('ring-2', 'ring-primary/20');
+    });
+
+    // Mock Action Button interactions
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (</script></body></html>

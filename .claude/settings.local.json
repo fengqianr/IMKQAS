@@ -114,7 +114,10 @@
       "Bash(kill -9 44484)",
       "Bash(java -jar target/IMKQAS-1.0-SNAPSHOT.jar)",
       "Bash(\"/c/python/解析器/python.exe\" scripts/batch_write_mappings.py)",
-      "Bash(PYTHONIOENCODING=utf-8 python3 -c \"from confidence_tuning import config; print\\(config.BASE_URL\\)\")"
+      "Bash(PYTHONIOENCODING=utf-8 python3 -c \"from confidence_tuning import config; print\\(config.BASE_URL\\)\")",
+      "Bash(cd /d \"D:\\\\Java\\\\代码\\\\IMKQAS\\\\frontend\")",
+      "mcp__playwright__browser_click",
+      "mcp__filesystem__write_file"
     ]
   }
 }

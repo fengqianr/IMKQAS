@@ -1,0 +1,141 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [ref=f1e5]: MedPrecision RAG
+        - navigation [ref=f1e6]:
+          - link "智能问答" [ref=f1e7] [cursor=pointer]:
+            - /url: "#"
+          - link "知识库" [ref=f1e8] [cursor=pointer]:
+            - /url: "#"
+          - link "禁忌规则" [ref=f1e9] [cursor=pointer]:
+            - /url: "#"
+      - generic [ref=f1e10]:
+        - generic [ref=f1e11]:
+          - generic [ref=f1e12]: search
+          - textbox "搜索规则或药物..." [ref=f1e13]
+        - button "notifications" [ref=f1e14] [cursor=pointer]
+        - button "settings" [ref=f1e16] [cursor=pointer]
+  - main [ref=f1e20]:
+    - generic [ref=f1e21]:
+      - generic [ref=f1e22]:
+        - paragraph [ref=f1e23]: 活跃规则总数
+        - heading "1,284" [level=3] [ref=f1e24]
+        - generic [ref=f1e25]:
+          - generic [ref=f1e26]: trending_up
+          - generic [ref=f1e27]: 本月新增 12 条
+      - generic [ref=f1e28]:
+        - paragraph [ref=f1e29]: 禁用等级规则
+        - heading "432" [level=3] [ref=f1e30]
+        - generic [ref=f1e31]: 占比规则库 33.6%
+      - generic [ref=f1e33]:
+        - button "upload_file 批量导入" [ref=f1e34] [cursor=pointer]:
+          - generic [ref=f1e35]: upload_file
+          - generic [ref=f1e36]: 批量导入
+        - button "add 新增规则" [ref=f1e37] [cursor=pointer]:
+          - generic [ref=f1e38]: add
+          - generic [ref=f1e39]: 新增规则
+    - generic [ref=f1e40]:
+      - generic [ref=f1e41]:
+        - generic [ref=f1e42]: 药物名称
+        - textbox "输入通用名或商品名" [ref=f1e43]
+      - generic [ref=f1e44]:
+        - generic [ref=f1e45]: 适用人群
+        - combobox [ref=f1e46]:
+          - option "全部人群" [selected]
+          - option "妊娠期女性"
+          - option "老年患者"
+          - option "肝功能受损"
+          - option "肾功能受损"
+          - option "哺乳期"
+      - generic [ref=f1e47]:
+        - generic [ref=f1e48]: 严重程度
+        - combobox [ref=f1e49]:
+          - option "所有等级" [selected]
+          - option "禁用 (Absolute)"
+          - option "慎用 (Relative)"
+      - button "应用筛选" [ref=f1e51] [cursor=pointer]
+      - button "重置" [ref=f1e52] [cursor=pointer]
+    - generic [ref=f1e53]:
+      - table [ref=f1e54]:
+        - rowgroup [ref=f1e55]:
+          - row [ref=f1e56]:
+            - columnheader "药物名称" [ref=f1e57]
+            - columnheader "目标人群" [ref=f1e58]
+            - columnheader "禁忌类型" [ref=f1e59]
+            - columnheader "风险描述" [ref=f1e60]
+            - columnheader "证据等级" [ref=f1e61]
+            - columnheader "最后更新" [ref=f1e62]
+            - columnheader "状态" [ref=f1e63]
+            - columnheader "操作" [ref=f1e64]
+        - rowgroup [ref=f1e65]:
+          - row [ref=f1e66]:
+            - 'cell "华法林 (Warfarin) ATC: B01AA03" [ref=f1e67]':
+              - generic [ref=f1e68]: 华法林 (Warfarin)
+              - generic [ref=f1e69]: "ATC: B01AA03"
+            - cell "妊娠期 (T1)" [ref=f1e70]
+            - cell "禁用" [ref=f1e72]
+            - cell [ref=f1e74]:
+              - paragraph [ref=f1e75]: 具有强致畸风险，可能导致华法林胚胎病。
+            - cell "Grade A" [ref=f1e76]
+            - cell "2023-10-12" [ref=f1e78]
+            - cell "已发布" [ref=f1e79]
+            - cell [ref=f1e81]:
+              - generic [ref=f1e82]:
+                - button "edit" [ref=f1e83] [cursor=pointer]
+                - button "delete" [ref=f1e85] [cursor=pointer]
+          - row [ref=f1e87]:
+            - 'cell "布洛芬 (Ibuprofen) ATC: M01AE01" [ref=f1e88]':
+              - generic [ref=f1e89]: 布洛芬 (Ibuprofen)
+              - generic [ref=f1e90]: "ATC: M01AE01"
+            - cell "严重肾功能不全" [ref=f1e91]
+            - cell "慎用" [ref=f1e93]
+            - cell [ref=f1e95]:
+              - paragraph [ref=f1e96]: NSAIDs可能导致前列腺素合成减少，加重肾损伤。
+            - cell "Level 1" [ref=f1e97]
+            - cell "2023-11-05" [ref=f1e99]
+            - cell "草稿" [ref=f1e100]
+            - cell [ref=f1e102]:
+              - generic [ref=f1e103]:
+                - button "edit" [ref=f1e104] [cursor=pointer]
+                - button "delete" [ref=f1e106] [cursor=pointer]
+          - row [ref=f1e108]:
+            - 'cell "阿托伐他汀 (Atorvastatin) ATC: C10AA05" [ref=f1e109]':
+              - generic [ref=f1e110]: 阿托伐他汀 (Atorvastatin)
+              - generic [ref=f1e111]: "ATC: C10AA05"
+            - cell "活动性肝病" [ref=f1e112]
+            - cell "禁用" [ref=f1e114]
+            - cell [ref=f1e116]:
+              - paragraph [ref=f1e117]: 可能引起转氨酶升高，在活动性肝损伤状态下可能诱发严重肝功能衰竭。
+            - cell "Class I" [ref=f1e118]
+            - cell "2023-12-01" [ref=f1e120]
+            - cell "审核中" [ref=f1e121]
+            - cell [ref=f1e123]:
+              - generic [ref=f1e124]:
+                - button "edit" [ref=f1e125] [cursor=pointer]
+                - button "delete" [ref=f1e127] [cursor=pointer]
+          - row [ref=f1e129]:
+            - 'cell "左氧氟沙星 (Levofloxacin) ATC: J01MA12" [ref=f1e130]':
+              - generic [ref=f1e131]: 左氧氟沙星 (Levofloxacin)
+              - generic [ref=f1e132]: "ATC: J01MA12"
+            - cell "18岁以下儿童" [ref=f1e133]
+            - cell "禁用" [ref=f1e135]
+            - cell [ref=f1e137]:
+              - paragraph [ref=f1e138]: 可能对发育中的软骨造成损害（动物实验证据显著）。
+            - cell "Grade B" [ref=f1e139]
+            - cell "2024-01-15" [ref=f1e141]
+            - cell "已发布" [ref=f1e142]
+            - cell [ref=f1e144]:
+              - generic [ref=f1e145]:
+                - button "edit" [ref=f1e146] [cursor=pointer]
+                - button "delete" [ref=f1e148] [cursor=pointer]
+      - generic [ref=f1e150]:
+        - generic [ref=f1e151]: 显示 1 到 10 条，共 1,284 条规则
+        - generic [ref=f1e152]:
+          - button "chevron_left" [disabled] [ref=f1e153]
+          - button "1" [ref=f1e155] [cursor=pointer]
+          - button "2" [ref=f1e156] [cursor=pointer]
+          - button "3" [ref=f1e157] [cursor=pointer]
+          - generic [ref=f1e158]: ...
+          - button "129" [ref=f1e159] [cursor=pointer]
+          - button "chevron_right" [ref=f1e160] [cursor=pointer]

@@ -154,12 +154,25 @@ public class QaServiceImpl implements QaService {
             long t7 = System.currentTimeMillis();
             QualityFilterService.ContradictionResult contradiction =
                     qualityFilterService.detectContradictions(filteredResults, query);
-            PipelineTraceContext.recordStep("矛盾检测", 7, System.currentTimeMillis() - t7);
-            if (contradiction.isHasContradiction()) {
-                log.warn("矛盾检测命中: pair={}, 阻断LLM调用", contradiction.getDrugPopulationPair());
-                PipelineTraceContext.finish();
-                return buildContradictionResponse(query, contradiction, startTime, intent);
+            String contradictionStepResult;
+            QualityFilterService.ContradictionResult.ResolutionType resType =
+                    contradiction.getResolutionType();
+            if (resType == QualityFilterService.ContradictionResult.ResolutionType.RESOLVED) {
+                contradictionStepResult = "已裁决(高权威源为准)";
+                log.info("矛盾已裁决: pair={}, 采纳权威性{:.2f}的{}向表述",
+                        contradiction.getDrugPopulationPair(),
+                        contradiction.getWinnerAuthority(),
+                        contradiction.isWinnerDirectionPositive() ? "正" : "负");
+            } else if (resType == QualityFilterService.ContradictionResult.ResolutionType.UNRESOLVED) {
+                contradictionStepResult = "未裁决(交LLM综合判断)";
+                log.warn("矛盾未裁决: pair={}, 权威性相当, 交LLM综合判断并附加冲突说明",
+                        contradiction.getDrugPopulationPair());
+            } else {
+                contradictionStepResult = "无矛盾";
             }
+            PipelineTraceContext.recordStep("矛盾检测", 7, System.currentTimeMillis() - t7,
+                    1, 1, Map.of("结果", contradictionStepResult));
+            // 矛盾信息由 contradiction 变量持有，后续在安全提示环节处理
 
             // [8] 多因子重排序
             long t8 = System.currentTimeMillis();
@@ -250,6 +263,14 @@ public class QaServiceImpl implements QaService {
             String safetyNote = contraindicationDetectionService.buildSafetyNote(query);
             if (safetyNote != null) {
                 answer = answer + "\n\n---\n" + safetyNote;
+            }
+
+            // 矛盾裁决安全提示
+            if (contradiction.isHasContradiction()) {
+                String contradictionNote = buildContradictionNote(contradiction);
+                if (contradictionNote != null) {
+                    answer = answer + "\n\n---\n" + contradictionNote;
+                }
             }
 
             double confidence = calculateConfidence(rerankedResults, answer);
@@ -406,25 +427,18 @@ public class QaServiceImpl implements QaService {
             long t7 = System.currentTimeMillis();
             QualityFilterService.ContradictionResult contradiction =
                     qualityFilterService.detectContradictions(filteredResults, query);
-            PipelineTraceContext.recordStep("矛盾检测", 7, System.currentTimeMillis() - t7,
-                    1, 1, Map.of("结果", contradiction.isHasContradiction() ? "发现矛盾" : "无矛盾"));
-            if (contradiction.isHasContradiction()) {
-                QaResponse cr = buildContradictionResponse(query, contradiction, startTime, intent);
-                PipelineTraceContext.get().putMetadata("intentType", intent.name());
-                PipelineTraceContext.get().putMetadata("blockedAt", "contradiction");
-                PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
-                List<RetrievalStepDto> stepDtos = buildStepDtos(trace);
-                RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
-                        .steps(stepDtos)
-                        .totalDurationMs(trace.getTotalDurationMs())
-                        .cacheHit(false)
-                        .intentType(intent.name())
-                        .build();
-                return new QaResponseWithSources(
-                        cr.getQuery(), cr.getAnswer(), cr.getRetrievedContext(),
-                        cr.getConfidence(), cr.getProcessingTime(), cr.getModelUsed(),
-                        Collections.emptyList(), cr.getIntentType(), cr.getQuestionnaireSuggestion(), retrievalPath);
+            String contradictionStepResult;
+            QualityFilterService.ContradictionResult.ResolutionType resType =
+                    contradiction.getResolutionType();
+            if (resType == QualityFilterService.ContradictionResult.ResolutionType.RESOLVED) {
+                contradictionStepResult = "已裁决(高权威源为准)";
+            } else if (resType == QualityFilterService.ContradictionResult.ResolutionType.UNRESOLVED) {
+                contradictionStepResult = "未裁决(交LLM综合判断)";
+            } else {
+                contradictionStepResult = "无矛盾";
             }
+            PipelineTraceContext.recordStep("矛盾检测", 7, System.currentTimeMillis() - t7,
+                    1, 1, Map.of("结果", contradictionStepResult));
 
             long t8 = System.currentTimeMillis();
             List<MultiRetrievalService.RetrievalResult> rerankedResults =
@@ -485,10 +499,18 @@ public class QaServiceImpl implements QaService {
                 sanitizedAnswer = sanitizedAnswer + "\n\n---\n\n" + suggestion.getSuggestionText();
             }
 
-            // 兜底安全提示
+            // 兜底安全提示：查询涉及药物+人群但禁忌规则表未覆盖
             String safetyNote = contraindicationDetectionService.buildSafetyNote(query);
             if (safetyNote != null) {
                 sanitizedAnswer = sanitizedAnswer + "\n\n---\n" + safetyNote;
+            }
+
+            // 矛盾裁决安全提示
+            if (contradiction.isHasContradiction()) {
+                String contradictionNote = buildContradictionNote(contradiction);
+                if (contradictionNote != null) {
+                    sanitizedAnswer = sanitizedAnswer + "\n\n---\n" + contradictionNote;
+                }
             }
 
             long processingTime = System.currentTimeMillis() - startTime;
@@ -823,20 +845,32 @@ public class QaServiceImpl implements QaService {
     }
 
     /**
-     * 构建矛盾信息响应（不送入LLM）
+     * 构建矛盾裁决安全提示（追加在LLM回答末尾，不阻断管线）
      */
-    private QaResponse buildContradictionResponse(String query,
-                                                   QualityFilterService.ContradictionResult contradiction,
-                                                   long startTime, IntentType intent) {
-        long processingTime = System.currentTimeMillis() - startTime;
-        String message = String.format(
-                "关于 %s 的信息存在冲突，不同权威来源给出了相反的结论。"
-                        + "建议您咨询专业医生，结合具体病情做出判断。",
-                contradiction.getDrugPopulationPair());
+    private String buildContradictionNote(QualityFilterService.ContradictionResult contradiction) {
+        if (contradiction == null || !contradiction.isHasContradiction()) {
+            return null;
+        }
+        QualityFilterService.ContradictionResult.ResolutionType resType =
+                contradiction.getResolutionType();
 
-        return new QaResponse(query, message, Collections.emptyList(),
-                0.5, processingTime, "safety-guard",
-                intent != null ? intent.name() : null, null);
+        if (resType == QualityFilterService.ContradictionResult.ResolutionType.RESOLVED) {
+            // 权威性有差异 → 以高权威表述为准
+            String preferred = contradiction.isWinnerDirectionPositive() ? "可用" : "不宜使用";
+            return String.format(
+                    "关于 %s，不同来源存在不同说法。经评估，权威性较高的来源（权威分数 %.2f）"
+                            + "倾向于认为%s，以下回答以此为准。",
+                    contradiction.getDrugPopulationPair(),
+                    contradiction.getWinnerAuthority(),
+                    preferred);
+        } else if (resType == QualityFilterService.ContradictionResult.ResolutionType.UNRESOLVED) {
+            // 权威性相当 → 交LLM判断，附加冲突说明
+            return String.format(
+                    "关于 %s，不同权威来源存在不同说法（权威性相当），"
+                            + "以下回答综合了多来源信息。建议您咨询专业医生，结合具体病情做出判断。",
+                    contradiction.getDrugPopulationPair());
+        }
+        return null;
     }
 
     /**

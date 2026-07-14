@@ -48,6 +48,18 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: '知识库管理', requiresAuth: false, noLayout: true }
   },
   {
+    path: '/contraindication-rules',
+    name: 'contraindication-rules',
+    component: () => import('@/views/ContraindicationRules.vue'),
+    meta: { title: '禁忌规则', requiresAuth: true, noLayout: true }
+  },
+  {
+    path: '/term-review',
+    name: 'term-review',
+    component: () => import('@/views/TermReview.vue'),
+    meta: { title: '词条审核', requiresAuth: true, noLayout: true }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: NotFoundView,

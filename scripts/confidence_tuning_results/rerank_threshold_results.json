@@ -1,0 +1,1287 @@
+{
+  "generatedAt": "2026-07-13T15:31:24.663858",
+  "mode": "offline",
+  "sampleSize": 500,
+  "currentThresholds": {
+    "minThreshold": 0.35,
+    "warningThreshold": 0.6
+  },
+  "topCombinations": [
+    {
+      "minThreshold": 0.25,
+      "warningThreshold": 0.45,
+      "blockCount": 30,
+      "warningCount": 100,
+      "passCount": 370,
+      "blockRate": 0.06,
+      "warningRate": 0.2,
+      "passRate": 0.74,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 7,
+          "PASS": 56,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 5,
+          "WARNING": 19,
+          "PASS": 38,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 1,
+          "WARNING": 9,
+          "PASS": 53,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 3,
+          "WARNING": 9,
+          "PASS": 51,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 7,
+          "WARNING": 26,
+          "PASS": 29,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 9,
+          "WARNING": 17,
+          "PASS": 37,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 4,
+          "PASS": 55,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 2,
+          "WARNING": 9,
+          "PASS": 51,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.25,
+      "warningThreshold": 0.5,
+      "blockCount": 30,
+      "warningCount": 136,
+      "passCount": 334,
+      "blockRate": 0.06,
+      "warningRate": 0.272,
+      "passRate": 0.668,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 9,
+          "PASS": 54,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 5,
+          "WARNING": 25,
+          "PASS": 32,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 1,
+          "WARNING": 14,
+          "PASS": 48,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 3,
+          "WARNING": 10,
+          "PASS": 50,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 7,
+          "WARNING": 32,
+          "PASS": 23,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 9,
+          "WARNING": 22,
+          "PASS": 32,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 12,
+          "PASS": 47,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 2,
+          "WARNING": 12,
+          "PASS": 48,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.25,
+      "warningThreshold": 0.55,
+      "blockCount": 30,
+      "warningCount": 169,
+      "passCount": 301,
+      "blockRate": 0.06,
+      "warningRate": 0.338,
+      "passRate": 0.602,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 11,
+          "PASS": 52,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 5,
+          "WARNING": 27,
+          "PASS": 30,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 1,
+          "WARNING": 17,
+          "PASS": 45,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 3,
+          "WARNING": 14,
+          "PASS": 46,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 7,
+          "WARNING": 39,
+          "PASS": 16,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 9,
+          "WARNING": 26,
+          "PASS": 28,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 14,
+          "PASS": 45,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 2,
+          "WARNING": 21,
+          "PASS": 39,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.3,
+      "warningThreshold": 0.45,
+      "blockCount": 41,
+      "warningCount": 89,
+      "passCount": 370,
+      "blockRate": 0.082,
+      "warningRate": 0.178,
+      "passRate": 0.74,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 7,
+          "PASS": 56,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 9,
+          "WARNING": 15,
+          "PASS": 38,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 2,
+          "WARNING": 8,
+          "PASS": 53,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 8,
+          "PASS": 51,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 8,
+          "WARNING": 25,
+          "PASS": 29,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 12,
+          "WARNING": 14,
+          "PASS": 37,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 4,
+          "PASS": 55,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 3,
+          "WARNING": 8,
+          "PASS": 51,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.3,
+      "warningThreshold": 0.5,
+      "blockCount": 41,
+      "warningCount": 125,
+      "passCount": 334,
+      "blockRate": 0.082,
+      "warningRate": 0.25,
+      "passRate": 0.668,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 9,
+          "PASS": 54,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 9,
+          "WARNING": 21,
+          "PASS": 32,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 2,
+          "WARNING": 13,
+          "PASS": 48,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 9,
+          "PASS": 50,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 8,
+          "WARNING": 31,
+          "PASS": 23,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 12,
+          "WARNING": 19,
+          "PASS": 32,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 12,
+          "PASS": 47,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 3,
+          "WARNING": 11,
+          "PASS": 48,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.3,
+      "warningThreshold": 0.55,
+      "blockCount": 41,
+      "warningCount": 158,
+      "passCount": 301,
+      "blockRate": 0.082,
+      "warningRate": 0.316,
+      "passRate": 0.602,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 11,
+          "PASS": 52,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 9,
+          "WARNING": 23,
+          "PASS": 30,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 2,
+          "WARNING": 16,
+          "PASS": 45,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 13,
+          "PASS": 46,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 8,
+          "WARNING": 38,
+          "PASS": 16,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 12,
+          "WARNING": 23,
+          "PASS": 28,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 14,
+          "PASS": 45,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 3,
+          "WARNING": 20,
+          "PASS": 39,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.35,
+      "warningThreshold": 0.5,
+      "blockCount": 63,
+      "warningCount": 103,
+      "passCount": 334,
+      "blockRate": 0.126,
+      "warningRate": 0.206,
+      "passRate": 0.668,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 1,
+          "WARNING": 8,
+          "PASS": 54,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 10,
+          "WARNING": 20,
+          "PASS": 32,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 3,
+          "WARNING": 12,
+          "PASS": 48,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 9,
+          "PASS": 50,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 15,
+          "WARNING": 24,
+          "PASS": 23,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 19,
+          "WARNING": 12,
+          "PASS": 32,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 5,
+          "WARNING": 10,
+          "PASS": 47,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 6,
+          "WARNING": 8,
+          "PASS": 48,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.35,
+      "warningThreshold": 0.55,
+      "blockCount": 63,
+      "warningCount": 136,
+      "passCount": 301,
+      "blockRate": 0.126,
+      "warningRate": 0.272,
+      "passRate": 0.602,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 1,
+          "WARNING": 10,
+          "PASS": 52,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 10,
+          "WARNING": 22,
+          "PASS": 30,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 3,
+          "WARNING": 15,
+          "PASS": 45,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 13,
+          "PASS": 46,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 15,
+          "WARNING": 31,
+          "PASS": 16,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 19,
+          "WARNING": 16,
+          "PASS": 28,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 5,
+          "WARNING": 12,
+          "PASS": 45,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 6,
+          "WARNING": 17,
+          "PASS": 39,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.35,
+      "warningThreshold": 0.6,
+      "blockCount": 63,
+      "warningCount": 184,
+      "passCount": 253,
+      "blockRate": 0.126,
+      "warningRate": 0.368,
+      "passRate": 0.506,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 1,
+          "WARNING": 15,
+          "PASS": 47,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 10,
+          "WARNING": 31,
+          "PASS": 21,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 3,
+          "WARNING": 16,
+          "PASS": 44,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 22,
+          "PASS": 37,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 15,
+          "WARNING": 40,
+          "PASS": 7,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 19,
+          "WARNING": 21,
+          "PASS": 23,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 5,
+          "WARNING": 16,
+          "PASS": 41,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 6,
+          "WARNING": 23,
+          "PASS": 33,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.4,
+      "warningThreshold": 0.55,
+      "blockCount": 96,
+      "warningCount": 103,
+      "passCount": 301,
+      "blockRate": 0.192,
+      "warningRate": 0.206,
+      "passRate": 0.602,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 4,
+          "WARNING": 7,
+          "PASS": 52,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 16,
+          "WARNING": 16,
+          "PASS": 30,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 4,
+          "WARNING": 14,
+          "PASS": 45,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 9,
+          "WARNING": 8,
+          "PASS": 46,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 25,
+          "WARNING": 21,
+          "PASS": 16,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 23,
+          "WARNING": 12,
+          "PASS": 28,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 6,
+          "WARNING": 11,
+          "PASS": 45,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 9,
+          "WARNING": 14,
+          "PASS": 39,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.4,
+      "warningThreshold": 0.6,
+      "blockCount": 96,
+      "warningCount": 151,
+      "passCount": 253,
+      "blockRate": 0.192,
+      "warningRate": 0.302,
+      "passRate": 0.506,
+      "utility": 1.0,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 4,
+          "WARNING": 12,
+          "PASS": 47,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 16,
+          "WARNING": 25,
+          "PASS": 21,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 4,
+          "WARNING": 15,
+          "PASS": 44,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 9,
+          "WARNING": 17,
+          "PASS": 37,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 25,
+          "WARNING": 30,
+          "PASS": 7,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 23,
+          "WARNING": 17,
+          "PASS": 23,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 6,
+          "WARNING": 15,
+          "PASS": 41,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 9,
+          "WARNING": 20,
+          "PASS": 33,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.3,
+      "warningThreshold": 0.6,
+      "blockCount": 41,
+      "warningCount": 206,
+      "passCount": 253,
+      "blockRate": 0.082,
+      "warningRate": 0.412,
+      "passRate": 0.506,
+      "utility": 0.9973,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 16,
+          "PASS": 47,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 9,
+          "WARNING": 32,
+          "PASS": 21,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 2,
+          "WARNING": 17,
+          "PASS": 44,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 22,
+          "PASS": 37,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 8,
+          "WARNING": 47,
+          "PASS": 7,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 12,
+          "WARNING": 28,
+          "PASS": 23,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 18,
+          "PASS": 41,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 3,
+          "WARNING": 26,
+          "PASS": 33,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.25,
+      "warningThreshold": 0.4,
+      "blockCount": 30,
+      "warningCount": 66,
+      "passCount": 404,
+      "blockRate": 0.06,
+      "warningRate": 0.132,
+      "passRate": 0.808,
+      "utility": 0.9946,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 4,
+          "PASS": 59,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 5,
+          "WARNING": 11,
+          "PASS": 46,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 1,
+          "WARNING": 3,
+          "PASS": 59,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 3,
+          "WARNING": 6,
+          "PASS": 54,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 7,
+          "WARNING": 18,
+          "PASS": 37,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 9,
+          "WARNING": 14,
+          "PASS": 40,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 3,
+          "PASS": 56,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 2,
+          "WARNING": 7,
+          "PASS": 53,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.25,
+      "warningThreshold": 0.6,
+      "blockCount": 30,
+      "warningCount": 217,
+      "passCount": 253,
+      "blockRate": 0.06,
+      "warningRate": 0.434,
+      "passRate": 0.506,
+      "utility": 0.9899,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 16,
+          "PASS": 47,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 5,
+          "WARNING": 36,
+          "PASS": 21,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 1,
+          "WARNING": 18,
+          "PASS": 44,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 3,
+          "WARNING": 23,
+          "PASS": 37,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 7,
+          "WARNING": 48,
+          "PASS": 7,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 9,
+          "WARNING": 31,
+          "PASS": 23,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 18,
+          "PASS": 41,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 2,
+          "WARNING": 27,
+          "PASS": 33,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.4,
+      "warningThreshold": 0.65,
+      "blockCount": 96,
+      "warningCount": 202,
+      "passCount": 202,
+      "blockRate": 0.192,
+      "warningRate": 0.404,
+      "passRate": 0.404,
+      "utility": 0.9749,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 4,
+          "WARNING": 16,
+          "PASS": 43,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 16,
+          "WARNING": 30,
+          "PASS": 16,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 4,
+          "WARNING": 25,
+          "PASS": 34,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 9,
+          "WARNING": 23,
+          "PASS": 31,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 25,
+          "WARNING": 30,
+          "PASS": 7,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 23,
+          "WARNING": 25,
+          "PASS": 15,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 6,
+          "WARNING": 23,
+          "PASS": 33,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 9,
+          "WARNING": 30,
+          "PASS": 23,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.4,
+      "warningThreshold": 0.5,
+      "blockCount": 96,
+      "warningCount": 70,
+      "passCount": 334,
+      "blockRate": 0.192,
+      "warningRate": 0.14,
+      "passRate": 0.668,
+      "utility": 0.967,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 4,
+          "WARNING": 5,
+          "PASS": 54,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 16,
+          "WARNING": 14,
+          "PASS": 32,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 4,
+          "WARNING": 11,
+          "PASS": 48,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 9,
+          "WARNING": 4,
+          "PASS": 50,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 25,
+          "WARNING": 14,
+          "PASS": 23,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 23,
+          "WARNING": 8,
+          "PASS": 32,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 6,
+          "WARNING": 9,
+          "PASS": 47,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 9,
+          "WARNING": 5,
+          "PASS": 48,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.35,
+      "warningThreshold": 0.45,
+      "blockCount": 63,
+      "warningCount": 67,
+      "passCount": 370,
+      "blockRate": 0.126,
+      "warningRate": 0.134,
+      "passRate": 0.74,
+      "utility": 0.9652,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 1,
+          "WARNING": 6,
+          "PASS": 56,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 10,
+          "WARNING": 14,
+          "PASS": 38,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 3,
+          "WARNING": 7,
+          "PASS": 53,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 8,
+          "PASS": 51,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 15,
+          "WARNING": 18,
+          "PASS": 29,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 19,
+          "WARNING": 7,
+          "PASS": 37,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 5,
+          "WARNING": 2,
+          "PASS": 55,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 6,
+          "WARNING": 5,
+          "PASS": 51,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.35,
+      "warningThreshold": 0.65,
+      "blockCount": 63,
+      "warningCount": 235,
+      "passCount": 202,
+      "blockRate": 0.126,
+      "warningRate": 0.47,
+      "passRate": 0.404,
+      "utility": 0.9601,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 1,
+          "WARNING": 19,
+          "PASS": 43,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 10,
+          "WARNING": 36,
+          "PASS": 16,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 3,
+          "WARNING": 26,
+          "PASS": 34,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 28,
+          "PASS": 31,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 15,
+          "WARNING": 40,
+          "PASS": 7,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 19,
+          "WARNING": 29,
+          "PASS": 15,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 5,
+          "WARNING": 24,
+          "PASS": 33,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 6,
+          "WARNING": 33,
+          "PASS": 23,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.3,
+      "warningThreshold": 0.4,
+      "blockCount": 41,
+      "warningCount": 55,
+      "passCount": 404,
+      "blockRate": 0.082,
+      "warningRate": 0.11,
+      "passRate": 0.808,
+      "utility": 0.958,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 0,
+          "WARNING": 4,
+          "PASS": 59,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 9,
+          "WARNING": 7,
+          "PASS": 46,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 2,
+          "WARNING": 2,
+          "PASS": 59,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 4,
+          "WARNING": 5,
+          "PASS": 54,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 8,
+          "WARNING": 17,
+          "PASS": 37,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 12,
+          "WARNING": 11,
+          "PASS": 40,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 3,
+          "WARNING": 3,
+          "PASS": 56,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 3,
+          "WARNING": 6,
+          "PASS": 53,
+          "total": 62
+        }
+      }
+    },
+    {
+      "minThreshold": 0.45,
+      "warningThreshold": 0.65,
+      "blockCount": 130,
+      "warningCount": 168,
+      "passCount": 202,
+      "blockRate": 0.26,
+      "warningRate": 0.336,
+      "passRate": 0.404,
+      "utility": 0.9534,
+      "diseaseCounts": {
+        "哮喘": {
+          "BLOCK": 7,
+          "WARNING": 13,
+          "PASS": 43,
+          "total": 63
+        },
+        "热性惊厥": {
+          "BLOCK": 24,
+          "WARNING": 22,
+          "PASS": 16,
+          "total": 62
+        },
+        "肺炎": {
+          "BLOCK": 10,
+          "WARNING": 19,
+          "PASS": 34,
+          "total": 63
+        },
+        "腹泻": {
+          "BLOCK": 12,
+          "WARNING": 20,
+          "PASS": 31,
+          "total": 63
+        },
+        "手足口病": {
+          "BLOCK": 33,
+          "WARNING": 22,
+          "PASS": 7,
+          "total": 62
+        },
+        "毛细支气管炎": {
+          "BLOCK": 26,
+          "WARNING": 22,
+          "PASS": 15,
+          "total": 63
+        },
+        "缺铁性贫血": {
+          "BLOCK": 7,
+          "WARNING": 22,
+          "PASS": 33,
+          "total": 62
+        },
+        "特应性皮炎": {
+          "BLOCK": 11,
+          "WARNING": 28,
+          "PASS": 23,
+          "total": 62
+        }
+      }
+    }
+  ],
+  "scoreDistribution": {
+    "count": 500,
+    "min": 0.0704,
+    "max": 0.9834,
+    "mean": 0.5776
+  },
+  "diseaseBreakdown": {
+    "哮喘": {
+      "count": 63,
+      "meanScore": 0.7029,
+      "minScore": 0.3496,
+      "maxScore": 0.9834
+    },
+    "手足口病": {
+      "count": 62,
+      "meanScore": 0.4463,
+      "minScore": 0.0814,
+      "maxScore": 0.7588
+    },
+    "毛细支气管炎": {
+      "count": 63,
+      "meanScore": 0.4882,
+      "minScore": 0.0993,
+      "maxScore": 0.835
+    },
+    "热性惊厥": {
+      "count": 62,
+      "meanScore": 0.5088,
+      "minScore": 0.0704,
+      "maxScore": 0.8095
+    },
+    "特应性皮炎": {
+      "count": 62,
+      "meanScore": 0.5867,
+      "minScore": 0.1481,
+      "maxScore": 0.8075
+    },
+    "缺铁性贫血": {
+      "count": 62,
+      "meanScore": 0.63,
+      "minScore": 0.1117,
+      "maxScore": 0.9523
+    },
+    "肺炎": {
+      "count": 63,
+      "meanScore": 0.6427,
+      "minScore": 0.244,
+      "maxScore": 0.9027
+    },
+    "腹泻": {
+      "count": 63,
+      "meanScore": 0.6127,
+      "minScore": 0.1321,
+      "maxScore": 0.8661
+    }
+  }
+}

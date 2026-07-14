@@ -81,7 +81,11 @@ public class SecurityConfig {
                                 "/api/his/interview/**",
                                 // 静态资源
                                 "/favicon.ico",
-                                "/error"
+                                "/error",
+                                // 词条审核端点（所有用户可访问）
+                                "/api/admin/unmapped-terms/**",
+                                // 禁忌规则管理端点（所有用户可访问）
+                                "/api/admin/contraindications/**"
                         ).permitAll()
                         // 管理员端点（仅ADMIN角色可访问）
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

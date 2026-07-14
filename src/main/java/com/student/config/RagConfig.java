@@ -485,6 +485,8 @@ public class RagConfig {
 
         /** 是否启用禁忌规则检测（离线标注 + 在线过滤） */
         private boolean contraindicationRuleEnabled = true;
+        /** 是否启用在线实时补偿（chunk未预标注时，查询阶段实时检测） */
+        private boolean realtimeContraindicationEnabled = true;
         /** 禁忌规则缓存TTL（秒） */
         private int contraindicationCacheTtl = 1800;
         /** 绝对禁忌降权因子（0.0=直接过滤，不进入LLM上下文） */

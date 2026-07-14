@@ -10,6 +10,8 @@
         <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
           <a class="qa-nav-link qa-nav-link-active" href="/qa">智能问答</a>
           <a class="qa-nav-link qa-nav-link-inactive" href="/knowledge">知识库</a>
+          <a class="qa-nav-link qa-nav-link-inactive" href="/contraindication-rules">禁忌规则</a>
+          <a class="qa-nav-link qa-nav-link-inactive" href="/term-review">词条审核</a>
         </nav>
       </div>
       <div class="custom-flex custom-items-center custom-gap-4">

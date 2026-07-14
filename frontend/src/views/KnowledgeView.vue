@@ -9,6 +9,8 @@
         <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
           <router-link to="/qa" class="qa-nav-link" :class="$route.path === '/qa' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">智能问答</router-link>
           <router-link to="/knowledge" class="qa-nav-link" :class="$route.path === '/knowledge' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">知识库</router-link>
+          <router-link to="/contraindication-rules" class="qa-nav-link" :class="$route.path === '/contraindication-rules' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">禁忌规则</router-link>
+          <router-link to="/term-review" class="qa-nav-link" :class="$route.path === '/term-review' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">词条审核</router-link>
         </nav>
       </div>
       <div class="custom-flex custom-items-center custom-gap-4">
@@ -25,12 +27,10 @@
         <h1 class="text-3xl font-bold font-headline tracking-tight text-on-surface custom-mb-2">
           知识库管理
         </h1>
-        <p class="text-on-surface-variant custom-max-w-2xl">
-          集中化管理医疗文献、病历记录与诊疗指南。利用 RAG 技术实现精准的临床辅助决策。
-        </p>
       </header>
 
-      <div class="custom-grid custom-grid-cols-12 custom-gap-6">
+      <!-- 文档管理标签页 -->
+      <div v-if="activeTab === 'documents'" class="custom-grid custom-grid-cols-12 custom-gap-6">
         <!-- Left Column: Navigation & Upload -->
         <div class="col-span-3 space-y-6">
           <!-- Category Management - 侧边栏 -->
@@ -465,6 +465,12 @@
           </section>
         </div>
       </div>
+
+      <!-- 禁忌规则标签页 -->
+      <ContraindicationRules v-if="activeTab === 'contraindications'" />
+
+      <!-- 词条审核标签页 -->
+      <TermReview v-if="activeTab === 'termReview'" />
     </div>
   </div>
 </template>
@@ -476,6 +482,8 @@ import { documentService } from '@/api/services/document.service'
 import { documentChunkService } from '@/api/services/document-chunk.service'
 import type { Document as ApiDocument } from '@/api/types/document.types'
 import type { DocumentChunk } from '@/api/types/document-chunk.types'
+import ContraindicationRules from '@/views/ContraindicationRules.vue'
+import TermReview from '@/views/TermReview.vue'
 
 // 类型定义
 interface Category {
@@ -527,6 +535,9 @@ const previewError = ref(false)         // 预览加载失败
 const previewText = ref('')             // 文本预览内容
 const previewBlobUrl = ref('')          // PDF预览的Blob URL
 const previewContainer = ref<HTMLElement | null>(null) // 预览容器引用
+
+// 标签页切换
+const activeTab = ref<'documents' | 'contraindications' | 'termReview'>('documents')
 
 // 分类数据
 const categories = ref<Category[]>([
