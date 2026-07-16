@@ -1,8 +1,10 @@
 package com.student.service.rag.impl;
 
+import com.student.config.RagConfig;
 import com.student.service.rag.CrossEncoderRerankService;
 import com.student.service.rag.MultiFactorRerankService;
 import com.student.service.rag.MultiRetrievalService;
+import com.student.service.rag.SynonymExpansionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -26,12 +28,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
-
-    /** 默认各维度权重（总和为1.0） */
-    private static final double DEFAULT_WEIGHT_AUTHORITY = 0.3;
-    private static final double DEFAULT_WEIGHT_TIMELINESS = 0.15;
-    private static final double DEFAULT_WEIGHT_SEMANTIC = 0.35;
-    private static final double DEFAULT_WEIGHT_INTENT = 0.2;
 
     /** 各知识类型的半衰期（年） */
     private static final Map<KnowledgeType, Double> HALF_LIVES = Map.of(
@@ -84,9 +80,15 @@ public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
     );
 
     private final CrossEncoderRerankService crossEncoderRerankService;
+    private final RagConfig ragConfig;
+    private final SynonymExpansionService synonymExpansionService;
 
-    public MultiFactorRerankServiceImpl(CrossEncoderRerankService crossEncoderRerankService) {
+    public MultiFactorRerankServiceImpl(CrossEncoderRerankService crossEncoderRerankService,
+                                         RagConfig ragConfig,
+                                         SynonymExpansionService synonymExpansionService) {
         this.crossEncoderRerankService = crossEncoderRerankService;
+        this.ragConfig = ragConfig;
+        this.synonymExpansionService = synonymExpansionService;
     }
 
     @Override
@@ -152,15 +154,29 @@ public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
                                       MultiRetrievalService.RetrievalResult result,
                                       double semanticScore) {
 
+        RagConfig.MultiFactorRerankConfig.FactorWeights weights =
+                ragConfig.getMultiFactorRerank().getWeights();
+        double wAuthority = weights.getAuthority();
+        double wTimeliness = weights.getTimeliness();
+        double wSemantic = weights.getSemantic();
+        double wIntent = weights.getIntent();
+        double wHierarchy = weights.getHierarchy();
+
         double authority = calculateAuthority(result);
         double timeliness = calculateTimeliness(result);
         double semantic = clamp(semanticScore, 0.0, 1.0);
         double intent = calculateIntentRelevance(query, result);
+        double hierarchy = 0.5;
 
-        double finalScore = DEFAULT_WEIGHT_AUTHORITY * authority
-                + DEFAULT_WEIGHT_TIMELINESS * timeliness
-                + DEFAULT_WEIGHT_SEMANTIC * semantic
-                + DEFAULT_WEIGHT_INTENT * intent;
+        if (ragConfig.getMultiFactorRerank().isHierarchyEnabled()) {
+            hierarchy = calculateHierarchyRelevance(query, result);
+        }
+
+        double finalScore = wAuthority * authority
+                + wTimeliness * timeliness
+                + wSemantic * semantic
+                + wIntent * intent
+                + wHierarchy * hierarchy;
 
         return clamp(finalScore, 0.0, 1.0);
     }
@@ -233,6 +249,80 @@ public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
 
         // 按命中数计分，命中5个以上即满分
         return clamp(hitCount * 0.2, 0.0, 1.0);
+    }
+
+    // ========== 层级相关性评分 ==========
+
+    /**
+     * 计算层级结构相关性分数
+     * 利用chunk的section_title、breadcrumb等层级元数据评估与查询的主题相关性
+     */
+    double calculateHierarchyRelevance(String query, MultiRetrievalService.RetrievalResult result) {
+        if (query == null || query.trim().isEmpty()) {
+            return 0.5;
+        }
+
+        Map<String, Object> metadata = result.getMetadata();
+        if (metadata == null || metadata.isEmpty()) {
+            return 0.5;
+        }
+
+        String sectionTitle = result.getMetadataString("section_title");
+        String breadcrumb = result.getMetadataString("breadcrumb");
+
+        if ((sectionTitle == null || sectionTitle.isEmpty())
+                && (breadcrumb == null || breadcrumb.isEmpty())) {
+            return 0.5;
+        }
+
+        // 规则1: section_title 精确包含查询
+        if (sectionTitle != null && !sectionTitle.isEmpty()) {
+            if (sectionTitle.contains(query)) {
+                return 1.0;
+            }
+        }
+
+        // 规则2: SynonymExpansionService 同义词匹配
+        if (sectionTitle != null && !sectionTitle.isEmpty()) {
+            try {
+                SynonymExpansionService.TermMapping mapping =
+                        synonymExpansionService.lookupTerm(query);
+                if (mapping != null && mapping.getStandardTerm() != null
+                        && sectionTitle.contains(mapping.getStandardTerm())) {
+                    return 0.9;
+                }
+            } catch (Exception e) {
+                log.debug("同义词查询失败，跳过同义词匹配: query={}", query, e);
+            }
+        }
+
+        // 规则3: 查询与breadcrumb的字符bigram重叠率 × 0.8
+        if (breadcrumb != null && !breadcrumb.isEmpty()) {
+            double bigramOverlap = characterBigramOverlap(query, breadcrumb);
+            return bigramOverlap * 0.8;
+        }
+
+        return 0.5;
+    }
+
+    /**
+     * 计算两个字符串之间的字符bigram重叠率
+     */
+    private double characterBigramOverlap(String query, String target) {
+        if (query == null || target == null || query.length() < 2 || target.length() < 2) {
+            return 0.0;
+        }
+        Set<String> queryBigrams = new HashSet<>();
+        for (int i = 0; i < query.length() - 1; i++) {
+            queryBigrams.add(query.substring(i, i + 2));
+        }
+        Set<String> targetBigrams = new HashSet<>();
+        for (int i = 0; i < target.length() - 1; i++) {
+            targetBigrams.add(target.substring(i, i + 2));
+        }
+        Set<String> intersection = new HashSet<>(queryBigrams);
+        intersection.retainAll(targetBigrams);
+        return queryBigrams.isEmpty() ? 0.0 : (double) intersection.size() / queryBigrams.size();
     }
 
     // ========== 权威性评分 ==========

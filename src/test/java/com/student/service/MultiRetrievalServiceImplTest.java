@@ -15,7 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -334,6 +336,81 @@ class MultiRetrievalServiceImplTest {
         assertNotNull(stats);
         assertTrue(stats.getTotalQueries() > 0);
         assertTrue(stats.getVectorQueries() > 0);
+    }
+
+    @Test
+    void testVectorRetrieval_MetadataPassThrough() {
+        String query = "高血压治疗";
+        int topK = 5;
+        List<Float> queryVector = Arrays.asList(1.0f, 2.0f, 3.0f);
+
+        MilvusService.SearchResult milvusResult = new MilvusService.SearchResult();
+        milvusResult.setChunkId(1L);
+        milvusResult.setDocumentId(100L);
+        milvusResult.setScore(0.9f);
+        milvusResult.setContent("内容1");
+        milvusResult.setMetadata("{\"section_title\":\"高血压治疗指南\",\"breadcrumb\":\"第1章 > 第1节\"}");
+
+        when(embeddingService.embed(query)).thenReturn(queryVector);
+        when(milvusService.searchSimilarVectors(queryVector, topK))
+                .thenReturn(Arrays.asList(milvusResult));
+
+        List<MultiRetrievalService.RetrievalResult> results =
+                multiRetrievalService.vectorRetrieval(query, topK);
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        assertEquals("高血压治疗指南", results.get(0).getMetadata().get("section_title"));
+        assertEquals("第1章 > 第1节", results.get(0).getMetadata().get("breadcrumb"));
+    }
+
+    @Test
+    void testVectorRetrieval_InvalidMetadataJson() {
+        String query = "测试查询";
+        int topK = 5;
+        List<Float> queryVector = Arrays.asList(1.0f, 2.0f, 3.0f);
+
+        MilvusService.SearchResult milvusResult = new MilvusService.SearchResult();
+        milvusResult.setChunkId(1L);
+        milvusResult.setDocumentId(100L);
+        milvusResult.setScore(0.9f);
+        milvusResult.setContent("内容1");
+        milvusResult.setMetadata("{invalid-json!!!}");
+
+        when(embeddingService.embed(query)).thenReturn(queryVector);
+        when(milvusService.searchSimilarVectors(queryVector, topK))
+                .thenReturn(Arrays.asList(milvusResult));
+
+        List<MultiRetrievalService.RetrievalResult> results =
+                multiRetrievalService.vectorRetrieval(query, topK);
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        assertTrue(results.get(0).getMetadata().isEmpty());
+    }
+
+    @Test
+    void testKeywordRetrieval_MetadataPassThrough() {
+        String query = "测试查询";
+        int topK = 5;
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("section_title", "糖尿病诊断标准");
+        metadata.put("breadcrumb", "第2章 > 第3节");
+
+        List<KeywordRetrievalService.SearchResult> keywordResults = Arrays.asList(
+                new KeywordRetrievalService.SearchResult(1L, 100L, 0.9, "内容1", metadata)
+        );
+
+        when(keywordRetrievalService.searchWithSynonyms(query, true, topK))
+                .thenReturn(keywordResults);
+
+        List<MultiRetrievalService.RetrievalResult> results =
+                multiRetrievalService.keywordRetrieval(query, topK);
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        assertEquals("糖尿病诊断标准", results.get(0).getMetadata().get("section_title"));
+        assertEquals("第2章 > 第3节", results.get(0).getMetadata().get("breadcrumb"));
     }
 
     @Test

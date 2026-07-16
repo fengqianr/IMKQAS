@@ -9,6 +9,8 @@ import com.student.service.rag.RrfFusionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -84,6 +86,7 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
             // 3. 转换为RetrievalResult格式
             List<RetrievalResult> results = new ArrayList<>();
             for (MilvusService.SearchResult milvusResult : milvusResults) {
+                Map<String, Object> metadata = parseMetadata(milvusResult.getMetadata());
                 RetrievalResult result = new RetrievalResult(
                         milvusResult.getChunkId(),
                         milvusResult.getDocumentId(),
@@ -91,7 +94,8 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
                         milvusResult.getContent(),
                         RetrievalSource.VECTOR,
                         milvusResult.getScore().doubleValue(), // 向量分数，Float转Double
-                        0.0 // 关键词分数
+                        0.0, // 关键词分数
+                        metadata
                 );
                 results.add(result);
             }
@@ -129,6 +133,8 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
             // 2. 转换为RetrievalResult格式
             List<RetrievalResult> results = new ArrayList<>();
             for (KeywordRetrievalService.SearchResult keywordResult : keywordResults) {
+                Map<String, Object> metadata = keywordResult.getMetadata() != null
+                        ? keywordResult.getMetadata() : Collections.emptyMap();
                 RetrievalResult result = new RetrievalResult(
                         keywordResult.getChunkId(),
                         keywordResult.getDocumentId(),
@@ -136,7 +142,8 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
                         keywordResult.getContent(),
                         RetrievalSource.KEYWORD,
                         0.0, // 向量分数
-                        keywordResult.getScore() // 关键词分数
+                        keywordResult.getScore(), // 关键词分数
+                        metadata
                 );
                 results.add(result);
             }
@@ -323,6 +330,24 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
     }
 
     // ========== 私有辅助方法 ==========
+
+    /**
+     * 解析Milvus返回的元数据JSON字符串为Map
+     * 与 KeywordRetrievalServiceImpl.parseMetadataJson 逻辑一致
+     */
+    private Map<String, Object> parseMetadata(String metadataStr) {
+        if (metadataStr == null || metadataStr.trim().isEmpty()) {
+            return Collections.emptyMap();
+        }
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(metadataStr,
+                    objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
+        } catch (Exception e) {
+            log.warn("Milvus元数据解析失败，使用空元数据: {}", metadataStr, e);
+            return Collections.emptyMap();
+        }
+    }
 
     /**
      * 降级检索（当混合检索失败时）

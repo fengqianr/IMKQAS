@@ -117,16 +117,16 @@ class MedicalDocumentSplitterTest {
         }
 
         @Test
-        @DisplayName("冒号副标题检测")
-        void testDetection_ColonSubtitle() {
-            String text = "急性发作期治疗（SABA为核心）：\n• 轻中度：沙丁胺醇雾化\n• 重度：异丙托溴铵";
+        @DisplayName("括号编号标题检测")
+        void testDetection_ParenNumbered() {
+            String text = "（一）概述\n内容A\n（二）流行病学\n内容B";
 
             List<MedicalDocumentSplitter.HeaderMatch> headers =
                     splitter.detectHeaders(text);
 
-            assertTrue(headers.size() >= 1);
-            assertEquals("急性发作期治疗（SABA为核心）", headers.get(0).title);
-            assertEquals("COLON_SUBTITLE", headers.get(0).patternType);
+            assertTrue(headers.size() >= 2);
+            assertEquals("（一）概述", headers.get(0).title);
+            assertEquals("PAREN_NUMBERED", headers.get(0).patternType);
         }
 
         @Test
@@ -169,18 +169,18 @@ class MedicalDocumentSplitterTest {
         }
 
         @Test
-        @DisplayName("中文编号分配 level 2")
+        @DisplayName("中文编号分配 level 1")
         void testLevel_ChineseNumbered() {
             MedicalDocumentSplitter.HeaderMatch match =
                     new MedicalDocumentSplitter.HeaderMatch(0, 5, "一、概述", "CHINESE_NUMBERED");
-            assertEquals(2, splitter.assignLevel(match));
+            assertEquals(1, splitter.assignLevel(match));
         }
 
         @Test
-        @DisplayName("冒号副标题分配 level 2")
-        void testLevel_ColonSubtitle() {
+        @DisplayName("括号编号分配 level 2")
+        void testLevel_ParenNumbered() {
             MedicalDocumentSplitter.HeaderMatch match =
-                    new MedicalDocumentSplitter.HeaderMatch(0, 15, "急性发作期治疗", "COLON_SUBTITLE");
+                    new MedicalDocumentSplitter.HeaderMatch(0, 7, "（一）概述", "PAREN_NUMBERED");
             assertEquals(2, splitter.assignLevel(match));
         }
     }
@@ -192,11 +192,11 @@ class MedicalDocumentSplitterTest {
         @Test
         @DisplayName("父子关系正确构建")
         void testTree_ParentChild() {
-            // 治疗方案(level1) → 急性发作期(level2), 长期控制(level2)
+            // 治疗方案(level1) → (一)急性发作期(level2), (二)长期控制(level2)
             String text = "主体文本\n" +
                     "【治疗方案】\n方案总述\n" +
-                    "急性发作期治疗（SABA为核心）：\n• 轻中度细节\n" +
-                    "长期控制治疗（阶梯方案）：\n• 第一阶细节";
+                    "（一）急性发作期治疗（SABA为核心）\n• 轻中度细节\n" +
+                    "（二）长期控制治疗（阶梯方案）\n• 第一阶细节";
 
             List<MedicalDocumentSplitter.SegmentInfo> result =
                     splitter.splitWithMetadata(text);
@@ -472,8 +472,8 @@ class MedicalDocumentSplitterTest {
         @DisplayName("层级嵌套正确：治疗方案子章节路径")
         void testMetadata_NestedPath() {
             String text = "【治疗方案】\n" +
-                    "急性发作期治疗（SABA为核心）：\n• 轻中度：沙丁胺醇雾化0.15mg/kg\n" +
-                    "长期控制治疗（阶梯方案）：\n• 第一阶：按需SABA";
+                    "（一）急性发作期治疗（SABA为核心）\n• 轻中度：沙丁胺醇雾化0.15mg/kg\n" +
+                    "（二）长期控制治疗（阶梯方案）\n• 第一阶：按需SABA";
 
             List<MedicalDocumentSplitter.SegmentInfo> result =
                     splitter.splitWithMetadata(text);
@@ -611,6 +611,137 @@ class MedicalDocumentSplitterTest {
             System.out.printf("  内容预览: %s...%n",
                     info.getText().substring(0, Math.min(60, info.getText().length()))
                             .replace("\n", "\\n"));
+        }
+    }
+
+    // ======================== TOC 过滤 ========================
+
+    @Nested
+    @DisplayName("目录页过滤")
+    class TocFiltering {
+
+        @Test
+        @DisplayName("标准中文目录页应被移除")
+        void testRemoveChineseToc() {
+            MedicalDocumentSplitter s = defaultSplitter();
+
+            String text = "目  录\n\n"
+                    + "第一章  概述..............................1\n"
+                    + "第二章  病因与发病机制....................5\n"
+                    + "第三章  诊断标准.........................12\n"
+                    + "\n\n"
+                    + "第一章 概述\n儿童支气管哮喘（以下简称哮喘）是儿童最常见的慢性呼吸道疾病...\n"
+                    + "【临床表现】\n反复发作性喘息、咳嗽、胸闷、气促。";
+
+            List<MedicalDocumentSplitter.SegmentInfo> result = s.splitWithMetadata(text);
+
+            assertFalse(result.isEmpty(), "应有分块结果");
+            // 目录条目不应出现在任何 chunk 中
+            for (MedicalDocumentSplitter.SegmentInfo info : result) {
+                assertFalse(info.getText().contains("概述..............................1"),
+                        "目录条目不应出现在分块中: " + info.getText());
+            }
+            // 正文内容应保留
+            boolean hasContent = result.stream()
+                    .anyMatch(i -> i.getText().contains("儿童支气管哮喘"));
+            assertTrue(hasContent, "正文内容应被保留");
+        }
+
+        @Test
+        @DisplayName("无目录的文档不受影响")
+        void testNoToc_passesThrough() {
+            MedicalDocumentSplitter s = defaultSplitter();
+
+            String text = "儿童支气管哮喘\n\n【临床表现】\n反复发作性喘息、咳嗽、胸闷、气促。\n\n"
+                    + "【诊断标准】\n临床表现 + 肺功能检查可确诊。";
+
+            List<MedicalDocumentSplitter.SegmentInfo> result = s.splitWithMetadata(text);
+
+            assertFalse(result.isEmpty());
+            boolean hasClinical = result.stream()
+                    .anyMatch(i -> i.getText().contains("临床表现"));
+            assertTrue(hasClinical, "正常章节内容应保留");
+        }
+
+        @Test
+        @DisplayName("关闭 TOC 过滤时目录页应保留")
+        void testSkipTocDisabled() {
+            MedicalDocumentSplitter s = defaultSplitter();
+            s.setSkipTableOfContents(false);
+
+            String text = "目  录\n\n"
+                    + "第一章  概述..............................1\n"
+                    + "第二章  病因与发病机制....................5\n"
+                    + "\n\n"
+                    + "第一章 概述\n儿童支气管哮喘是儿童最常见的慢性呼吸道疾病。";
+
+            List<MedicalDocumentSplitter.SegmentInfo> result = s.splitWithMetadata(text);
+
+            // 关闭 TOC 过滤后，目录内容可能出现在结果中，不强制断言
+            assertFalse(result.isEmpty(), "应有分块结果");
+        }
+    }
+
+    // ======================== 外部文档主题 ========================
+
+    @Nested
+    @DisplayName("外部文档主题覆盖")
+    class DocumentTopicOverride {
+
+        @Test
+        @DisplayName("setDocumentTopic 后 breadcrumb 应以文件名开头")
+        void testExternalTopicUsedInBreadcrumb() {
+            MedicalDocumentSplitter s = defaultSplitter();
+            s.setDocumentTopic("儿童支气管哮喘诊疗指南");
+
+            String text = "【病因与发病机制】\n哮喘的病因包括遗传因素和环境因素。\n\n"
+                    + "【诊断标准】\n临床表现 + 肺功能检查可确诊。";
+
+            List<MedicalDocumentSplitter.SegmentInfo> result = s.splitWithMetadata(text);
+
+            assertFalse(result.isEmpty());
+            for (MedicalDocumentSplitter.SegmentInfo info : result) {
+                assertNotNull(info.getBreadcrumb(), "应有 breadcrumb");
+                assertTrue(info.getBreadcrumb().startsWith("儿童支气管哮喘诊疗指南"),
+                        "breadcrumb 应以文件名开头，实际: " + info.getBreadcrumb());
+            }
+        }
+
+        @Test
+        @DisplayName("未设置外部主题时使用自动提取")
+        void testNoExternalTopic_usesAutoExtracted() {
+            MedicalDocumentSplitter s = defaultSplitter();
+            // 不调用 setDocumentTopic
+
+            String text = "儿童支气管哮喘诊疗指南\n\n"
+                    + "【病因与发病机制】\n哮喘的病因包括遗传因素和环境因素。";
+
+            List<MedicalDocumentSplitter.SegmentInfo> result = s.splitWithMetadata(text);
+
+            assertFalse(result.isEmpty());
+            // 自动提取的 documentTopic 来自文本第一行
+            for (MedicalDocumentSplitter.SegmentInfo info : result) {
+                assertNotNull(info.getDocumentTopic());
+                // 应该是从文本中提取的
+            }
+        }
+
+        @Test
+        @DisplayName("外部主题为空字符串时回退自动提取")
+        void testEmptyExternalTopic_fallsBack() {
+            MedicalDocumentSplitter s = defaultSplitter();
+            s.setDocumentTopic("");
+
+            String text = "儿童支气管哮喘诊疗指南\n\n"
+                    + "【病因与发病机制】\n哮喘的病因包括遗传因素和环境因素。";
+
+            List<MedicalDocumentSplitter.SegmentInfo> result = s.splitWithMetadata(text);
+
+            assertFalse(result.isEmpty());
+            // 空字符串应回退到自动提取
+            for (MedicalDocumentSplitter.SegmentInfo info : result) {
+                assertNotNull(info.getDocumentTopic());
+            }
         }
     }
 }

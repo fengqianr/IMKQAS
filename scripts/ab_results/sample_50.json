@@ -1,0 +1,777 @@
+{
+  "description": "A/B测试50题分层抽样",
+  "totalQuestions": 50,
+  "diseaseDistribution": {
+    "热性惊厥": 6,
+    "哮喘": 6,
+    "特应性皮炎": 6,
+    "肺炎": 7,
+    "毛细支气管炎": 6,
+    "缺铁性贫血": 6,
+    "手足口病": 6,
+    "腹泻": 7
+  },
+  "questionTypeDistribution": {
+    "直白问法": 16,
+    "混合问法": 14,
+    "口语问法": 20
+  },
+  "questions": [
+    {
+      "index": 1,
+      "id": "Q216",
+      "disease": "热性惊厥",
+      "questionType": "直白问法",
+      "userQuery": "咨询一下，热性惊厥是什么表现？",
+      "expectedKeywords": [
+        "热性惊厥",
+        "抽搐",
+        "发热",
+        "体温",
+        "单纯性",
+        "复杂性"
+      ]
+    },
+    {
+      "index": 2,
+      "id": "Q405",
+      "disease": "哮喘",
+      "questionType": "混合问法",
+      "userQuery": "医生，夜间咳嗽是哮喘吗？",
+      "expectedKeywords": [
+        "哮喘",
+        "咳嗽",
+        "喘息",
+        "胸闷",
+        "气促",
+        "吸入"
+      ]
+    },
+    {
+      "index": 3,
+      "id": "Q373",
+      "disease": "热性惊厥",
+      "questionType": "混合问法",
+      "userQuery": "热性惊厥是什么表现，有什么好办法？",
+      "expectedKeywords": [
+        "热性惊厥",
+        "抽搐",
+        "发热",
+        "体温",
+        "单纯性",
+        "复杂性"
+      ]
+    },
+    {
+      "index": 4,
+      "id": "Q437",
+      "disease": "特应性皮炎",
+      "questionType": "口语问法",
+      "userQuery": "孩子湿疹用什么润肤霜，要不要紧？",
+      "expectedKeywords": [
+        "湿疹",
+        "润肤",
+        "特应性皮炎",
+        "瘙痒",
+        "激素",
+        "阶梯治疗"
+      ]
+    },
+    {
+      "index": 5,
+      "id": "Q065",
+      "disease": "肺炎",
+      "questionType": "混合问法",
+      "userQuery": "医生，肺炎早期表现有哪些？",
+      "expectedKeywords": [
+        "肺炎",
+        "发热",
+        "咳嗽",
+        "呼吸急促",
+        "低氧",
+        "抗菌药"
+      ]
+    },
+    {
+      "index": 6,
+      "id": "Q368",
+      "disease": "毛细支气管炎",
+      "questionType": "直白问法",
+      "userQuery": "想问下毛细支气管炎多久能好？",
+      "expectedKeywords": [
+        "毛细支气管炎",
+        "婴儿",
+        "住院标准",
+        "氧饱和度",
+        "喂养困难",
+        "呼吸暂停"
+      ]
+    },
+    {
+      "index": 7,
+      "id": "Q401",
+      "disease": "肺炎",
+      "questionType": "口语问法",
+      "userQuery": "请问大家病毒性肺炎需要输液吗，有经验的说说？",
+      "expectedKeywords": [
+        "肺炎",
+        "病毒性",
+        "发热",
+        "咳嗽",
+        "呼吸急促",
+        "低氧",
+        "抗菌药"
+      ]
+    },
+    {
+      "index": 8,
+      "id": "Q342",
+      "disease": "毛细支气管炎",
+      "questionType": "混合问法",
+      "userQuery": "毛细支气管炎和肺炎区别，有什么好办法？",
+      "expectedKeywords": [
+        "毛细支气管炎",
+        "婴儿",
+        "住院标准",
+        "氧饱和度",
+        "喂养困难",
+        "呼吸暂停"
+      ]
+    },
+    {
+      "index": 9,
+      "id": "Q255",
+      "disease": "缺铁性贫血",
+      "questionType": "口语问法",
+      "userQuery": "请问大家贫血脸色会发白吗，有经验的说说？",
+      "expectedKeywords": [
+        "贫血",
+        "脸色",
+        "缺铁性贫血",
+        "筛查",
+        "补铁",
+        "铁蛋白",
+        "血红蛋白"
+      ]
+    },
+    {
+      "index": 10,
+      "id": "Q492",
+      "disease": "热性惊厥",
+      "questionType": "直白问法",
+      "userQuery": "想问下热性惊厥是什么表现？",
+      "expectedKeywords": [
+        "热性惊厥",
+        "抽搐",
+        "发热",
+        "体温",
+        "单纯性",
+        "复杂性"
+      ]
+    },
+    {
+      "index": 11,
+      "id": "Q202",
+      "disease": "特应性皮炎",
+      "questionType": "口语问法",
+      "userQuery": "医生，宝宝湿疹什么症状？",
+      "expectedKeywords": [
+        "湿疹",
+        "特应性皮炎",
+        "瘙痒",
+        "润肤",
+        "激素",
+        "阶梯治疗"
+      ]
+    },
+    {
+      "index": 12,
+      "id": "Q362",
+      "disease": "特应性皮炎",
+      "questionType": "混合问法",
+      "userQuery": "小儿湿疹用什么润肤霜，需要去医院吗？",
+      "expectedKeywords": [
+        "湿疹",
+        "润肤",
+        "特应性皮炎",
+        "瘙痒",
+        "激素",
+        "阶梯治疗"
+      ]
+    },
+    {
+      "index": 13,
+      "id": "Q280",
+      "disease": "手足口病",
+      "questionType": "口语问法",
+      "userQuery": "宝宝手足口病饮食注意什么，怎么办？",
+      "expectedKeywords": [
+        "手足口病",
+        "皮疹",
+        "发热",
+        "重症预警",
+        "居家护理",
+        "返园"
+      ]
+    },
+    {
+      "index": 14,
+      "id": "Q230",
+      "disease": "缺铁性贫血",
+      "questionType": "口语问法",
+      "userQuery": "新手妈妈求助：贫血脸色会发白吗？",
+      "expectedKeywords": [
+        "贫血",
+        "脸色",
+        "缺铁性贫血",
+        "筛查",
+        "补铁",
+        "铁蛋白",
+        "血红蛋白"
+      ]
+    },
+    {
+      "index": 15,
+      "id": "Q214",
+      "disease": "特应性皮炎",
+      "questionType": "混合问法",
+      "userQuery": "小儿湿疹严重了怎么办，需要去医院吗？",
+      "expectedKeywords": [
+        "湿疹",
+        "特应性皮炎",
+        "瘙痒",
+        "润肤",
+        "激素",
+        "阶梯治疗"
+      ]
+    },
+    {
+      "index": 16,
+      "id": "Q042",
+      "disease": "毛细支气管炎",
+      "questionType": "直白问法",
+      "userQuery": "咨询一下，毛细支气管炎用什么药？",
+      "expectedKeywords": [
+        "毛细支气管炎",
+        "婴儿",
+        "住院标准",
+        "氧饱和度",
+        "喂养困难",
+        "呼吸暂停"
+      ]
+    },
+    {
+      "index": 17,
+      "id": "Q354",
+      "disease": "腹泻",
+      "questionType": "口语问法",
+      "userQuery": "宝宝婴儿腹泻有什么表现，怎么办？",
+      "expectedKeywords": [
+        "腹泻",
+        "脱水",
+        "口服补液盐",
+        "补锌",
+        "电解质",
+        "ORS"
+      ]
+    },
+    {
+      "index": 18,
+      "id": "Q009",
+      "disease": "腹泻",
+      "questionType": "混合问法",
+      "userQuery": "腹泻一天几次算严重，该如何处理？",
+      "expectedKeywords": [
+        "腹泻",
+        "脱水",
+        "口服补液盐",
+        "补锌",
+        "电解质",
+        "ORS"
+      ]
+    },
+    {
+      "index": 19,
+      "id": "Q063",
+      "disease": "肺炎",
+      "questionType": "直白问法",
+      "userQuery": "病毒性肺炎需要输液吗？",
+      "expectedKeywords": [
+        "肺炎",
+        "病毒性",
+        "发热",
+        "咳嗽",
+        "呼吸急促",
+        "低氧",
+        "抗菌药"
+      ]
+    },
+    {
+      "index": 20,
+      "id": "Q416",
+      "disease": "肺炎",
+      "questionType": "口语问法",
+      "userQuery": "孩子最近肺炎球菌疫苗有用吗，怎么办啊？",
+      "expectedKeywords": [
+        "肺炎",
+        "发热",
+        "咳嗽",
+        "呼吸急促",
+        "低氧",
+        "抗菌药"
+      ]
+    },
+    {
+      "index": 21,
+      "id": "Q474",
+      "disease": "腹泻",
+      "questionType": "口语问法",
+      "userQuery": "请问大家腹泻补锌要补多久，有经验的说说？",
+      "expectedKeywords": [
+        "腹泻",
+        "补锌",
+        "脱水",
+        "口服补液盐",
+        "电解质",
+        "ORS"
+      ]
+    },
+    {
+      "index": 22,
+      "id": "Q201",
+      "disease": "特应性皮炎",
+      "questionType": "口语问法",
+      "userQuery": "湿疹会痒吗，在线等！",
+      "expectedKeywords": [
+        "湿疹",
+        "特应性皮炎",
+        "瘙痒",
+        "润肤",
+        "激素",
+        "阶梯治疗"
+      ]
+    },
+    {
+      "index": 23,
+      "id": "Q473",
+      "disease": "手足口病",
+      "questionType": "口语问法",
+      "userQuery": "孩子最近手足口病重症预警信号，怎么办啊？",
+      "expectedKeywords": [
+        "手足口病",
+        "重症预警",
+        "皮疹",
+        "发热",
+        "居家护理",
+        "返园"
+      ]
+    },
+    {
+      "index": 24,
+      "id": "Q326",
+      "disease": "腹泻",
+      "questionType": "口语问法",
+      "userQuery": "孩子最近腹泻带血怎么回事，怎么办啊？",
+      "expectedKeywords": [
+        "腹泻",
+        "脱水",
+        "口服补液盐",
+        "补锌",
+        "电解质",
+        "ORS"
+      ]
+    },
+    {
+      "index": 25,
+      "id": "Q301",
+      "disease": "腹泻",
+      "questionType": "直白问法",
+      "userQuery": "我想问一下腹泻后怎么恢复饮食？",
+      "expectedKeywords": [
+        "腹泻",
+        "脱水",
+        "口服补液盐",
+        "补锌",
+        "电解质",
+        "ORS"
+      ]
+    },
+    {
+      "index": 26,
+      "id": "Q418",
+      "disease": "缺铁性贫血",
+      "questionType": "直白问法",
+      "userQuery": "想问下婴儿贫血什么症状？",
+      "expectedKeywords": [
+        "贫血",
+        "缺铁性贫血",
+        "筛查",
+        "补铁",
+        "铁蛋白",
+        "血红蛋白"
+      ]
+    },
+    {
+      "index": 27,
+      "id": "Q121",
+      "disease": "肺炎",
+      "questionType": "混合问法",
+      "userQuery": "请问肺炎咳嗽是什么样的，严重吗？",
+      "expectedKeywords": [
+        "肺炎",
+        "咳嗽",
+        "发热",
+        "呼吸急促",
+        "低氧",
+        "抗菌药"
+      ]
+    },
+    {
+      "index": 28,
+      "id": "Q392",
+      "disease": "缺铁性贫血",
+      "questionType": "直白问法",
+      "userQuery": "咨询一下，儿童贫血筛查什么时候做？",
+      "expectedKeywords": [
+        "贫血",
+        "筛查",
+        "缺铁性贫血",
+        "补铁",
+        "铁蛋白",
+        "血红蛋白"
+      ]
+    },
+    {
+      "index": 29,
+      "id": "Q430",
+      "disease": "手足口病",
+      "questionType": "口语问法",
+      "userQuery": "孩子手足口病皮疹什么样，要不要紧？",
+      "expectedKeywords": [
+        "手足口病",
+        "皮疹",
+        "发热",
+        "重症预警",
+        "居家护理",
+        "返园"
+      ]
+    },
+    {
+      "index": 30,
+      "id": "Q385",
+      "disease": "哮喘",
+      "questionType": "口语问法",
+      "userQuery": "哮喘吸入剂怎么用，在线等！",
+      "expectedKeywords": [
+        "哮喘",
+        "吸入",
+        "喘息",
+        "咳嗽",
+        "胸闷",
+        "气促"
+      ]
+    },
+    {
+      "index": 31,
+      "id": "Q183",
+      "disease": "毛细支气管炎",
+      "questionType": "混合问法",
+      "userQuery": "小儿毛细支气管炎要住院吗，需要去医院吗？",
+      "expectedKeywords": [
+        "毛细支气管炎",
+        "婴儿",
+        "住院标准",
+        "氧饱和度",
+        "喂养困难",
+        "呼吸暂停"
+      ]
+    },
+    {
+      "index": 32,
+      "id": "Q339",
+      "disease": "毛细支气管炎",
+      "questionType": "口语问法",
+      "userQuery": "哪些宝宝容易得毛细支气管炎，在线等！",
+      "expectedKeywords": [
+        "毛细支气管炎",
+        "婴儿",
+        "住院标准",
+        "氧饱和度",
+        "喂养困难",
+        "呼吸暂停"
+      ]
+    },
+    {
+      "index": 33,
+      "id": "Q001",
+      "disease": "哮喘",
+      "questionType": "口语问法",
+      "userQuery": "我家宝宝儿童哮喘怎么治，着急！",
+      "expectedKeywords": [
+        "哮喘",
+        "喘息",
+        "咳嗽",
+        "胸闷",
+        "气促",
+        "吸入"
+      ]
+    },
+    {
+      "index": 34,
+      "id": "Q300",
+      "disease": "肺炎",
+      "questionType": "直白问法",
+      "userQuery": "想问下听诊能听出肺炎吗？",
+      "expectedKeywords": [
+        "肺炎",
+        "发热",
+        "咳嗽",
+        "呼吸急促",
+        "低氧",
+        "抗菌药"
+      ]
+    },
+    {
+      "index": 35,
+      "id": "Q267",
+      "disease": "缺铁性贫血",
+      "questionType": "混合问法",
+      "userQuery": "怎么查贫血，有什么好办法？",
+      "expectedKeywords": [
+        "贫血",
+        "缺铁性贫血",
+        "筛查",
+        "补铁",
+        "铁蛋白",
+        "血红蛋白"
+      ]
+    },
+    {
+      "index": 36,
+      "id": "Q028",
+      "disease": "毛细支气管炎",
+      "questionType": "口语问法",
+      "userQuery": "宝宝婴儿鼻塞怎么清理，怎么办？",
+      "expectedKeywords": [
+        "婴儿",
+        "鼻塞",
+        "毛细支气管炎",
+        "住院标准",
+        "氧饱和度",
+        "喂养困难",
+        "呼吸暂停"
+      ]
+    },
+    {
+      "index": 37,
+      "id": "Q194",
+      "disease": "缺铁性贫血",
+      "questionType": "口语问法",
+      "userQuery": "孩子贫血会食欲不振吗，要不要紧？",
+      "expectedKeywords": [
+        "贫血",
+        "缺铁性贫血",
+        "筛查",
+        "补铁",
+        "铁蛋白",
+        "血红蛋白"
+      ]
+    },
+    {
+      "index": 38,
+      "id": "Q334",
+      "disease": "肺炎",
+      "questionType": "混合问法",
+      "userQuery": "医生，肺炎什么情况要马上去医院？",
+      "expectedKeywords": [
+        "肺炎",
+        "发热",
+        "咳嗽",
+        "呼吸急促",
+        "低氧",
+        "抗菌药"
+      ]
+    },
+    {
+      "index": 39,
+      "id": "Q461",
+      "disease": "热性惊厥",
+      "questionType": "混合问法",
+      "userQuery": "医生，热性惊厥持续多久？",
+      "expectedKeywords": [
+        "热性惊厥",
+        "抽搐",
+        "发热",
+        "体温",
+        "单纯性",
+        "复杂性"
+      ]
+    },
+    {
+      "index": 40,
+      "id": "Q173",
+      "disease": "热性惊厥",
+      "questionType": "口语问法",
+      "userQuery": "热性惊厥会变成癫痫吗，在线等！",
+      "expectedKeywords": [
+        "热性惊厥",
+        "抽搐",
+        "发热",
+        "体温",
+        "单纯性",
+        "复杂性"
+      ]
+    },
+    {
+      "index": 41,
+      "id": "Q109",
+      "disease": "哮喘",
+      "questionType": "直白问法",
+      "userQuery": "我想问一下过敏会引发哮喘吗？",
+      "expectedKeywords": [
+        "哮喘",
+        "喘息",
+        "咳嗽",
+        "胸闷",
+        "气促",
+        "吸入"
+      ]
+    },
+    {
+      "index": 42,
+      "id": "Q468",
+      "disease": "腹泻",
+      "questionType": "直白问法",
+      "userQuery": "想问下腹泻吃什么食物好？",
+      "expectedKeywords": [
+        "腹泻",
+        "脱水",
+        "口服补液盐",
+        "补锌",
+        "电解质",
+        "ORS"
+      ]
+    },
+    {
+      "index": 43,
+      "id": "Q104",
+      "disease": "手足口病",
+      "questionType": "直白问法",
+      "userQuery": "请问手足口病什么时候能回幼儿园？",
+      "expectedKeywords": [
+        "手足口病",
+        "皮疹",
+        "发热",
+        "重症预警",
+        "居家护理",
+        "返园"
+      ]
+    },
+    {
+      "index": 44,
+      "id": "Q428",
+      "disease": "哮喘",
+      "questionType": "口语问法",
+      "userQuery": "新手妈妈求助：学校哮喘怎么管理？",
+      "expectedKeywords": [
+        "哮喘",
+        "喘息",
+        "咳嗽",
+        "胸闷",
+        "气促",
+        "吸入"
+      ]
+    },
+    {
+      "index": 45,
+      "id": "Q212",
+      "disease": "热性惊厥",
+      "questionType": "直白问法",
+      "userQuery": "热性惊厥会翻白眼吗？",
+      "expectedKeywords": [
+        "热性惊厥",
+        "抽搐",
+        "发热",
+        "体温",
+        "单纯性",
+        "复杂性"
+      ]
+    },
+    {
+      "index": 46,
+      "id": "Q149",
+      "disease": "特应性皮炎",
+      "questionType": "直白问法",
+      "userQuery": "湿疹会反复发作吗？",
+      "expectedKeywords": [
+        "湿疹",
+        "特应性皮炎",
+        "瘙痒",
+        "润肤",
+        "激素",
+        "阶梯治疗"
+      ]
+    },
+    {
+      "index": 47,
+      "id": "Q102",
+      "disease": "手足口病",
+      "questionType": "直白问法",
+      "userQuery": "想问下手足口病怎么消毒？",
+      "expectedKeywords": [
+        "手足口病",
+        "消毒",
+        "皮疹",
+        "发热",
+        "重症预警",
+        "居家护理",
+        "返园"
+      ]
+    },
+    {
+      "index": 48,
+      "id": "Q145",
+      "disease": "哮喘",
+      "questionType": "直白问法",
+      "userQuery": "哮喘发作是什么感觉？",
+      "expectedKeywords": [
+        "哮喘",
+        "喘息",
+        "咳嗽",
+        "胸闷",
+        "气促",
+        "吸入"
+      ]
+    },
+    {
+      "index": 49,
+      "id": "Q113",
+      "disease": "腹泻",
+      "questionType": "混合问法",
+      "userQuery": "医生，婴儿腹泻有什么表现？",
+      "expectedKeywords": [
+        "腹泻",
+        "脱水",
+        "口服补液盐",
+        "补锌",
+        "电解质",
+        "ORS"
+      ]
+    },
+    {
+      "index": 50,
+      "id": "Q406",
+      "disease": "手足口病",
+      "questionType": "混合问法",
+      "userQuery": "手足口病发热怎么办，有什么好办法？",
+      "expectedKeywords": [
+        "手足口病",
+        "发热",
+        "皮疹",
+        "重症预警",
+        "居家护理",
+        "返园"
+      ]
+    }
+  ]
+}

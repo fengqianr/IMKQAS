@@ -307,41 +307,31 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
     /**
      * 解析重排序响应（阿里云格式）
      */
-    private List<Double> parseRerankResponse(String responseBody, int expectedSize) {
-        // 简化实现：假设响应为JSON数组，包含每个文档的分数
-        // 实际应使用JSON库解析阿里云响应格式
+    private List<Double> parseRerankResponse(String responseBody, int expectedSize) throws IOException {
         List<Double> scores = new ArrayList<>();
 
-        try {
-            // 尝试解析嵌套格式（gte-rerank-v2）
-            if (responseBody.contains("\"results\"") && responseBody.contains("\"relevance_score\"")) {
-                // 解析嵌套格式：{"output": {"results": [{"index": 0, "relevance_score": 0.933, ...}]}}
-                parseNestedResponse(responseBody, scores, expectedSize);
+        // 尝试解析嵌套格式（gte-rerank-v2）
+        if (responseBody.contains("\"results\"") && responseBody.contains("\"relevance_score\"")) {
+            parseNestedResponse(responseBody, scores, expectedSize);
+        }
+        // 尝试解析扁平格式（旧格式或兼容格式）
+        else if (responseBody.contains("\"scores\"")) {
+            String scoresPart = responseBody.substring(
+                    responseBody.indexOf("[") + 1,
+                    responseBody.indexOf("]")
+            );
+            String[] scoreStrs = scoresPart.split(",");
+            for (String scoreStr : scoreStrs) {
+                scores.add(Double.parseDouble(scoreStr.trim()));
             }
-            // 尝试解析扁平格式（旧格式或兼容格式）
-            else if (responseBody.contains("\"scores\"")) {
-                // 提取分数数组
-                String scoresPart = responseBody.substring(
-                        responseBody.indexOf("[") + 1,
-                        responseBody.indexOf("]")
-                );
-                String[] scoreStrs = scoresPart.split(",");
-                for (String scoreStr : scoreStrs) {
-                    scores.add(Double.parseDouble(scoreStr.trim()));
-                }
-            } else {
-                // 如果解析失败，生成模拟分数（降级）
-                log.warn("重排序响应解析失败，使用模拟分数: {}", responseBody);
-                scores = generateMockScores(expectedSize);
-            }
-        } catch (Exception e) {
-            log.warn("重排序响应解析异常，使用模拟分数: {}", e.getMessage());
-            scores = generateMockScores(expectedSize);
+        } else {
+            throw new IOException("无法解析重排序API响应格式: "
+                    + responseBody.substring(0, Math.min(200, responseBody.length())));
         }
 
         // 确保分数数量与文档数量一致
         while (scores.size() < expectedSize) {
-            scores.add(0.5); // 默认分数
+            scores.add(0.5);
         }
 
         return scores.subList(0, Math.min(scores.size(), expectedSize));
@@ -354,13 +344,19 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
         try {
             // 查找"results"数组
             int resultsStart = responseBody.indexOf("\"results\":");
-            if (resultsStart == -1) return;
+            if (resultsStart == -1) {
+                throw new IOException("响应中缺少 'results' 字段");
+            }
 
             int bracketStart = responseBody.indexOf("[", resultsStart);
-            if (bracketStart == -1) return;
+            if (bracketStart == -1) {
+                throw new IOException("'results' 后缺少 '['");
+            }
 
             int bracketEnd = findMatchingBracket(responseBody, bracketStart);
-            if (bracketEnd == -1) return;
+            if (bracketEnd == -1) {
+                throw new IOException("未找到匹配的 ']'");
+            }
 
             String resultsArray = responseBody.substring(bracketStart, bracketEnd + 1);
 
@@ -414,7 +410,7 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
 
         } catch (Exception e) {
             log.warn("解析嵌套格式响应异常: {}", e.getMessage());
-            throw e;
+            throw new RuntimeException("嵌套格式响应解析失败", e);
         }
     }
 
@@ -509,18 +505,6 @@ public class CrossEncoderRerankServiceImpl implements CrossEncoderRerankService 
         });
 
         return sortedResults.subList(0, Math.min(sortedResults.size(), topK));
-    }
-
-    /**
-     * 生成模拟分数（用于降级）
-     */
-    private List<Double> generateMockScores(int size) {
-        List<Double> scores = new ArrayList<>();
-        // 生成递减的模拟分数
-        for (int i = 0; i < size; i++) {
-            scores.add(0.9 - (i * 0.1));
-        }
-        return scores;
     }
 
     /**

@@ -609,6 +609,19 @@ public class QaServiceImpl implements QaService {
         }
 
         log.debug("检索完成: query={}, mode={}, results={}", query, mode, results.size());
+        if (results != null && !results.isEmpty()) {
+            log.info("=== 检索结果 (共{}条) ===", results.size());
+            for (int i = 0; i < results.size(); i++) {
+                var r = results.get(i);
+                String breadcrumb = r.getMetadataString("breadcrumb");
+                log.info("[检索][{}] score={}, source={}, breadcrumb={}, content={}",
+                        i + 1,
+                        String.format("%.4f", r.getScore()),
+                        r.getSource(),
+                        breadcrumb != null ? breadcrumb : "N/A",
+                        truncate(r.getContent(), 120));
+            }
+        }
         return results != null ? results : Collections.emptyList();
     }
 
@@ -629,6 +642,19 @@ public class QaServiceImpl implements QaService {
 
         log.debug("多因子重排序完成: query={}, input={}, output={}",
                 truncate(query, 50), results.size(), rerankedResults.size());
+        if (rerankedResults != null && !rerankedResults.isEmpty()) {
+            log.info("=== 重排序结果 (共{}条) ===", rerankedResults.size());
+            for (int i = 0; i < rerankedResults.size(); i++) {
+                var r = rerankedResults.get(i);
+                String breadcrumb = r.getMetadataString("breadcrumb");
+                log.info("[重排][{}] score={}, source={}, breadcrumb={}, content={}",
+                        i + 1,
+                        String.format("%.4f", r.getScore()),
+                        r.getSource(),
+                        breadcrumb != null ? breadcrumb : "N/A",
+                        truncate(r.getContent(), 120));
+            }
+        }
         return rerankedResults != null ? rerankedResults : results;
     }
 
@@ -637,7 +663,13 @@ public class QaServiceImpl implements QaService {
      */
     private List<String> extractContext(List<MultiRetrievalService.RetrievalResult> results) {
         return results.stream()
-                .map(MultiRetrievalService.RetrievalResult::getContent)
+                .map(result -> {
+                    String breadcrumb = result.getMetadataString("breadcrumb");
+                    if (breadcrumb != null && !breadcrumb.trim().isEmpty()) {
+                        return "[来源：" + breadcrumb + "]\n" + result.getContent();
+                    }
+                    return result.getContent();
+                })
                 .collect(Collectors.toList());
     }
 

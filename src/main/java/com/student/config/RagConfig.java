@@ -505,14 +505,18 @@ public class RagConfig {
     /** 多因子重排序配置 */
     @Data
     public static class MultiFactorRerankConfig {
-        /** 维度权重 */
+        /** 维度权重（五维，和为1） */
         @Data
         public static class FactorWeights {
-            private double authority = 0.4;
-            private double timeliness = 0.2;
-            private double semantic = 0.4;
+            private double authority = 0.27;
+            private double timeliness = 0.13;
+            private double semantic = 0.32;
+            private double intent = 0.18;
+            private double hierarchy = 0.10;
         }
         private FactorWeights weights = new FactorWeights();
+        /** 是否启用层级相关性评分（利用chunk的section_title/breadcrumb元数据） */
+        private boolean hierarchyEnabled = true;
         /** 时效性衰减率 λ */
         private double decayRate = 0.3;
         /** 各知识类型半衰期（年） */
@@ -615,10 +619,13 @@ public class RagConfig {
                 qualityFilter.getMinFragmentLength(), qualityFilter.getBlacklistDomains().size(),
                 qualityFilter.isContradictionDetectionEnabled() ? "启用" : "禁用",
                 qualityFilter.isContraindicationRuleEnabled() ? "启用" : "禁用");
-        log.info("多因子重排序: 权威权重={}, 时效权重={}, 语义权重={}",
+        log.info("多因子重排序: 权威权重={}, 时效权重={}, 语义权重={}, 意图权重={}, 层级权重={}, 层级增强={}",
                 multiFactorRerank.getWeights().getAuthority(),
                 multiFactorRerank.getWeights().getTimeliness(),
-                multiFactorRerank.getWeights().getSemantic());
+                multiFactorRerank.getWeights().getSemantic(),
+                multiFactorRerank.getWeights().getIntent(),
+                multiFactorRerank.getWeights().getHierarchy(),
+                multiFactorRerank.isHierarchyEnabled() ? "启用" : "禁用");
         log.info("语义缓存链: 启用={}, TTL={}s, 版本={}",
                 semanticCache.isEnabled(), semanticCache.getTtl(), semanticCache.getKnowledgeVersion());
         log.info("MinerU PDF转换: 启用={}, API端点={}, 超时={}s",

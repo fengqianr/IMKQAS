@@ -36,6 +36,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.student.config.RagConfig;
 import com.student.entity.Document;
 import com.student.entity.DocumentChunk;
+import com.student.mapper.DocumentChunkMapper;
 import com.student.service.dataBase.MilvusService;
 import com.student.service.dataBase.MinioService;
 import com.student.service.document.DocumentChunkService;
@@ -68,6 +69,7 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     private final ContraindicationDetectionService contraindicationDetectionService;
     private final RagConfig ragConfig;
     private final MinioService minioService;
+    private final DocumentChunkMapper documentChunkMapper;
 
     // 用于跟踪处理状态
     private final Map<Long, Document.Status> processingStatus = new ConcurrentHashMap<>();
@@ -102,7 +104,7 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
 
             // 2. 智能分块
             log.info("文档处理步骤2-分块开始: documentId={}", documentId);
-            List<DocumentChunk> chunks = chunkText(fullText, documentId);
+            List<DocumentChunk> chunks = chunkText(fullText, documentId, document.getTitle());
             log.info("文档处理步骤2-分块完成: documentId={}, chunkCount={}", documentId, chunks.size());
             if (chunks.isEmpty()) {
                 throw new RuntimeException("文档分块失败，未生成任何分块");
@@ -200,9 +202,7 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     public boolean retryFailedDocument(Long documentId) {
         Document document = documentService.getById(documentId);
         if (document != null && document.getStatus() == Document.Status.FAILED) {
-            // 清理旧的分块数据
-            cleanupOldChunks(documentId);
-            // 重新处理
+            // processDocument 内部已包含 cleanupOldChunks，无需重复调用
             return processDocument(documentId);
         }
         return false;
@@ -843,12 +843,12 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     /**
      * 文本分块：根据配置的策略选择分割方式
      */
-    private List<DocumentChunk> chunkText(String text, Long documentId) {
+    private List<DocumentChunk> chunkText(String text, Long documentId, String documentTitle) {
         RagConfig.DocumentConfig.ChunkConfig chunkConfig = ragConfig.getDocument().getChunk();
         String strategy = chunkConfig.getStrategy();
 
         if ("medical".equals(strategy)) {
-            return chunkTextMedical(text, documentId, chunkConfig);
+            return chunkTextMedical(text, documentId, chunkConfig, documentTitle);
         }
 
         List<String> segments;
@@ -893,7 +893,8 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
      * 医学文档结构感知分块
      */
     private List<DocumentChunk> chunkTextMedical(String text, Long documentId,
-                                                  RagConfig.DocumentConfig.ChunkConfig chunkConfig) {
+                                                  RagConfig.DocumentConfig.ChunkConfig chunkConfig,
+                                                  String documentTitle) {
         RagConfig.DocumentConfig.ChunkConfig.MedicalChunkConfig medicalConfig =
                 chunkConfig.getMedical();
         if (medicalConfig == null) {
@@ -913,6 +914,11 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
                 medicalConfig.getMinTableRows(),
                 medicalConfig.getSiblingMergeThreshold(),
                 medicalConfig.getMaxDepth());
+
+        // 使用文档标题作为 breadcrumb 的主题，覆盖自动提取
+        if (documentTitle != null && !documentTitle.isBlank()) {
+            splitter.setDocumentTopic(documentTitle.trim());
+        }
 
         List<MedicalDocumentSplitter.SegmentInfo> segmentInfos = splitter.splitWithMetadata(text);
         return buildChunksWithMetadata(segmentInfos, documentId);
@@ -1119,13 +1125,12 @@ public class DocumentProcessorServiceImpl implements DocumentProcessorService {
     private void cleanupOldChunks(Long documentId) {
         log.info("清理旧分块数据: documentId={}", documentId);
 
-        // 删除数据库中的旧分块记录
-        QueryWrapper<DocumentChunk> wrapper = new QueryWrapper<>();
-        wrapper.eq("document_id", documentId);
-        documentChunkService.remove(wrapper);
+        // 物理删除数据库中的旧分块记录（绕过@TableLogic，避免 uk_document_chunk 唯一约束冲突）
+        int deletedRows = documentChunkMapper.physicalDeleteByDocumentId(documentId);
+        log.info("物理删除旧分块记录: documentId={}, deletedRows={}", documentId, deletedRows);
 
         // 从Milvus中删除相关向量
-        milvusService.deleteByDocumentId(documentId);  // 注意：实际方法名是deleteByDocumentId，不是deleteVectorsByDocumentId
+        milvusService.deleteByDocumentId(documentId);
 
         log.info("旧分块数据清理完成: documentId={}", documentId);
     }

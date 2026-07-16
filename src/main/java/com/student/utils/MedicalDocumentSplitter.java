@@ -28,14 +28,14 @@ public class MedicalDocumentSplitter {
     /** L1: 中文"第X章/节" */
     static final Pattern CHINESE_CHAPTER = Pattern.compile("^(第[一二三四五六七八九十\\d]+[章节篇部分])\\s*$");
 
-    /** L2: 中文序号标题 "一、概述"/"二、流行病学" */
+    /** L1: 中文序号标题 "一、概述"/"二、流行病学" */
     static final Pattern CHINESE_NUMBERED = Pattern.compile("^([一二三四五六七八九十])、\\s*(.+)$");
+
+    /** L2: 中文括号序号标题 "（一）概述"/"（二）流行病学" */
+    static final Pattern PAREN_NUMBERED = Pattern.compile("^（([一二三四五六七八九十]+)）\\s*(.*)$");
 
     /** L2: 数字编号 "1. "/"2.1 "/"9. 标题" */
     static final Pattern DIGIT_HEADER = Pattern.compile("^(\\d+(?:\\.\\d+)*)\\.?\\s+(.+)$");
-
-    /** L2: 冒号结尾的短标题行，如 "急性发作期治疗（SABA为核心）：" */
-    static final Pattern COLON_SUBTITLE = Pattern.compile("^(.{2,50})[：:]\\s*$");
 
     // ======================== 其他检测正则 ========================
 
@@ -60,6 +60,13 @@ public class MedicalDocumentSplitter {
     /** 占位符前缀 */
     static final String PH_PREFIX = "__MEDPROT_";
 
+    /** 目录页标题行 */
+    static final Pattern TOC_HEADER = Pattern.compile("^\\s*(目\\s*录|目\\s*次|Table\\s*of\\s*Contents|CONTENTS)\\s*$",
+            Pattern.CASE_INSENSITIVE);
+
+    /** 目录条目行: 文本 + 点线/空格 + 页码 */
+    static final Pattern TOC_ENTRY = Pattern.compile("^.{4,80}[\\.…\\s]{3,}\\d{1,4}\\s*$");
+
     // ======================== 配置字段 ========================
 
     private final int chunkSize;
@@ -75,6 +82,12 @@ public class MedicalDocumentSplitter {
     private final int siblingMergeThreshold;
     private final int maxDepth;
     private final RecursiveTextSplitter fallbackSplitter;
+
+    /** 外部指定的文档主题（如文件名），非 null 时覆盖自动提取的 documentTopic */
+    private String externalDocumentTopic;
+
+    /** 是否跳过目录页，默认开启 */
+    private boolean skipTableOfContents = true;
 
     // ======================== 构造函数 ========================
 
@@ -120,6 +133,70 @@ public class MedicalDocumentSplitter {
     }
 
     /**
+     * 设置外部文档主题（如文件名），覆盖自动提取的 documentTopic
+     */
+    public void setDocumentTopic(String topic) {
+        this.externalDocumentTopic = topic;
+    }
+
+    /**
+     * 设置是否跳过目录页
+     */
+    public void setSkipTableOfContents(boolean skip) {
+        this.skipTableOfContents = skip;
+    }
+
+    /**
+     * 检测并移除目录页内容
+     * 启发式策略：找到"目录"标题行，将其到正文开始之间的内容移除
+     */
+    String removeTableOfContents(String text) {
+        String[] lines = text.split("\n", -1);
+        StringBuilder result = new StringBuilder();
+        boolean inToc = false;
+        int nonTocLineCount = 0;
+        StringBuilder tocExitBuffer = new StringBuilder();
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+
+            // 目录标题行检测
+            if (TOC_HEADER.matcher(trimmed).matches()) {
+                inToc = true;
+                nonTocLineCount = 0;
+                tocExitBuffer.setLength(0);
+                continue;
+            }
+
+            if (inToc) {
+                // 空行或目录条目行: 认定为目录内容
+                if (trimmed.isEmpty() || TOC_ENTRY.matcher(trimmed).matches()) {
+                    // 遇到目录行，清空缓冲区（前面缓冲的非目录行可能是误判）
+                    if (nonTocLineCount > 0) {
+                        tocExitBuffer.setLength(0);
+                        nonTocLineCount = 0;
+                    }
+                    continue;
+                }
+
+                // 非目录行: 缓冲并累计计数
+                tocExitBuffer.append(line).append("\n");
+                nonTocLineCount++;
+                if (nonTocLineCount >= 3) {
+                    inToc = false;
+                    result.append(tocExitBuffer);
+                    tocExitBuffer.setLength(0);
+                }
+            } else {
+                result.append(line).append("\n");
+            }
+        }
+
+        String cleaned = result.toString().trim();
+        return cleaned;
+    }
+
+    /**
      * 按医学文档结构分片，返回携带层级元数据的结果
      * @param text 原始文本
      * @return 分片结果列表（含元数据）
@@ -132,10 +209,16 @@ public class MedicalDocumentSplitter {
             return Collections.emptyList();
         }
 
+        // 过滤目录页
+        String workText = text;
+        if (skipTableOfContents) {
+            workText = removeTableOfContents(text);
+        }
+
         Map<String, ProtectedBlock> protectedBlocks = new LinkedHashMap<>();
 
         // Phase 1: 预处理保护
-        String processed = text;
+        String processed = workText;
         processed = protectDosage(processed, protectedBlocks);
         processed = protectTables(processed, protectedBlocks);
 
@@ -143,6 +226,11 @@ public class MedicalDocumentSplitter {
         SectionNode root = sectionHierarchy
                 ? parseDocumentStructure(processed)
                 : createFlatRoot(processed);
+
+        // 外部指定的 documentTopic 覆盖自动提取
+        if (externalDocumentTopic != null && !externalDocumentTopic.isEmpty()) {
+            injectDocumentMeta(root, externalDocumentTopic);
+        }
 
         // Phase 3: 沿结构树切分
         List<SegmentInfo> segments = chunkBySections(root, processed);
@@ -337,18 +425,18 @@ public class MedicalDocumentSplitter {
             }
 
             if (match == null) {
-                Matcher digMatcher = DIGIT_HEADER.matcher(trimmed);
-                if (digMatcher.matches() && digMatcher.group(2).length() >= minSectionHeaderLen) {
+                Matcher pnMatcher = PAREN_NUMBERED.matcher(trimmed);
+                if (pnMatcher.matches()) {
                     match = new HeaderMatch(pos, pos + line.length(),
-                            digMatcher.group(2), "DIGIT_HEADER");
+                            trimmed, "PAREN_NUMBERED");
                 }
             }
 
             if (match == null) {
-                Matcher colMatcher = COLON_SUBTITLE.matcher(trimmed);
-                if (colMatcher.matches() && !isBulletItem(trimmed)) {
+                Matcher digMatcher = DIGIT_HEADER.matcher(trimmed);
+                if (digMatcher.matches() && digMatcher.group(2).length() >= minSectionHeaderLen) {
                     match = new HeaderMatch(pos, pos + line.length(),
-                            colMatcher.group(1), "COLON_SUBTITLE");
+                            digMatcher.group(2), "DIGIT_HEADER");
                 }
             }
 
@@ -390,9 +478,8 @@ public class MedicalDocumentSplitter {
      */
     int assignLevel(HeaderMatch match) {
         return switch (match.patternType) {
-            case "BRACKET", "MARKDOWN_H1H2", "CHINESE_CHAPTER" -> 1;
-            case "CHINESE_NUMBERED", "DIGIT_HEADER" -> 2;
-            case "COLON_SUBTITLE", "MARKDOWN_H3" -> 2;
+            case "BRACKET", "MARKDOWN_H1H2", "CHINESE_CHAPTER", "CHINESE_NUMBERED" -> 1;
+            case "PAREN_NUMBERED", "DIGIT_HEADER", "MARKDOWN_H3" -> 2;
             case "SHORT_STANDALONE" -> 1;
             default -> 2;
         };

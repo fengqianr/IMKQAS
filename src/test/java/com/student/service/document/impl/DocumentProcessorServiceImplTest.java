@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.student.config.RagConfig;
 import com.student.entity.Document;
+import com.student.mapper.DocumentChunkMapper;
 import com.student.service.dataBase.MilvusService;
 import com.student.service.dataBase.MinioService;
 import com.student.service.document.DocumentChunkService;
@@ -39,6 +40,9 @@ class DocumentProcessorServiceImplTest {
 
     @Mock
     private MinioService minioService;
+
+    @Mock
+    private DocumentChunkMapper documentChunkMapper;
 
     @InjectMocks
     private DocumentProcessorServiceImpl documentProcessorService;
@@ -94,14 +98,14 @@ class DocumentProcessorServiceImplTest {
         when(documentService.getById(documentId)).thenReturn(testDocument);
 
         // 模拟清理操作成功
-        when(documentChunkService.remove(any(QueryWrapper.class))).thenReturn(true);
+        when(documentChunkMapper.physicalDeleteByDocumentId(documentId)).thenReturn(1);
         when(milvusService.deleteByDocumentId(documentId)).thenReturn(true);
 
         // 调用retryFailedDocument
         boolean result = documentProcessorService.retryFailedDocument(documentId);
 
         // 验证清理操作被调用
-        verify(documentChunkService, times(1)).remove(any(QueryWrapper.class));
+        verify(documentChunkMapper, times(1)).physicalDeleteByDocumentId(documentId);
         verify(milvusService, times(1)).deleteByDocumentId(documentId);
 
         // 验证retryFailedDocument返回false（因为processDocument会失败）
@@ -123,7 +127,7 @@ class DocumentProcessorServiceImplTest {
         assertFalse(result);
 
         // 验证清理操作没有被调用
-        verify(documentChunkService, never()).remove(any(QueryWrapper.class));
+        verify(documentChunkMapper, never()).physicalDeleteByDocumentId(anyLong());
         verify(milvusService, never()).deleteByDocumentId(anyLong());
     }
 
@@ -224,9 +228,9 @@ class DocumentProcessorServiceImplTest {
     void testCleanupOldChunks() throws Exception {
         Long documentId = 1L;
 
-        // 模拟DocumentChunkService删除操作 - remove方法返回boolean，不是void
-        when(documentChunkService.remove(any(QueryWrapper.class))).thenReturn(true);
-        // 模拟MilvusService删除向量 - 注意：实际方法名是deleteByDocumentId，不是deleteVectorsByDocumentId
+        // 模拟物理删除操作
+        when(documentChunkMapper.physicalDeleteByDocumentId(documentId)).thenReturn(1);
+        // 模拟MilvusService删除向量
         when(milvusService.deleteByDocumentId(documentId)).thenReturn(true);
 
         // 使用反射调用私有方法
@@ -238,7 +242,7 @@ class DocumentProcessorServiceImplTest {
         assertDoesNotThrow(() -> cleanupMethod.invoke(documentProcessorService, documentId));
 
         // 验证交互
-        verify(documentChunkService, times(1)).remove(any(QueryWrapper.class));
+        verify(documentChunkMapper, times(1)).physicalDeleteByDocumentId(documentId);
         verify(milvusService, times(1)).deleteByDocumentId(documentId);
     }
 
