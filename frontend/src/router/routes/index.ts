@@ -7,12 +7,6 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/LoginView.vue'),
     meta: { requiresAuth: false, hideNav: true }
   },
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/views/DashboardView.vue'),
-    meta: { requiresAuth: true, title: '仪表板' }
-  },
   // 问答模块路由（占位）
   {
     path: '/qa',
@@ -30,7 +24,7 @@ export const routes: RouteRecordRaw[] = [
   // 重定向
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/qa'
   },
   // 404页面
   {

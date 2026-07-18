@@ -98,7 +98,7 @@ const handleLogin = async () => {
 
     if (result.success) {
       ElMessage.success('登录成功')
-      router.push('/dashboard')
+      router.push('/qa')
     } else {
       ElMessage.error(result.message || '登录失败')
     }

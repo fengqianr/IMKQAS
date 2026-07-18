@@ -1,6 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
-import DashboardView from '@/views/DashboardView.vue'
 import QaView from '@/views/QaView.vue'
 import KnowledgeView from '@/views/KnowledgeView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
@@ -8,7 +7,7 @@ import NotFoundView from '@/views/NotFoundView.vue'
 export const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/dashboard',
+    redirect: '/qa',
     meta: { requiresAuth: true }
   },
   {
@@ -28,12 +27,6 @@ export const routes: RouteRecordRaw[] = [
     name: 'forgot-password',
     component: () => import('@/views/ForgotPasswordView.vue'),
     meta: { title: '忘记密码', guestOnly: true }
-  },
-  {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: DashboardView,
-    meta: { title: '仪表板', requiresAuth: true }
   },
   {
     path: '/qa',
