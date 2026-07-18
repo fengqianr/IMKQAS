@@ -64,11 +64,12 @@ public class DocumentController {
     /**
      * 删除文档
      * @param id 文档ID
+     * @return 操作结果
      */
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public ApiResponse<Void> delete(@PathVariable Long id) {
         service.removeById(id);
+        return ApiResponse.success();
     }
 
     /**
