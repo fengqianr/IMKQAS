@@ -1,0 +1,21 @@
+package com.imkqas;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.mybatis.spring.annotation.MapperScan;
+
+/**
+ * IMKQAS医疗知识问答系统主应用类
+ *
+ * @author 系统
+ * @version 1.0
+ */
+@SpringBootApplication
+@EnableScheduling
+@MapperScan("com.imkqas.mapper")
+public class ImkqasApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ImkqasApplication.class, args);
+    }
+}

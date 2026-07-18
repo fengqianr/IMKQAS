@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.student</groupId>
+    <groupId>com.imkqas</groupId>
     <artifactId>IMKQAS</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -275,7 +275,7 @@
                         <argument>--spring.config.location=classpath:/</argument>
                     </arguments>
                     <useTestClasspath>false</useTestClasspath>
-                    <mainClass>com.student.ImkqasApplication</mainClass>
+                    <mainClass>com.imkqas.ImkqasApplication</mainClass>
                 </configuration>
             </plugin>
             <!-- JaCoCo代码覆盖率插件 -->

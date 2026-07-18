@@ -1,0 +1,41 @@
+=== 意图识别准确率测试报告 ===
+
+测试集: 60条（KNOWLEDGE_QUERY 20条 / DATA_COLLECTION 20条 / MIXED 20条）
+测试时间: 2026-07-17
+
+【总体准确率】
+  正确分类: 59 / 60
+  准确率: 98.3%
+
+【各类意图准确率】
+  KNOWLEDGE_QUERY : 20/20 = 100.0%
+  DATA_COLLECTION : 20/20 = 100.0%
+  MIXED           : 19/20 = 95.0%
+
+【各问法准确率】
+  评估请求(assess    ): 4/4 = 100.0%
+  家人主语(family    ): 10/10 = 100.0%
+  泛化知识(generic   ): 5/5 = 100.0%
+  无我  (no_wo     ): 21/22 = 95.5%
+  带我  (with_wo   ): 19/19 = 100.0%
+
+【混淆矩阵】（行=预期, 列=实际）
+                    KNOWLEDGE_QUERY   DATA_COLLECTION   MIXED             
+  KNOWLEDGE_QUERY   20                0                 0                 
+  DATA_COLLECTION   0                 20                0                 
+  MIXED             1                 0                 19                
+
+【分类路径分布】（按耗时>=500ms推测走LLM）
+  规则/正则/缓存层: 42条 (70.0%)
+  LLM层: 18条 (30.0%)
+
+【错误分类明细】（共1条）
+  Query: "压力大到吃不下饭，有什么调节的方法？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (686ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+【结论】
+  意图识别准确率 98.3%，达到 95% 的预期目标。
+  主要错误集中在 MIXED 被误判为 KNOWLEDGE_QUERY（1条）的边界模糊场景。
+  优化方向: 补充 MIXED
+  意图的个人描述关键词规则（如"我"+疑问句式组合判定）。

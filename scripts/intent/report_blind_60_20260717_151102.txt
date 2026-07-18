@@ -1,0 +1,136 @@
+=== 意图识别准确率测试报告 ===
+
+测试集: 60条（KNOWLEDGE_QUERY 20条 / DATA_COLLECTION 20条 / MIXED 20条）
+测试时间: 2026-07-17
+
+【总体准确率】
+  正确分类: 35 / 60
+  准确率: 58.3%
+
+【各类意图准确率】
+  KNOWLEDGE_QUERY : 16/20 = 80.0%
+  DATA_COLLECTION : 18/20 = 90.0%
+  MIXED           : 1/20 = 5.0%
+
+【各问法准确率】
+  评估请求(assess    ): 3/4 = 75.0%
+  家人主语(family    ): 1/10 = 10.0%
+  泛化知识(generic   ): 5/5 = 100.0%
+  无我  (no_wo     ): 11/22 = 50.0%
+  带我  (with_wo   ): 15/19 = 78.9%
+
+【混淆矩阵】（行=预期, 列=实际）
+                    KNOWLEDGE_QUERY   DATA_COLLECTION   MIXED             
+  KNOWLEDGE_QUERY   16                0                 4                 
+  DATA_COLLECTION   2                 18                0                 
+  MIXED             18                1                 1                 
+
+【分类路径分布】（按耗时>=500ms推测走LLM）
+  规则/正则/缓存层: 38条 (63.3%)
+  LLM层: 22条 (36.7%)
+
+【错误分类明细】（共25条）
+  Query: "我想知道布洛芬的副作用有哪些"
+  预期: KNOWLEDGE_QUERY -> 实际: MIXED (0ms)
+  原因: 规则/正则层：规则覆盖不足
+
+  Query: "我想问一下缺铁性贫血吃什么补得快"
+  预期: KNOWLEDGE_QUERY -> 实际: MIXED (1ms)
+  原因: 规则/正则层：规则覆盖不足
+
+  Query: "我想了解热性惊厥会不会留后遗症"
+  预期: KNOWLEDGE_QUERY -> 实际: MIXED (0ms)
+  原因: 规则/正则层：规则覆盖不足
+
+  Query: "我想问问湿疹患儿洗澡要注意什么"
+  预期: KNOWLEDGE_QUERY -> 实际: MIXED (0ms)
+  原因: 规则/正则层：规则覆盖不足
+
+  Query: "情绪一直很低落，怎么都高兴不起来"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "帮我看看我是不是有点抑郁了"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "最近总是失眠，有什么办法能睡个好觉？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "这两周情绪特别低落，要不要去看医生？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (1ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "最近老是心慌，是不是心脏出问题了？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (1ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "最近焦虑得不行，怎么才能缓解？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "这段时间睡眠很差，吃褪黑素管用吗？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "天天晚上失眠，长期下去会不会出问题？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "心情低落了快一个月了，这算抑郁症吗？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (1ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "老是半夜惊醒，需要去医院检查吗？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (1ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "压力大到吃不下饭，有什么调节的方法？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "最近情绪波动特别大，该怎么控制？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (1ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "孩子咳嗽好几天了，吃什么药好？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "宝宝拉肚子两天了，需要禁食吗？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "娃反复发烧，会不会烧坏脑子？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "孩子身上起红疹子还很痒，该怎么办？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "家里孩子得了手足口，多久能好？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (787ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "儿子最近老说腿疼，要去查什么？"
+  预期: MIXED -> 实际: DATA_COLLECTION (606ms)
+  原因: LLM层误判（LLM将边界case判为DATA_COLLECTION）
+
+  Query: "宝宝脸色一直发白，是不是贫血？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (1ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "娃昨晚抽搐了一次，要不要去医院复查？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "孩子湿疹总不好，换什么药膏管用？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (1ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+【结论】
+  意图识别准确率 58.3%，未达到 95% 的预期目标。
+  主要错误集中在 MIXED 被误判为 KNOWLEDGE_QUERY（18条）的边界模糊场景。
+  优化方向: 补充 MIXED 意图的个人描述关键词规则（如"我"+疑问句式组合判定）。

@@ -45,7 +45,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.student: DEBUG
+    com.imkqas: DEBUG
     org.springframework: WARN
     org.hibernate: WARN
   pattern:

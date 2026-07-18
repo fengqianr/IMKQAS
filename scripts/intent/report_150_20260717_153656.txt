@@ -1,0 +1,146 @@
+=== 意图识别准确率测试报告 ===
+
+测试集: 150条（KNOWLEDGE_QUERY 50条 / DATA_COLLECTION 50条 / MIXED 50条）
+测试时间: 2026-07-17
+
+【总体准确率】
+  正确分类: 122 / 150
+  准确率: 81.3%
+
+【各类意图准确率】
+  KNOWLEDGE_QUERY : 50/50 = 100.0%
+  DATA_COLLECTION : 22/50 = 44.0%
+  MIXED           : 50/50 = 100.0%
+
+【各问法准确率】
+  口语  (colloquial): 34/50 = 68.0%
+  混合  (mixed     ): 55/55 = 100.0%
+  直白  (plain     ): 33/45 = 73.3%
+
+【混淆矩阵】（行=预期, 列=实际）
+                    KNOWLEDGE_QUERY   DATA_COLLECTION   MIXED             
+  KNOWLEDGE_QUERY   50                0                 0                 
+  DATA_COLLECTION   28                22                0                 
+  MIXED             0                 0                 50                
+
+【分类路径分布】（按耗时>=500ms推测走LLM）
+  规则/正则/缓存层: 145条 (96.7%)
+  LLM层: 5条 (3.3%)
+
+【错误分类明细】（共28条）
+  Query: "我想做一个焦虑自评"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (37ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "帮我评估一下睡眠质量"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (21ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "给我做个PHQ-9量表"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (24ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我想测试自己是否有焦虑症"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (10ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "帮我做失眠量表评估"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (12ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我需要做心理健康筛查"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (13ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我想评估一下最近的情绪状态"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (19ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "帮我筛查一下抑郁倾向"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (22ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "做个睡眠质量测评"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (14ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我想填一下GAD-7量表"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (12ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "测一测我的失眠严重程度"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (27ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "请帮我评估心理状态"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (11ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我最近情绪很低落"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (14ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我这两周心情特别差"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (11ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我最近对什么都提不起兴趣"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (10ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我老是半夜醒过来"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (12ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我心里总是慌慌的"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (14ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我入睡特别困难，要躺很久才能睡着"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (13ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我经常凌晨三四点就醒了"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (13ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我最近心情很差，看什么都不顺眼"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (13ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我晚上翻来覆去睡不着"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (16ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我做什么事都没有兴趣，也不想动"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (18ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我情绪一直很消沉"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (11ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我很难放松下来"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (12ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我最近老是走神，注意力不集中"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (18ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我白天没精神，晚上又睡不着"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (42ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我这段时间一直高兴不起来，也不想出门"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (10ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "我最近饭量变得特别大，控制不住地吃"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (13ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+【结论】
+  意图识别准确率 81.3%，未达到 95% 的预期目标。
+  主要错误集中在 DATA_COLLECTION 被误判为 KNOWLEDGE_QUERY（28条）的边界模糊场景。
+  优化方向: 扩充数据采集关键词/问卷触发词覆盖。

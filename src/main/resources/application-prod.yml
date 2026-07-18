@@ -70,7 +70,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.student: INFO
+    com.imkqas: INFO
     org.springframework: INFO
     org.hibernate.SQL: WARN
   file:

@@ -1,0 +1,48 @@
+=== 意图识别准确率测试报告 ===
+
+测试集: 60条（KNOWLEDGE_QUERY 20条 / DATA_COLLECTION 20条 / MIXED 20条）
+测试时间: 2026-07-17
+
+【总体准确率】
+  正确分类: 57 / 60
+  准确率: 95.0%
+
+【各类意图准确率】
+  KNOWLEDGE_QUERY : 20/20 = 100.0%
+  DATA_COLLECTION : 18/20 = 90.0%
+  MIXED           : 19/20 = 95.0%
+
+【各问法准确率】
+  评估请求(assess    ): 3/4 = 75.0%
+  家人主语(family    ): 10/10 = 100.0%
+  泛化知识(generic   ): 5/5 = 100.0%
+  无我  (no_wo     ): 20/22 = 90.9%
+  带我  (with_wo   ): 19/19 = 100.0%
+
+【混淆矩阵】（行=预期, 列=实际）
+                    KNOWLEDGE_QUERY   DATA_COLLECTION   MIXED             
+  KNOWLEDGE_QUERY   20                0                 0                 
+  DATA_COLLECTION   2                 18                0                 
+  MIXED             1                 0                 19                
+
+【分类路径分布】（按耗时>=500ms推测走LLM）
+  规则/正则/缓存层: 60条 (100.0%)
+  LLM层: 0条 (0.0%)
+
+【错误分类明细】（共3条）
+  Query: "情绪一直很低落，怎么都高兴不起来"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (14ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "帮我看看我是不是有点抑郁了"
+  预期: DATA_COLLECTION -> 实际: KNOWLEDGE_QUERY (24ms)
+  原因: 规则/正则层：个人症状描述关键词未覆盖，被判为知识查询（可能兜底）
+
+  Query: "压力大到吃不下饭，有什么调节的方法？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (21ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+【结论】
+  意图识别准确率 95.0%，达到 95% 的预期目标。
+  主要错误集中在 DATA_COLLECTION 被误判为 KNOWLEDGE_QUERY（2条）的边界模糊场景。
+  优化方向: 扩充数据采集关键词/问卷触发词覆盖。

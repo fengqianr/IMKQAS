@@ -97,7 +97,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.student: DEBUG
+    com.imkqas: DEBUG
     org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
@@ -251,17 +251,17 @@ imkqas:
       # 查询结果缓存
       query:
         enabled: true
-        ttl: 3600  # 1小时
+        ttl: 2147483647
         max-size: 1000
       # 嵌入向量缓存
       embedding:
         enabled: true
-        ttl: 86400  # 24小时
+        ttl: 2147483647
         max-size: 10000
       # LLM响应缓存
       llm:
         enabled: true
-        ttl: 1800  # 30分钟
+        ttl: 2147483647
         max-size: 500
 
     # SNOMED CT 配置
@@ -356,7 +356,7 @@ imkqas:
       # 是否启用语义缓存
       enabled: true
       # Redis缓存TTL（秒），作为最终兜底（超过则缓存自动失效，懒加载重建）
-      ttl: 7200
+      ttl: 2147483647
       # 分布式锁等待超时（秒）
       lock-wait-timeout: 5
       # 分布式锁TTL（秒），防止死锁

@@ -8,7 +8,7 @@
 
 - **项目类型**：基于 Spring Boot + MyBatis Plus 的 Java Web 项目
 - **Java 版本**：21（在 pom.xml 中配置）
-- **主类**：`com.student.ImkqasApplication`（Spring Boot 启动类）
+- **主类**：`com.imkqas.ImkqasApplication`（Spring Boot 启动类）
 - **项目状态**：医疗知识问答系统（IMKQAS），包含用户、文档、对话等完整业务模块
 
 ## 常用开发任务
@@ -16,9 +16,9 @@
 ### 构建和运行
 
 - **编译项目**：`mvn compile`
-- **运行测试**：`mvn test`（目前没有测试）。运行单个测试：`mvn test -Dtest=测试类名`
+- **运行测试**：`mvn test`。运行单个测试：`mvn test -Dtest=测试类名`
 - **打包项目**：`mvn package`（在 `target/` 目录生成 JAR 文件）
-- **运行主类**：`mvn exec:java -Dexec.mainClass="com.student.Main"`
+- **运行应用**：`mvn spring-boot:run`
 - **清理构建**：`mvn clean`
 - **跳过测试**：`mvn clean install -DskipTests`
 
@@ -29,13 +29,20 @@ IMKQAS/
 ├── pom.xml                    # Maven 项目配置文件
 ├── src/
 │   ├── main/
-│   │   ├── java/             # Java 源代码目录
-│   │   │   └── com/student/  # 包目录结构
-│   │   │       └── Main.java # 主类文件
-│   │   └── resources/        # 资源文件目录（如配置文件）
+│   │   ├── java/
+│   │   │   └── com/imkqas/   # 包目录结构
+│   │   │       ├── ImkqasApplication.java  # Spring Boot 启动类
+│   │   │       ├── controller/  # 控制器（qa/rag/his/drug/triage/evaluation）
+│   │   │       ├── service/     # 服务层（rag/his/document/drug/triage/evaluation/export/snomed/common）
+│   │   │       ├── entity/      # 实体类
+│   │   │       ├── mapper/      # MyBatis Plus Mapper
+│   │   │       ├── config/      # 配置类
+│   │   │       └── utils/       # 工具类
+│   │   └── resources/        # 配置文件、Flyway 迁移脚本（db/migration）
 │   └── test/
-│       ├── java/             # 测试代码目录
+│       ├── java/com/imkqas/  # 测试代码目录（与主代码同包结构）
 │       └── resources/        # 测试资源文件
+├── frontend/                 # Vue 3 前端
 └── target/                   # 构建输出目录（被 .gitignore 忽略）
 ```
 
@@ -78,7 +85,7 @@ IMKQAS/
 
 ### 命名约定
 
-1. **包名**：全小写，使用逆域名格式（如 `com.student.utils`）
+1. **包名**：全小写，使用逆域名格式（如 `com.imkqas.utils`）
 2. **类名**：大驼峰命名法（如 `StudentService`、`UserController`）
 3. **接口名**：大驼峰命名法，通常以 `able`、`er` 结尾（如 `Runnable`、`Formatter`）
 4. **方法名**：小驼峰命名法（如 `getStudentInfo`、`saveUserData`）
@@ -369,10 +376,10 @@ when(executorService.submit(any(Callable.class))).thenAnswer(invocation -> {
 3. **重要依赖版本**：
    - Milvus SDK: 2.3.6（注意 API 变更，见"第三方库集成"章节）
    - MinIO SDK: 8.5.10（注意 Builder 模式 API，见"第三方库集成"章节）
-   - MyBatis Plus: 3.5.7
+   - MyBatis Plus: 3.5.5
    - Spring Boot: 3.2.5
    - Java: 21
-4. 测试目录存在但当前没有测试文件，需要补充单元测试
+4. 测试代码位于 `src/test/java/com/imkqas`（约 48 个测试类），新增功能时需同步补充单元测试
 5. 所有生成的代码都应包含中文注释和文档
 6. 与用户交互时使用专业、简洁的中文
 7. 数据访问使用 MyBatis Plus，不再使用 JPA/jakarta 相关注解

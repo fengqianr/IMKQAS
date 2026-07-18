@@ -1,0 +1,198 @@
+=== 意图识别准确率测试报告 ===
+
+测试集: 150条（三类意图各50条）
+测试时间: 2026-07-16
+
+【总体准确率】
+  正确分类: 109 / 150
+  准确率: 72.7%
+
+【各类意图准确率】
+  KNOWLEDGE_QUERY : 48/50 = 96.0%
+  DATA_COLLECTION : 50/50 = 100.0%
+  MIXED           : 11/50 = 22.0%
+
+【各问法准确率】
+  口语  (colloquial): 49/50 = 98.0%
+  混合  (mixed     ): 15/55 = 27.3%
+  直白  (plain     ): 45/45 = 100.0%
+
+【混淆矩阵】（行=预期, 列=实际）
+                    KNOWLEDGE_QUERY   DATA_COLLECTION   MIXED             
+  KNOWLEDGE_QUERY   48                2                 0                 
+  DATA_COLLECTION   0                 50                0                 
+  MIXED             11                28                11                
+
+【分类路径分布】（按耗时>=500ms推测走LLM）
+  规则/正则/缓存层: 92条 (61.3%)
+  LLM层: 58条 (38.7%)
+
+【错误分类明细】（共41条）
+  Query: "贫血是不是多吃红枣就行了？"
+  预期: KNOWLEDGE_QUERY -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：知识提问误命中数据采集关键词/正则
+
+  Query: "缺铁性贫血除了吃药还能怎么补？"
+  预期: KNOWLEDGE_QUERY -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：知识提问误命中数据采集关键词/正则
+
+  Query: "我最近头痛，该怎么缓解？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "我最近总是失眠，吃什么药能改善？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我情绪很低落，需要去看心理医生吗？"
+  预期: MIXED -> 实际: DATA_COLLECTION (667ms)
+  原因: LLM层误判（LLM将边界case判为DATA_COLLECTION）
+
+  Query: "我最近很焦虑，怎么才能放松下来？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我睡不好已经一个月了，怎么治？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我经常心慌，是不是焦虑症的表现？"
+  预期: MIXED -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近吃不下饭，是抑郁了吗？"
+  预期: MIXED -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我总是半夜醒，需要吃安眠药吗？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我心情很差，有什么自我调节的方法？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (568ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "我最近老是紧张出汗，该做什么检查？"
+  预期: MIXED -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我家孩子拉肚子三天了，要不要去医院？"
+  预期: MIXED -> 实际: DATA_COLLECTION (895ms)
+  原因: LLM层误判（LLM将边界case判为DATA_COLLECTION）
+
+  Query: "我儿子得了手足口病，我要怎么护理他？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我孩子昨晚热性惊厥了，会不会有后遗症？"
+  预期: MIXED -> 实际: DATA_COLLECTION (654ms)
+  原因: LLM层误判（LLM将边界case判为DATA_COLLECTION）
+
+  Query: "我孩子最近脸色发黄，是不是贫血了？"
+  预期: MIXED -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我家娃咳嗽一周了，会不会是肺炎？"
+  预期: MIXED -> 实际: DATA_COLLECTION (423ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近情绪低落还失眠，应该先治哪个？"
+  预期: MIXED -> 实际: DATA_COLLECTION (2ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我总是焦虑得睡不着，吃褪黑素有用吗？"
+  预期: MIXED -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近压力大到头疼，该怎么办？"
+  预期: MIXED -> 实际: DATA_COLLECTION (533ms)
+  原因: LLM层误判（LLM将边界case判为DATA_COLLECTION）
+
+  Query: "我最近一躺下就胡思乱想，怎么才能快速入睡？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (717ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "我情绪波动很大，需要做什么检查吗？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "我最近总是疲惫没精神，是抑郁的症状吗？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近容易发脾气，怎么控制情绪？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (506ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "我心慌手抖好几天了，要挂什么科？"
+  预期: MIXED -> 实际: DATA_COLLECTION (437ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近不想上班不想社交，这是抑郁症吗？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我睡前焦虑得厉害，有什么放松技巧？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我孩子肺炎刚出院，回家要注意什么？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (610ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "我孩子惊厥过一次，以后发烧要怎么预防？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (0ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "我宝宝湿疹总反复，要忌口什么食物？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (592ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "我孩子查出缺铁性贫血，饮食上怎么补铁？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (815ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "我家娃毛细支气管炎住院了，出院后会复发吗？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (437ms)
+  原因: 规则/正则层：命中知识关键词但个人描述特征未被规则识别
+
+  Query: "我最近失眠还心慌，是焦虑症还是心脏有问题？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我这两周一直高兴不起来，要不要做个抑郁筛查？"
+  预期: MIXED -> 实际: DATA_COLLECTION (341ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我总是早醒，白天没精神，怎么调整作息？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近记性变差还失眠，是什么原因？"
+  预期: MIXED -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我情绪低落的时候暴饮暴食，怎么改掉？"
+  预期: MIXED -> 实际: KNOWLEDGE_QUERY (724ms)
+  原因: LLM层误判（LLM将边界case判为KNOWLEDGE_QUERY）
+
+  Query: "我最近焦虑到吃不下饭，有什么快速缓解的办法？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我睡不好导致白天头晕，需要吃什么药调理？"
+  预期: MIXED -> 实际: DATA_COLLECTION (1ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近心情烦躁看什么都烦，是不是该看医生了？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+  Query: "我最近半夜惊醒后就睡不着，这是焦虑的表现吗？"
+  预期: MIXED -> 实际: DATA_COLLECTION (0ms)
+  原因: 规则/正则层：命中个人描述/问卷关键词但知识提问特征未被规则识别
+
+【结论】
+  意图识别准确率 72.7%，未达到 95% 的预期目标。
+  主要错误集中在 MIXED 被误判为 DATA_COLLECTION（28条）的边界模糊场景。
+  优化方向: 补充 MIXED 意图的个人描述关键词规则（如"我"+疑问句式组合判定）。

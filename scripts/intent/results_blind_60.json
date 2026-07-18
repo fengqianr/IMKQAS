@@ -1,0 +1,546 @@
+{
+  "testTime": "2026-07-17 17:03:13",
+  "elapsedSeconds": 63.3,
+  "results": [
+    {
+      "id": 201,
+      "query": "请告诉我肺炎的症状有哪些",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 202,
+      "query": "请给我讲讲哮喘的治疗方法",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 203,
+      "query": "我想知道布洛芬的副作用有哪些",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 1,
+      "correct": true
+    },
+    {
+      "id": 204,
+      "query": "我想了解一下手足口病的传播途径",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 205,
+      "query": "请帮我解释一下什么是热性惊厥",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 206,
+      "query": "我想问一下缺铁性贫血吃什么补得快",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 207,
+      "query": "请告诉我腹泻的时候能不能吃鸡蛋",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 208,
+      "query": "我想咨询一下特应性皮炎的日常护理方法",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 209,
+      "query": "给我科普一下毛细支气管炎和肺炎的区别",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 210,
+      "query": "帮我查一下阿莫西林的儿童用量",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 211,
+      "query": "我想知道退烧药多久吃一次比较安全",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 212,
+      "query": "请给我介绍一下小儿腹泻的预防措施",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 213,
+      "query": "我想了解热性惊厥会不会留后遗症",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 214,
+      "query": "告诉我益生菌应该怎么给孩子吃",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 215,
+      "query": "我想问问湿疹患儿洗澡要注意什么",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "with_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 216,
+      "query": "儿童发烧的常见原因是什么？",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "generic",
+      "costMs": 707,
+      "correct": true
+    },
+    {
+      "id": 217,
+      "query": "手足口病流行季节是什么时候？",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "generic",
+      "costMs": 683,
+      "correct": true
+    },
+    {
+      "id": 218,
+      "query": "哮喘患儿运动时要注意什么？",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "generic",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 219,
+      "query": "缺铁性贫血会影响孩子发育吗？",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "generic",
+      "costMs": 631,
+      "correct": true
+    },
+    {
+      "id": 220,
+      "query": "蒙脱石散和益生菌能一起吃吗？",
+      "expected": "KNOWLEDGE_QUERY",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "generic",
+      "costMs": 473,
+      "correct": true
+    },
+    {
+      "id": 221,
+      "query": "最近老是失眠，整个人都快垮了",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 468,
+      "correct": true
+    },
+    {
+      "id": 222,
+      "query": "这两周心情特别低落，啥也不想干",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 357,
+      "correct": true
+    },
+    {
+      "id": 223,
+      "query": "晚上翻来覆去睡不着，白天完全没精神",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 564,
+      "correct": true
+    },
+    {
+      "id": 224,
+      "query": "心里总是烦得很，看谁都不顺眼",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 817,
+      "correct": true
+    },
+    {
+      "id": 225,
+      "query": "最近对什么都提不起兴趣，也不想说话",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 685,
+      "correct": true
+    },
+    {
+      "id": 226,
+      "query": "这段时间特别容易紧张，手心老是出汗",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 682,
+      "correct": true
+    },
+    {
+      "id": 227,
+      "query": "半夜老是醒，醒了就再也睡不着了",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 592,
+      "correct": true
+    },
+    {
+      "id": 228,
+      "query": "感觉压力好大，快喘不过气了",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 375,
+      "correct": true
+    },
+    {
+      "id": 229,
+      "query": "最近吃不下饭，整个人瘦了一圈",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 692,
+      "correct": true
+    },
+    {
+      "id": 230,
+      "query": "情绪一直很低落，怎么都高兴不起来",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 557,
+      "correct": true
+    },
+    {
+      "id": 231,
+      "query": "一到晚上就胡思乱想，根本停不下来",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 522,
+      "correct": true
+    },
+    {
+      "id": 232,
+      "query": "这几天心神不宁的，总觉得要出事",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "no_wo",
+      "costMs": 848,
+      "correct": true
+    },
+    {
+      "id": 233,
+      "query": "帮我看看我是不是有点抑郁了",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "assess",
+      "costMs": 473,
+      "correct": true
+    },
+    {
+      "id": 234,
+      "query": "想做个心理测试看看自己现在的状态",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "assess",
+      "costMs": 401,
+      "correct": true
+    },
+    {
+      "id": 235,
+      "query": "测一下我现在的焦虑水平",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "assess",
+      "costMs": 523,
+      "correct": true
+    },
+    {
+      "id": 236,
+      "query": "整宿整宿睡不着，想做个睡眠评估",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "assess",
+      "costMs": 729,
+      "correct": true
+    },
+    {
+      "id": 237,
+      "query": "我这阵子老是心神不宁，坐也不是站也不是",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "with_wo",
+      "costMs": 401,
+      "correct": true
+    },
+    {
+      "id": 238,
+      "query": "我这几天天天做噩梦，睡得特别浅",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "with_wo",
+      "costMs": 523,
+      "correct": true
+    },
+    {
+      "id": 239,
+      "query": "我现在满脑子都是乱七八糟的事，静不下心",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "with_wo",
+      "costMs": 473,
+      "correct": true
+    },
+    {
+      "id": 240,
+      "query": "我胃口越来越差，也没什么食欲",
+      "expected": "DATA_COLLECTION",
+      "predicted": "DATA_COLLECTION",
+      "style": "with_wo",
+      "costMs": 619,
+      "correct": true
+    },
+    {
+      "id": 241,
+      "query": "最近总是失眠，有什么办法能睡个好觉？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 242,
+      "query": "这两周情绪特别低落，要不要去看医生？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 243,
+      "query": "最近老是心慌，是不是心脏出问题了？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 244,
+      "query": "最近焦虑得不行，怎么才能缓解？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 245,
+      "query": "这段时间睡眠很差，吃褪黑素管用吗？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 246,
+      "query": "天天晚上失眠，长期下去会不会出问题？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 247,
+      "query": "心情低落了快一个月了，这算抑郁症吗？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 248,
+      "query": "老是半夜惊醒，需要去医院检查吗？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 249,
+      "query": "压力大到吃不下饭，有什么调节的方法？",
+      "expected": "MIXED",
+      "predicted": "KNOWLEDGE_QUERY",
+      "style": "no_wo",
+      "costMs": 686,
+      "correct": false
+    },
+    {
+      "id": 250,
+      "query": "最近情绪波动特别大，该怎么控制？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "no_wo",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 251,
+      "query": "孩子咳嗽好几天了，吃什么药好？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 252,
+      "query": "宝宝拉肚子两天了，需要禁食吗？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 253,
+      "query": "娃反复发烧，会不会烧坏脑子？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 254,
+      "query": "孩子身上起红疹子还很痒，该怎么办？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 255,
+      "query": "家里孩子得了手足口，多久能好？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 1,
+      "correct": true
+    },
+    {
+      "id": 256,
+      "query": "儿子最近老说腿疼，要去查什么？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 257,
+      "query": "女儿哮喘犯了，雾化几天能见效？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 692,
+      "correct": true
+    },
+    {
+      "id": 258,
+      "query": "宝宝脸色一直发白，是不是贫血？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 259,
+      "query": "娃昨晚抽搐了一次，要不要去医院复查？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    },
+    {
+      "id": 260,
+      "query": "孩子湿疹总不好，换什么药膏管用？",
+      "expected": "MIXED",
+      "predicted": "MIXED",
+      "style": "family",
+      "costMs": 0,
+      "correct": true
+    }
+  ]
+}
