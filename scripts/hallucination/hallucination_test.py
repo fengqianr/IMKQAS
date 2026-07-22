@@ -12,7 +12,7 @@ RAG 幻觉率测试脚本（四分类版）
 判断"知识库是否有相关知识"的依据：查询时同步记录的检索日志（citations/retrievedContext），
 满足以下任一条件视为"检索到相关文档"：
   - 检索片段(snippet/title/上下文)包含 >=2 个期望关键词
-  - 重排序分数 relevanceScore >= 0.6
+  - 重排序分数 relevanceScore >= 0.55
   - 片段与问题的 ROUGE-L >= 0.2 或 字符二元组余弦相似度 >= 0.6
 
 用法:

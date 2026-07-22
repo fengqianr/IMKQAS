@@ -1,0 +1,164 @@
+{
+  "description": "LLM置信度阈值扫描 — 准确率 vs 覆盖率",
+  "sampleSize": 500,
+  "thresholdRange": [
+    0.1,
+    0.9,
+    0.05
+  ],
+  "results": [
+    {
+      "threshold": 0.1,
+      "total": 500,
+      "accepted": 497,
+      "correct": 462,
+      "incorrect": 35,
+      "accuracy": 0.9296,
+      "coverage": 0.994
+    },
+    {
+      "threshold": 0.15,
+      "total": 500,
+      "accepted": 269,
+      "correct": 238,
+      "incorrect": 31,
+      "accuracy": 0.8848,
+      "coverage": 0.538
+    },
+    {
+      "threshold": 0.2,
+      "total": 500,
+      "accepted": 269,
+      "correct": 238,
+      "incorrect": 31,
+      "accuracy": 0.8848,
+      "coverage": 0.538
+    },
+    {
+      "threshold": 0.25,
+      "total": 500,
+      "accepted": 269,
+      "correct": 238,
+      "incorrect": 31,
+      "accuracy": 0.8848,
+      "coverage": 0.538
+    },
+    {
+      "threshold": 0.3,
+      "total": 500,
+      "accepted": 247,
+      "correct": 217,
+      "incorrect": 30,
+      "accuracy": 0.8785,
+      "coverage": 0.494
+    },
+    {
+      "threshold": 0.35,
+      "total": 500,
+      "accepted": 247,
+      "correct": 217,
+      "incorrect": 30,
+      "accuracy": 0.8785,
+      "coverage": 0.494
+    },
+    {
+      "threshold": 0.4,
+      "total": 500,
+      "accepted": 245,
+      "correct": 216,
+      "incorrect": 29,
+      "accuracy": 0.8816,
+      "coverage": 0.49
+    },
+    {
+      "threshold": 0.45,
+      "total": 500,
+      "accepted": 238,
+      "correct": 210,
+      "incorrect": 28,
+      "accuracy": 0.8824,
+      "coverage": 0.476
+    },
+    {
+      "threshold": 0.5,
+      "total": 500,
+      "accepted": 238,
+      "correct": 210,
+      "incorrect": 28,
+      "accuracy": 0.8824,
+      "coverage": 0.476
+    },
+    {
+      "threshold": 0.55,
+      "total": 500,
+      "accepted": 238,
+      "correct": 210,
+      "incorrect": 28,
+      "accuracy": 0.8824,
+      "coverage": 0.476
+    },
+    {
+      "threshold": 0.6,
+      "total": 500,
+      "accepted": 234,
+      "correct": 207,
+      "incorrect": 27,
+      "accuracy": 0.8846,
+      "coverage": 0.468
+    },
+    {
+      "threshold": 0.65,
+      "total": 500,
+      "accepted": 225,
+      "correct": 199,
+      "incorrect": 26,
+      "accuracy": 0.8844,
+      "coverage": 0.45
+    },
+    {
+      "threshold": 0.7,
+      "total": 500,
+      "accepted": 219,
+      "correct": 194,
+      "incorrect": 25,
+      "accuracy": 0.8858,
+      "coverage": 0.438
+    },
+    {
+      "threshold": 0.75,
+      "total": 500,
+      "accepted": 207,
+      "correct": 183,
+      "incorrect": 24,
+      "accuracy": 0.8841,
+      "coverage": 0.414
+    },
+    {
+      "threshold": 0.8,
+      "total": 500,
+      "accepted": 207,
+      "correct": 183,
+      "incorrect": 24,
+      "accuracy": 0.8841,
+      "coverage": 0.414
+    },
+    {
+      "threshold": 0.85,
+      "total": 500,
+      "accepted": 206,
+      "correct": 183,
+      "incorrect": 23,
+      "accuracy": 0.8883,
+      "coverage": 0.412
+    },
+    {
+      "threshold": 0.9,
+      "total": 500,
+      "accepted": 194,
+      "correct": 175,
+      "incorrect": 19,
+      "accuracy": 0.9021,
+      "coverage": 0.388
+    }
+  ]
+}

@@ -149,6 +149,23 @@ public class MultiFactorRerankServiceImpl implements MultiFactorRerankService {
         return rerank(query, results, 5); // 默认 top5
     }
 
+    /**
+     * 获取单个检索结果的五因子分解分数，用于离线权重网格搜索。
+     * 返回 Map 包含 authority、timeliness、semantic、intent、hierarchy 五项。
+     */
+    public Map<String, Double> getFactorBreakdown(String query,
+                                                   MultiRetrievalService.RetrievalResult result,
+                                                   double semanticScore) {
+        Map<String, Double> factors = new LinkedHashMap<>();
+        factors.put("authority", calculateAuthority(result));
+        factors.put("timeliness", calculateTimeliness(result));
+        factors.put("semantic", clamp(semanticScore, 0.0, 1.0));
+        factors.put("intent", calculateIntentRelevance(query, result));
+        factors.put("hierarchy", ragConfig.getMultiFactorRerank().isHierarchyEnabled()
+                ? calculateHierarchyRelevance(query, result) : 0.5);
+        return factors;
+    }
+
     @Override
     public double calculateFinalScore(String query,
                                       MultiRetrievalService.RetrievalResult result,

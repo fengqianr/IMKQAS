@@ -21,7 +21,7 @@ REQUEST_TIMEOUT = 60
 # ============================================================
 # 路径配置
 # ============================================================
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 TEST_SCENARIOS_PATH = os.path.join(PROJECT_ROOT, "scripts", "test_scenarios.json")
 
 CACHE_DIR = os.path.join(PROJECT_ROOT, "scripts", "confidence_tuning_cache")

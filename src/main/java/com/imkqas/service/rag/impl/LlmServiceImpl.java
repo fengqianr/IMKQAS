@@ -127,6 +127,11 @@ public class LlmServiceImpl implements LlmService {
 
     @Override
     public String generateAnswer(String query, List<String> context) {
+        return generateAnswerWithConfidence(query, context).getAnswer();
+    }
+
+    @Override
+    public GenerateResult generateAnswerWithConfidence(String query, List<String> context) {
         long startTime = System.currentTimeMillis();
         totalCalls.incrementAndGet();
 
@@ -143,7 +148,8 @@ public class LlmServiceImpl implements LlmService {
                 log.debug("LLM本地缓存命中: query={}, cacheKey={}",
                         query.substring(0, Math.min(query.length(), 50)), cacheKey);
                 updateStats(true, startTime, 0, 0);
-                return cachedAnswer;
+                // 缓存中的回答是已清理的，无法提取置信度，保守返回最低值
+                return new GenerateResult(cachedAnswer, 0.1);
             }
 
             // 2.2 检查Redis缓存
@@ -156,7 +162,7 @@ public class LlmServiceImpl implements LlmService {
                     // 回填本地缓存
                     localCache.put(cacheKey, redisAnswer);
                     updateStats(true, startTime, 0, 0);
-                    return redisAnswer;
+                    return new GenerateResult(redisAnswer, 0.1);
                 }
             }
         }
@@ -173,30 +179,44 @@ public class LlmServiceImpl implements LlmService {
             // 4. 调用LLM API
             LlmApiResponse response = callLlmApi(prompt);
 
-            // 5. 提取回答
-            String answer = extractAnswerFromResponse(response);
+            // 5. 提取原始回答
+            String rawAnswer = extractAnswerFromResponse(response);
 
-            // 6. 缓存回答（多级缓存）
-            if (ragConfig.getCache().getLlm().isEnabled() && answer != null && !answer.trim().isEmpty()) {
+            // DEBUG: 检查LLM是否输出了confidence行
+            log.warn("[DEBUG] LLM原始回答全文 (len={}): >>>{}<<<",
+                    rawAnswer != null ? rawAnswer.length() : 0, rawAnswer);
+
+            // 6. 提取 LLM 原生置信度
+            double llmConfidence = extractConfidence(rawAnswer);
+
+            // 7. 清理回答（移除置信度行）
+            String cleanAnswer = stripConfidenceLine(rawAnswer);
+
+            // 8. 缓存清理后的回答（多级缓存）
+            if (ragConfig.getCache().getLlm().isEnabled() && cleanAnswer != null && !cleanAnswer.trim().isEmpty()) {
                 String cacheKey = generateCacheKey(normalizedQuery, context);
-                // 6.1 写入Redis
-                redisService.set(cacheKey, answer, (long) ragConfig.getCache().getLlm().getTtl());
-                // 6.2 写入本地缓存
-                localCache.put(cacheKey, answer);
-                log.debug("LLM回答缓存设置: query={}, cacheKey={}",
-                        query.substring(0, Math.min(query.length(), 50)), cacheKey);
+                // 8.1 写入Redis
+                redisService.set(cacheKey, cleanAnswer, (long) ragConfig.getCache().getLlm().getTtl());
+                // 8.2 写入本地缓存
+                localCache.put(cacheKey, cleanAnswer);
+                log.debug("LLM回答缓存设置: query={}, cacheKey={}, confidence={}",
+                        query.substring(0, Math.min(query.length(), 50)), cacheKey,
+                        String.format("%.2f", llmConfidence));
             }
 
-            // 7. 更新统计信息
+            // 9. 更新统计信息
             updateStats(true, startTime, response.getTokensGenerated(), response.getTokensConsumed());
 
-            return answer;
+            log.info("LLM生成完成: confidence={}, answerLength={}",
+                    String.format("%.2f", llmConfidence), cleanAnswer != null ? cleanAnswer.length() : 0);
+
+            return new GenerateResult(cleanAnswer, llmConfidence);
 
         } catch (Exception e) {
             log.error("LLM生成回答异常: query={}", query, e);
             updateErrorStats(e);
             updateStats(false, startTime, 0, 0);
-            return getFallbackAnswer(query, e);
+            return new GenerateResult(getFallbackAnswer(query, e), 0.1);
         }
     }
 
@@ -240,12 +260,13 @@ public class LlmServiceImpl implements LlmService {
 
     @Override
     public AnswerWithCitations generateAnswerWithCitations(String query, List<ContextWithSource> contextWithSources) {
-        // 先生成回答
+        // 先生成回答（含置信度）
         List<String> contextContents = new ArrayList<>();
         for (ContextWithSource ctx : contextWithSources) {
             contextContents.add(ctx.getContent());
         }
-        String answer = generateAnswer(query, contextContents);
+        GenerateResult genResult = generateAnswerWithConfidence(query, contextContents);
+        String answer = genResult.getAnswer();
 
         // 多策略引用匹配：句子匹配 → 滑动窗口 → 关键词子串
         List<Citation> citations = new ArrayList<>();
@@ -261,7 +282,7 @@ public class LlmServiceImpl implements LlmService {
 
         // 按在回答中出现的位置排序
         citations.sort(Comparator.comparingInt(Citation::getPosition));
-        return new AnswerWithCitations(answer, citations);
+        return new AnswerWithCitations(answer, citations, genResult.getConfidence());
     }
 
     /**
@@ -628,10 +649,17 @@ public class LlmServiceImpl implements LlmService {
 
         // ═══ 回答要求 ═══
         prompt.append("【回答要求】\n");
-        prompt.append("请基于以上参考知识片段回答。如果无法回答，务必说「当前知识不足，建议咨询医生」。\n");
-        prompt.append("涉及诊断或治疗时，必须强调「此信息仅供参考，不能替代专业医疗建议」。\n\n");
+        prompt.append("1. 基于以上参考知识片段回答。如果无法回答，务必说「当前知识不足，建议咨询医生」。\n");
+        prompt.append("2. 涉及诊断或治疗时，必须强调「此信息仅供参考，不能替代专业医疗建议」。\n\n");
 
-        prompt.append("回答：");
+        prompt.append("【输出格式 - 严格执行】\n");
+        prompt.append("你的回答必须以单独一行 \"confidence: X.XX\" 结尾。\n");
+        prompt.append("其中 X.XX 是0.00~1.00之间的数值，表示你对该回答的把握程度。\n");
+        prompt.append("示例格式：\n");
+        prompt.append("感冒是上呼吸道病毒感染引起的常见疾病...（正文）\n");
+        prompt.append("confidence: 0.85\n\n");
+
+        prompt.append("请回答：");
 
         return prompt.toString();
     }
@@ -813,16 +841,131 @@ public class LlmServiceImpl implements LlmService {
     private String extractAnswerFromResponse(LlmApiResponse response) {
         String answer = response.getAnswer();
 
-        // 清理回答：移除多余的空白、标记等
         if (answer != null) {
             answer = answer.trim();
-            // 如果回答以"回答："开头，移除它
+            // 尝试从JSON格式中提取 answer 字段
+            String jsonAnswer = tryExtractJsonField(answer, "answer");
+            if (jsonAnswer != null) {
+                return jsonAnswer.trim();
+            }
+            // 移除可能的前缀标记
             if (answer.startsWith("回答：")) {
                 answer = answer.substring(3).trim();
+            } else if (answer.startsWith("请回答：")) {
+                answer = answer.substring(4).trim();
+            } else if (answer.startsWith("请回答:")) {
+                answer = answer.substring(4).trim();
             }
         }
 
         return answer;
+    }
+
+    /**
+     * 从 LLM 回答中提取置信度分数
+     * 匹配模式: "confidence: 0.XX" 或 "confidence: 0.XX"（大小写不敏感）
+     *
+     * @param answer LLM 原始回答
+     * @return 置信度分数（0.0~1.0），未找到时返回 0.0
+     */
+    double extractConfidence(String answer) {
+        if (answer == null || answer.trim().isEmpty()) {
+            return 0.1;
+        }
+        // 1. 优先尝试从JSON格式中提取
+        Double jsonConf = tryExtractJsonDoubleField(answer, "confidence");
+        if (jsonConf != null) {
+            return Math.max(0.1, Math.min(1.0, jsonConf));
+        }
+        // 2. 回退到正则匹配 "confidence: X.XX"
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                "confidence\\s*[:：]\\s*(0?\\.\\d+|1\\.0|1\\.00|1|0)([^\\d]|$)",
+                java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
+        java.util.regex.Matcher matcher = pattern.matcher(answer);
+        if (matcher.find()) {
+            try {
+                double confidence = Double.parseDouble(matcher.group(1));
+                return Math.max(0.1, Math.min(1.0, confidence));
+            } catch (NumberFormatException e) {
+                log.warn("置信度解析失败: {}", matcher.group(1));
+            }
+        }
+        // 3. 兜底：基于回答内容推断置信度
+        return inferConfidenceFromAnswer(answer);
+    }
+
+    /**
+     * 基于回答内容推断置信度（当LLM未显式输出置信度时使用）
+     */
+    private double inferConfidenceFromAnswer(String answer) {
+        if (answer == null || answer.trim().isEmpty()) {
+            return 0.1;
+        }
+        double confidence = 0.5;
+        // 知识不足/拒答模式 → 低置信度
+        if (answer.contains("当前知识不足") || answer.contains("建议咨询医生")
+                || answer.contains("无法回答") || answer.contains("不知道")
+                || answer.contains("没有相关信息") || answer.contains("无法提供")) {
+            confidence -= 0.3;
+        }
+        // 回答较长且结构完整 → 偏高的置信度
+        if (answer.length() > 200) {
+            confidence += 0.2;
+        } else if (answer.length() > 80) {
+            confidence += 0.1;
+        }
+        return Math.max(0.1, Math.min(1.0, confidence));
+    }
+
+    /**
+     * 尝试从JSON字符串中提取指定字段的字符串值
+     */
+    private String tryExtractJsonField(String text, String fieldName) {
+        if (text == null) return null;
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(text);
+            if (node.has(fieldName) && node.get(fieldName).isTextual()) {
+                return node.get(fieldName).asText();
+            }
+        } catch (Exception e) {
+            // 不是有效JSON，忽略
+        }
+        return null;
+    }
+
+    /**
+     * 尝试从JSON字符串中提取指定字段的double值
+     */
+    private Double tryExtractJsonDoubleField(String text, String fieldName) {
+        if (text == null) return null;
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(text);
+            if (node.has(fieldName)) {
+                return node.get(fieldName).asDouble();
+            }
+        } catch (Exception e) {
+            // 不是有效JSON，忽略
+        }
+        return null;
+    }
+
+    /**
+     * 从 LLM 回答中移除置信度行
+     * 移除 "confidence: X.XX" 及后续可能的空白行
+     *
+     * @param answer LLM 原始回答
+     * @return 清理后的回答
+     */
+    String stripConfidenceLine(String answer) {
+        if (answer == null || answer.trim().isEmpty()) {
+            return answer;
+        }
+        // 移除 confidence 行及之后可能的空行
+        return answer.replaceAll(
+                "(?i)\\n?\\s*confidence\\s*[:：]\\s*(0\\.\\d+|1\\.0|1|0)\\s*\\n*$",
+                "").trim();
     }
 
     /**

@@ -22,6 +22,19 @@ public interface LlmService {
     String generateAnswer(String query, List<String> context);
 
     /**
+     * 生成回答并返回 LLM 原生置信度
+     * 在 Prompt 中要求 LLM 同步输出 confidence 分数，解析后一并返回
+     *
+     * @param query 用户查询
+     * @param context 检索到的上下文文档
+     * @return 包含回答和置信度的结果
+     */
+    default GenerateResult generateAnswerWithConfidence(String query, List<String> context) {
+        String answer = generateAnswer(query, context);
+        return new GenerateResult(answer, 0.0);
+    }
+
+    /**
      * 生成单个回答（异步）
      *
      * @param query 用户查询
@@ -89,6 +102,22 @@ public interface LlmService {
     // ========== 内部数据类型 ==========
 
     /**
+     * LLM 生成结果（包含回答和 LLM 原生置信度）
+     */
+    class GenerateResult {
+        private final String answer;
+        private final double confidence;
+
+        public GenerateResult(String answer, double confidence) {
+            this.answer = answer;
+            this.confidence = confidence;
+        }
+
+        public String getAnswer() { return answer; }
+        public double getConfidence() { return confidence; }
+    }
+
+    /**
      * 带来源的上下文文档
      */
     class ContextWithSource {
@@ -121,10 +150,16 @@ public interface LlmService {
     class AnswerWithCitations {
         private final String answer;
         private final List<Citation> citations;
+        private final double confidence;
 
         public AnswerWithCitations(String answer, List<Citation> citations) {
+            this(answer, citations, 0.0);
+        }
+
+        public AnswerWithCitations(String answer, List<Citation> citations, double confidence) {
             this.answer = answer;
             this.citations = citations;
+            this.confidence = confidence;
         }
 
         public String getAnswer() {
@@ -133,6 +168,10 @@ public interface LlmService {
 
         public List<Citation> getCitations() {
             return citations;
+        }
+
+        public double getConfidence() {
+            return confidence;
         }
     }
 

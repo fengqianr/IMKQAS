@@ -113,7 +113,7 @@ public class QaServiceImpl implements QaService {
                         : "感谢您的描述。目前暂未匹配到合适的评估问卷，建议您咨询专业医生获取更准确的评估。";
                 return new QaResponse(query, answerText, Collections.emptyList(),
                         0.85, processingTime, "intent-router",
-                        intent.name(), suggestion);
+                        intent.name(), suggestion, 0.85);
             }
 
             // ═══ [2] 查询预处理：分词 + 实体识别 + 同义词扩展 ═══
@@ -180,21 +180,22 @@ public class QaServiceImpl implements QaService {
                     rerankDocuments(processedQuery, filteredResults);
             PipelineTraceContext.recordStep("多因子重排序", 8, System.currentTimeMillis() - t8);
 
-            // ═══ [9] 安全兜底：置信度门控 ═══
+            // ═══ [9] 安全兜底：检索结果为空预检 ═══
             long t9 = System.currentTimeMillis();
-            ConfidenceDecision confidenceDecision = safetyGuardService.assessConfidence(rerankedResults);
-            PipelineTraceContext.recordStep("安全兜底②-置信度门控", 9, System.currentTimeMillis() - t9);
-            if (confidenceDecision.isBlocked()) {
+            String emptyBlockMsg = safetyGuardService.checkEmptyRetrieval(rerankedResults);
+            PipelineTraceContext.recordStep("安全兜底②-检索空检", 9, System.currentTimeMillis() - t9);
+            if (emptyBlockMsg != null) {
                 PipelineTraceContext.finish();
-                return buildLowConfidenceResponse(query, confidenceDecision, startTime, intent);
+                ConfidenceDecision emptyDecision = ConfidenceDecision.block(0.0, emptyBlockMsg);
+                return buildLowConfidenceResponse(query, emptyDecision, startTime, intent);
             }
 
             List<String> context = extractContext(rerankedResults);
 
-            // ═══ [10][11] 语义化缓存链 → LLM生成 ═══
+            // ═══ [10][11] 语义化缓存链 → LLM生成（含置信度） ═══
             String answer;
+            double llmConfidence;
             String modelUsed = llmService.getModelInfo().getName();
-            // 直接使用查询预处理阶段的结果，避免对SNOMED CT的重复调用
             String normalizedQuery = processedQuery != null ? processedQuery : query;
             List<Long> sortedFragmentIds = extractSortedFragmentIds(rerankedResults);
 
@@ -204,7 +205,8 @@ public class QaServiceImpl implements QaService {
             if (cached != null) {
                 cacheHit = true;
                 PipelineTraceContext.recordStep("语义缓存(命中)", 10, System.currentTimeMillis() - t10);
-                answer = safetyGuardService.sanitizeAnswer(cached.getAnswer(), 0.8);
+                llmConfidence = 0.5;
+                answer = cached.getAnswer();
                 log.info("语义缓存命中: query={}, version={}, latency=0ms(L2)",
                         truncate(query, 50), cached.getVersion());
             } else {
@@ -216,13 +218,12 @@ public class QaServiceImpl implements QaService {
                 if (lockAcquired) {
                     try {
                         long t11 = System.currentTimeMillis();
-                        answer = generateAnswer(processedQuery, context);
-                        PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t11);
-
-                        long t12 = System.currentTimeMillis();
-                        answer = safetyGuardService.sanitizeAnswer(answer,
-                                calculateConfidence(rerankedResults, answer));
-                        PipelineTraceContext.recordStep("安全兜底③-答案净化", 12, System.currentTimeMillis() - t12);
+                        LlmService.GenerateResult genResult =
+                                llmService.generateAnswerWithConfidence(processedQuery, context);
+                        answer = genResult.getAnswer();
+                        llmConfidence = genResult.getConfidence();
+                        PipelineTraceContext.recordStep("LLM生成(含置信度)", 11, System.currentTimeMillis() - t11,
+                                1, 1, Map.of("LLM置信度", String.format("%.2f", llmConfidence)));
 
                         List<String> sources = context.stream().limit(3).collect(Collectors.toList());
                         semanticCacheService.put(normalizedQuery, sortedFragmentIds, answer, sources);
@@ -237,22 +238,38 @@ public class QaServiceImpl implements QaService {
                             semanticCacheService.get(normalizedQuery, sortedFragmentIds);
                     if (retryCached != null) {
                         cacheHit = true;
-                        answer = safetyGuardService.sanitizeAnswer(retryCached.getAnswer(), 0.8);
+                        llmConfidence = 0.5;
+                        answer = retryCached.getAnswer();
                         log.info("语义缓存重试命中: query={}", truncate(query, 50));
                     } else {
                         long t11 = System.currentTimeMillis();
-                        answer = generateAnswer(processedQuery, context);
-                        PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t11);
-
-                        long t12 = System.currentTimeMillis();
-                        answer = safetyGuardService.sanitizeAnswer(answer,
-                                calculateConfidence(rerankedResults, answer));
-                        PipelineTraceContext.recordStep("安全兜底③-答案净化", 12, System.currentTimeMillis() - t12);
+                        LlmService.GenerateResult genResult =
+                                llmService.generateAnswerWithConfidence(processedQuery, context);
+                        answer = genResult.getAnswer();
+                        llmConfidence = genResult.getConfidence();
+                        PipelineTraceContext.recordStep("LLM生成(含置信度)", 11, System.currentTimeMillis() - t11,
+                                1, 1, Map.of("LLM置信度", String.format("%.2f", llmConfidence)));
 
                         log.debug("语义缓存未命中且未获取锁，直接调用LLM: query={}", truncate(query, 50));
                     }
                 }
             }
+
+            // ═══ [12] 安全兜底：LLM置信度门控 ═══
+            long t12 = System.currentTimeMillis();
+            ConfidenceDecision confidenceDecision = safetyGuardService.assessConfidence(llmConfidence);
+            PipelineTraceContext.recordStep("安全兜底②-LLM置信度门控", 12, System.currentTimeMillis() - t12,
+                    1, 1, Map.of("结果", confidenceDecision.isBlocked() ? "低于阈值，已阻断" : "通过",
+                            "LLM置信度", String.format("%.2f", confidenceDecision.getConfidence())));
+            if (confidenceDecision.isBlocked()) {
+                PipelineTraceContext.finish();
+                return buildLowConfidenceResponse(query, confidenceDecision, startTime, intent);
+            }
+
+            // ═══ [13] 安全兜底：答案净化 ═══
+            long t13 = System.currentTimeMillis();
+            answer = safetyGuardService.sanitizeAnswer(answer, llmConfidence);
+            PipelineTraceContext.recordStep("安全兜底③-答案净化", 13, System.currentTimeMillis() - t13);
 
             // MIXED：在RAG回答末尾附加问卷推荐
             if (intent == IntentType.MIXED && suggestion != null && suggestion.isMatched()) {
@@ -273,7 +290,7 @@ public class QaServiceImpl implements QaService {
                 }
             }
 
-            double confidence = calculateConfidence(rerankedResults, answer);
+            double finalConfidence = calculateConfidence(llmConfidence, answer);
 
             long processingTime = System.currentTimeMillis() - startTime;
             totalProcessingTime.addAndGet(processingTime);
@@ -282,14 +299,15 @@ public class QaServiceImpl implements QaService {
             QaResponse response = new QaResponse(
                     query, answer,
                     context.stream().limit(3).collect(Collectors.toList()),
-                    confidence, processingTime, modelUsed,
-                    intent.name(), suggestion);
+                    finalConfidence, processingTime, modelUsed,
+                    intent.name(), suggestion, llmConfidence);
 
-            log.info("问答完成: query={}, intent={}, contextCount={}, answerLength={}, confidence={}, time={}ms",
+            log.info("问答完成: query={}, intent={}, contextCount={}, answerLength={}, llmConfidence={}, finalConfidence={}, time={}ms",
                     truncate(query, 50), intent, context.size(),
-                    answer.length(), confidence, processingTime);
+                    answer.length(), llmConfidence, finalConfidence, processingTime);
 
-            PipelineTraceContext.get().putMetadata("confidence", confidence);
+            PipelineTraceContext.get().putMetadata("confidence", finalConfidence);
+            PipelineTraceContext.get().putMetadata("llmConfidence", llmConfidence);
             PipelineTraceContext.get().putMetadata("cacheHit", cacheHit);
             PipelineTraceContext.get().putMetadata("intentType", intent.name());
             PipelineTraceContext.get().putMetadata("totalTimeMs", processingTime);
@@ -363,7 +381,7 @@ public class QaServiceImpl implements QaService {
                         .build();
                 return new QaResponseWithSources(query, answerText, Collections.emptyList(),
                         0.85, processingTime, "intent-router", Collections.emptyList(),
-                        intent.name(), suggestion, retrievalPath);
+                        intent.name(), suggestion, retrievalPath, 0.85);
             }
 
             // ═══ 查询预处理 ═══
@@ -398,7 +416,7 @@ public class QaServiceImpl implements QaService {
                 return new QaResponseWithSources(
                         er.getQuery(), er.getAnswer(), er.getRetrievedContext(),
                         er.getConfidence(), er.getProcessingTime(), er.getModelUsed(),
-                        Collections.emptyList(), er.getIntentType(), er.getQuestionnaireSuggestion(), retrievalPath);
+                        Collections.emptyList(), er.getIntentType(), er.getQuestionnaireSuggestion(), retrievalPath, er.getRawConfidence());
             }
 
             long t4 = System.currentTimeMillis();
@@ -451,13 +469,50 @@ public class QaServiceImpl implements QaService {
                     Map.of("最高分", String.format("%.2f", topScore),
                            "候选数", rerankedResults.size()));
 
+            // ═══ [9] 安全兜底：检索结果为空预检 ═══
             long t9 = System.currentTimeMillis();
-            ConfidenceDecision confidenceDecision = safetyGuardService.assessConfidence(rerankedResults);
-            PipelineTraceContext.recordStep("安全兜底②-置信度门控", 9, System.currentTimeMillis() - t9,
-                    1, 1, Map.of("结果", confidenceDecision.isBlocked() ? "低于阈值，已阻断" : "通过",
-                           "最高置信度", String.format("%.2f", confidenceDecision.getMaxScore())));
-            if (confidenceDecision.isBlocked()) {
-                QaResponse lr = buildLowConfidenceResponse(query, confidenceDecision, startTime, intent);
+            String emptyBlockMsg2 = safetyGuardService.checkEmptyRetrieval(rerankedResults);
+            PipelineTraceContext.recordStep("安全兜底②-检索空检", 9, System.currentTimeMillis() - t9);
+            if (emptyBlockMsg2 != null) {
+                QaResponse lr = buildLowConfidenceResponse(query, ConfidenceDecision.block(0.0, emptyBlockMsg2), startTime, intent);
+                PipelineTraceContext.get().putMetadata("intentType", intent.name());
+                PipelineTraceContext.get().putMetadata("blockedAt", "emptyRetrieval");
+                PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
+                List<RetrievalStepDto> stepDtos = buildStepDtos(trace);
+                RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
+                        .steps(stepDtos)
+                        .totalDurationMs(trace.getTotalDurationMs())
+                        .cacheHit(false)
+                        .intentType(intent.name())
+                        .build();
+                return new QaResponseWithSources(
+                        lr.getQuery(), lr.getAnswer(), lr.getRetrievedContext(),
+                        lr.getConfidence(), lr.getProcessingTime(), lr.getModelUsed(),
+                        Collections.emptyList(), lr.getIntentType(), lr.getQuestionnaireSuggestion(), retrievalPath, lr.getRawConfidence());
+            }
+
+            long t10 = System.currentTimeMillis();
+            List<LlmService.ContextWithSource> contextWithSources = buildContextWithSources(rerankedResults);
+            LlmService.AnswerWithCitations answerWithCitations =
+                    llmService.generateAnswerWithCitations(query, contextWithSources);
+            double llmConfidence2 = answerWithCitations.getConfidence();
+            PipelineTraceContext.recordStep("LLM生成(含置信度)", 11, System.currentTimeMillis() - t10,
+                    contextWithSources.size(), 1,
+                    Map.of("上下文片段", contextWithSources.size(),
+                           "答案长度", answerWithCitations.getAnswer().length() + "字",
+                           "引用数", String.valueOf(answerWithCitations.getCitations().size()),
+                           "LLM置信度", String.format("%.2f", llmConfidence2)));
+            List<SourceCitation> citations = buildSourceCitations(
+                    rerankedResults, answerWithCitations.getCitations());
+
+            // ═══ [12] 安全兜底：LLM置信度门控 ═══
+            long t12 = System.currentTimeMillis();
+            ConfidenceDecision confidenceDecision2 = safetyGuardService.assessConfidence(llmConfidence2);
+            PipelineTraceContext.recordStep("安全兜底②-LLM置信度门控", 12, System.currentTimeMillis() - t12,
+                    1, 1, Map.of("结果", confidenceDecision2.isBlocked() ? "低于阈值，已阻断" : "通过",
+                            "LLM置信度", String.format("%.2f", confidenceDecision2.getConfidence())));
+            if (confidenceDecision2.isBlocked()) {
+                QaResponse lr = buildLowConfidenceResponse(query, confidenceDecision2, startTime, intent);
                 PipelineTraceContext.get().putMetadata("intentType", intent.name());
                 PipelineTraceContext.get().putMetadata("blockedAt", "lowConfidence");
                 PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
@@ -471,28 +526,16 @@ public class QaServiceImpl implements QaService {
                 return new QaResponseWithSources(
                         lr.getQuery(), lr.getAnswer(), lr.getRetrievedContext(),
                         lr.getConfidence(), lr.getProcessingTime(), lr.getModelUsed(),
-                        Collections.emptyList(), lr.getIntentType(), lr.getQuestionnaireSuggestion(), retrievalPath);
+                        Collections.emptyList(), lr.getIntentType(), lr.getQuestionnaireSuggestion(), retrievalPath, llmConfidence2);
             }
 
-            long t10 = System.currentTimeMillis();
-            List<LlmService.ContextWithSource> contextWithSources = buildContextWithSources(rerankedResults);
-            LlmService.AnswerWithCitations answerWithCitations =
-                    llmService.generateAnswerWithCitations(query, contextWithSources);
-            PipelineTraceContext.recordStep("LLM生成", 11, System.currentTimeMillis() - t10,
-                    contextWithSources.size(), 1,
-                    Map.of("上下文片段", contextWithSources.size(),
-                           "答案长度", answerWithCitations.getAnswer().length() + "字",
-                           "引用数", String.valueOf(answerWithCitations.getCitations().size())));
-            List<SourceCitation> citations = buildSourceCitations(
-                    rerankedResults, answerWithCitations.getCitations());
-
-            double confidence = calculateConfidence(rerankedResults, answerWithCitations.getAnswer());
-            long t12 = System.currentTimeMillis();
-            String sanitizedAnswer = safetyGuardService.sanitizeAnswer(answerWithCitations.getAnswer(), confidence);
+            double finalConfidence2 = calculateConfidence(llmConfidence2, answerWithCitations.getAnswer());
+            long t13 = System.currentTimeMillis();
+            String sanitizedAnswer = safetyGuardService.sanitizeAnswer(answerWithCitations.getAnswer(), llmConfidence2);
             boolean wasSanitized = !sanitizedAnswer.equals(answerWithCitations.getAnswer());
-            PipelineTraceContext.recordStep("安全兜底③-答案净化", 12, System.currentTimeMillis() - t12,
+            PipelineTraceContext.recordStep("安全兜底③-答案净化", 13, System.currentTimeMillis() - t13,
                     1, 1, Map.of("结果", wasSanitized ? "已净化（移除风险内容）" : "无需净化",
-                           "置信度", String.format("%.2f", confidence)));
+                           "置信度", String.format("%.2f", llmConfidence2)));
 
             // MIXED：末尾附加问卷推荐
             if (intent == IntentType.MIXED && suggestion != null && suggestion.isMatched()) {
@@ -523,7 +566,8 @@ public class QaServiceImpl implements QaService {
                     .collect(Collectors.toList());
 
             // 收集管线追踪数据
-            PipelineTraceContext.get().putMetadata("confidence", confidence);
+            PipelineTraceContext.get().putMetadata("confidence", finalConfidence2);
+            PipelineTraceContext.get().putMetadata("llmConfidence", llmConfidence2);
             PipelineTraceContext.get().putMetadata("cacheHit", false);
             PipelineTraceContext.get().putMetadata("intentType", intent.name());
             PipelineTraceContext.get().putMetadata("totalTimeMs", processingTime);
@@ -538,12 +582,12 @@ public class QaServiceImpl implements QaService {
 
             QaResponseWithSources response = new QaResponseWithSources(
                     query, sanitizedAnswer, contextSummary,
-                    confidence, processingTime, llmService.getModelInfo().getName(),
-                    citations, intent.name(), suggestion, retrievalPath);
+                    finalConfidence2, processingTime, llmService.getModelInfo().getName(),
+                    citations, intent.name(), suggestion, retrievalPath, llmConfidence2);
 
-            log.info("带来源问答完成: query={}, intent={}, sources={}, answerLength={}, confidence={}, time={}ms, traceSteps={}",
+            log.info("带来源问答完成: query={}, intent={}, sources={}, answerLength={}, llmConfidence={}, finalConfidence={}, time={}ms, traceSteps={}",
                     query, intent, citations.size(), answerWithCitations.getAnswer().length(),
-                    confidence, processingTime, stepDtos.size());
+                    llmConfidence2, finalConfidence2, processingTime, stepDtos.size());
 
             return response;
 
@@ -555,7 +599,7 @@ public class QaServiceImpl implements QaService {
             return new QaResponseWithSources(
                     fallback.getQuery(), fallback.getAnswer(), fallback.getRetrievedContext(),
                     fallback.getConfidence(), fallback.getProcessingTime(), fallback.getModelUsed(),
-                    Collections.emptyList(), fallback.getIntentType(), fallback.getQuestionnaireSuggestion(), null);
+                    Collections.emptyList(), fallback.getIntentType(), fallback.getQuestionnaireSuggestion(), null, fallback.getRawConfidence());
         } finally {
             PipelineTraceContext.clear();
         }
@@ -690,38 +734,27 @@ public class QaServiceImpl implements QaService {
     }
 
     /**
-     * 计算置信度
+     * 计算综合置信度（LLM 原生置信度为主，回答内容分析为辅）
+     *
+     * @param llmConfidence LLM 返回的原生置信度（0.0~1.0）
+     * @param answer LLM 生成的回答
+     * @return 综合置信度
      */
-    private double calculateConfidence(
-            List<MultiRetrievalService.RetrievalResult> results,
-            String answer
-    ) {
-        if (results.isEmpty()) {
-            return 0.0;
-        }
-
-        // 基于检索结果的分数计算置信度
-        double maxScore = results.stream()
-                .mapToDouble(result -> result.getScore() != null ? result.getScore() : 0.0)
-                .max()
-                .orElse(0.0);
-
-        // 基于回答长度和内容计算额外置信度
+    private double calculateConfidence(double llmConfidence, String answer) {
+        // LLM 置信度占主导权重（0.8），回答内容分析辅助（0.2）
         double answerConfidence = calculateAnswerConfidence(answer);
-
-        // 综合置信度
-        return (maxScore * 0.7) + (answerConfidence * 0.3);
+        return (llmConfidence * 0.8) + (answerConfidence * 0.2);
     }
 
     /**
-     * 基于回答内容计算置信度
+     * 基于回答内容计算置信度（辅助因子）
      */
     private double calculateAnswerConfidence(String answer) {
         if (answer == null || answer.trim().isEmpty()) {
             return 0.0;
         }
 
-        double confidence = 0.5; // 基础置信度
+        double confidence = 0.5;
 
         // 检查是否包含无法回答的提示
         if (answer.contains("无法回答") || answer.contains("不知道") ||
@@ -734,7 +767,6 @@ public class QaServiceImpl implements QaService {
             confidence += 0.2;
         }
 
-        // 限制在0-1之间
         return Math.max(0.0, Math.min(1.0, confidence));
     }
 
@@ -862,7 +894,7 @@ public class QaServiceImpl implements QaService {
         long processingTime = System.currentTimeMillis() - startTime;
         return new QaResponse(query, decision.getAdviceMessage(), Collections.emptyList(),
                 0.0, processingTime, "safety-guard",
-                intent != null ? intent.name() : null, null);
+                intent != null ? intent.name() : null, null, 0.0);
     }
 
     /**
@@ -872,8 +904,8 @@ public class QaServiceImpl implements QaService {
                                                     IntentType intent) {
         long processingTime = System.currentTimeMillis() - startTime;
         return new QaResponse(query, decision.getMessage(), Collections.emptyList(),
-                decision.getMaxScore(), processingTime, "safety-guard",
-                intent != null ? intent.name() : null, null);
+                decision.getConfidence(), processingTime, "safety-guard",
+                intent != null ? intent.name() : null, null, decision.getConfidence());
     }
 
     /**
@@ -912,7 +944,7 @@ public class QaServiceImpl implements QaService {
         long processingTime = System.currentTimeMillis() - startTime;
         String fallbackAnswer = "抱歉，当前无法处理您的查询。请检查网络连接或稍后重试。";
         return new QaResponse(query, fallbackAnswer, Collections.emptyList(),
-                0.1, processingTime, "fallback", null, null);
+                0.1, processingTime, "fallback", null, null, 0.0);
     }
 
     /**

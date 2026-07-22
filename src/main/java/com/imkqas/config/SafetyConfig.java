@@ -58,22 +58,22 @@ public class SafetyConfig {
         private boolean matchFullSentence = true;
     }
 
-    // ========== 置信度门控配置 ==========
+    // ========== 置信度门控配置（基于 LLM 原生置信度） ==========
 
     @Data
     public static class ConfidenceConfig {
         /** 是否启用置信度门控 */
         private boolean enabled = true;
 
-        /** 硬阻断阈值：低于此值不调用 LLM，直接返回"无法找到可靠信息" */
+        /** 硬阻断阈值：LLM 置信度低于此值不返回回答，直接返回低置信度提示 */
         @DecimalMin("0.0")
         @DecimalMax("1.0")
-        private double minThreshold = 0.35;
+        private double minThreshold = 0.50;
 
-        /** 警告阈值：低于此值 LLM 正常生成，但添加医疗免责声明 */
+        /** 警告阈值：LLM 置信度低于此值但高于 minThreshold 时，正常返回但添加医疗免责声明 */
         @DecimalMin("0.0")
         @DecimalMax("1.0")
-        private double warningThreshold = 0.6;
+        private double warningThreshold = 0.55;
 
         /** 检索结果为空时的响应文本 */
         private String noRetrievalResponse = "抱歉，我无法从现有医学资料库中找到与您问题相关的信息。医疗建议需要基于确切的医学知识，建议您咨询专业医生获取准确的诊断和治疗方案。";

@@ -7,11 +7,10 @@ import com.imkqas.dto.rag.RetrievalTestResponse;
 import com.imkqas.entity.DocumentChunk;
 import com.imkqas.service.dataBase.MilvusService;
 import com.imkqas.service.document.DocumentChunkService;
-import com.imkqas.service.rag.EmbeddingService;
-import com.imkqas.service.rag.KeywordRetrievalService;
-import com.imkqas.service.rag.MultiRetrievalService;
+import com.imkqas.service.rag.*;
 import com.imkqas.service.rag.MultiRetrievalService.RetrievalResult;
 import com.imkqas.service.rag.MultiRetrievalService.RetrievalSource;
+import com.imkqas.service.rag.impl.MultiFactorRerankServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -46,6 +45,8 @@ public class RetrievalTestController {
     private final KeywordRetrievalService keywordRetrievalService;
     private final DocumentChunkService documentChunkService;
     private final RagConfig ragConfig;
+    private final MultiFactorRerankServiceImpl multiFactorRerankService;
+    private final CrossEncoderRerankService crossEncoderRerankService;
 
     private final ExecutorService pathwayExecutor = Executors.newFixedThreadPool(3);
 
@@ -267,6 +268,67 @@ public class RetrievalTestController {
         ));
 
         return ResponseEntity.ok(info);
+    }
+
+    /**
+     * 多因子分解端点，用于离线权重网格搜索。
+     * 对查询执行检索+多因子重排序，返回每篇文档的五因子分数。
+     */
+    @PostMapping("/factor-breakdown")
+    @Operation(summary = "多因子分解", description = "返回每篇检索文档的五因子分数，用于网格搜索权重调优")
+    public ResponseEntity<Map<String, Object>> factorBreakdown(@RequestBody Map<String, Object> body) {
+        String query = (String) body.get("query");
+        int topK = body.containsKey("topK") ? ((Number) body.get("topK")).intValue() : 20;
+
+        if (query == null || query.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", "query不能为空"));
+        }
+
+        try {
+            // 1. 混合检索
+            int perSideK = ragConfig.getRetrieval().getInitialTopK();
+            List<RetrievalResult> retrieved = multiRetrievalService.hybridRetrievalWithPerSideK(
+                    query, topK, perSideK,
+                    ragConfig.getRetrieval().getWeights().getVector(),
+                    ragConfig.getRetrieval().getWeights().getKeyword());
+
+            // 2. 交叉编码器获取语义分数
+            List<RetrievalResult> reranked = crossEncoderRerankService.rerank(
+                    query, retrieved, Math.min(retrieved.size(), 20));
+            Map<String, Double> semanticMap = new HashMap<>();
+            for (RetrievalResult r : reranked) {
+                String key = r.getChunkId() != null ? String.valueOf(r.getChunkId()) : r.getContent();
+                semanticMap.put(key, r.getScore() != null ? r.getScore() : 0.5);
+            }
+
+            // 3. 逐文档计算五因子分解
+            List<Map<String, Object>> docs = new ArrayList<>();
+            for (RetrievalResult r : retrieved) {
+                String key = r.getChunkId() != null ? String.valueOf(r.getChunkId()) : r.getContent();
+                double semantic = semanticMap.getOrDefault(key, 0.5);
+                Map<String, Double> factors = multiFactorRerankService.getFactorBreakdown(query, r, semantic);
+
+                Map<String, Object> doc = new LinkedHashMap<>();
+                doc.put("chunkId", r.getChunkId());
+                doc.put("content", r.getContent() != null
+                        ? r.getContent().substring(0, Math.min(r.getContent().length(), 300)) : "");
+                doc.putAll(factors);
+                docs.add(doc);
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "query", query,
+                    "docCount", docs.size(),
+                    "docs", docs
+            ));
+        } catch (Exception e) {
+            log.error("因子分解异常: query={}", query, e);
+            return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
     }
 
     /**

@@ -1,0 +1,110 @@
+{
+  "description": "LLM置信度阈值扫描 — 准确率 vs 覆盖率",
+  "sampleSize": 500,
+  "thresholdRange": [
+    0.1,
+    0.9,
+    0.05
+  ],
+  "results": [
+    {
+      "threshold": 0.9,
+      "total": 500,
+      "accepted": 206,
+      "correct": 183,
+      "incorrect": 23,
+      "accuracy": 0.8883,
+      "coverage": 0.412
+    },
+    {
+      "threshold": 0.91,
+      "total": 500,
+      "accepted": 194,
+      "correct": 175,
+      "incorrect": 19,
+      "accuracy": 0.9021,
+      "coverage": 0.388
+    },
+    {
+      "threshold": 0.92,
+      "total": 500,
+      "accepted": 194,
+      "correct": 175,
+      "incorrect": 19,
+      "accuracy": 0.9021,
+      "coverage": 0.388
+    },
+    {
+      "threshold": 0.93,
+      "total": 500,
+      "accepted": 173,
+      "correct": 154,
+      "incorrect": 19,
+      "accuracy": 0.8902,
+      "coverage": 0.346
+    },
+    {
+      "threshold": 0.94,
+      "total": 500,
+      "accepted": 173,
+      "correct": 154,
+      "incorrect": 19,
+      "accuracy": 0.8902,
+      "coverage": 0.346
+    },
+    {
+      "threshold": 0.95,
+      "total": 500,
+      "accepted": 8,
+      "correct": 7,
+      "incorrect": 1,
+      "accuracy": 0.875,
+      "coverage": 0.016
+    },
+    {
+      "threshold": 0.96,
+      "total": 500,
+      "accepted": 8,
+      "correct": 7,
+      "incorrect": 1,
+      "accuracy": 0.875,
+      "coverage": 0.016
+    },
+    {
+      "threshold": 0.97,
+      "total": 500,
+      "accepted": 8,
+      "correct": 7,
+      "incorrect": 1,
+      "accuracy": 0.875,
+      "coverage": 0.016
+    },
+    {
+      "threshold": 0.98,
+      "total": 500,
+      "accepted": 8,
+      "correct": 7,
+      "incorrect": 1,
+      "accuracy": 0.875,
+      "coverage": 0.016
+    },
+    {
+      "threshold": 0.99,
+      "total": 500,
+      "accepted": 8,
+      "correct": 7,
+      "incorrect": 1,
+      "accuracy": 0.875,
+      "coverage": 0.016
+    },
+    {
+      "threshold": 1.0,
+      "total": 500,
+      "accepted": 8,
+      "correct": 7,
+      "incorrect": 1,
+      "accuracy": 0.875,
+      "coverage": 0.016
+    }
+  ]
+}

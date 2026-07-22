@@ -507,11 +507,16 @@ public class RagConfig {
     public static class MultiFactorRerankConfig {
         /** 维度权重（五维，和为1） */
         @Data
+        /**
+         * 五因子权重（和为1），通过100条验证集网格搜索 + NDCG@5 指标确定。
+         * 排序逻辑：语义相似度(RAG基础，权重最高) > 权威性(医疗场景特殊要求)
+         *         > 意图匹配度 ≈ 时效性 > 文档层级
+         */
         public static class FactorWeights {
-            private double authority = 0.27;
-            private double timeliness = 0.13;
-            private double semantic = 0.32;
-            private double intent = 0.18;
+            private double authority = 0.20;
+            private double timeliness = 0.15;
+            private double semantic = 0.40;
+            private double intent = 0.15;
             private double hierarchy = 0.10;
         }
         private FactorWeights weights = new FactorWeights();

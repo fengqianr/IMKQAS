@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class MedicalEntityRecognitionServiceImpl implements MedicalEntityRecognitionService {
 
-    @Value("${imkqas.query-rewrite.thuocl-dict-path:/data/dict/thuocl_medical.txt}")
+    @Value("${imkqas.rag.query-rewrite.thuocl-dict-path:/data/dict/thuocl_medical.txt}")
     private String thuoclDictPath;
 
     // 分类词库：按实体类型组织的THUOCL词条

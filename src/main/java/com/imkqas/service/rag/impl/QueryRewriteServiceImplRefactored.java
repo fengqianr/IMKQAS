@@ -54,7 +54,7 @@ public class QueryRewriteServiceImplRefactored implements QueryRewriteService {
     private final SynonymExpansionService synonymExpansionService;
 
     // 配置参数
-    @Value("${imkqas.query-rewrite.thuocl-dict-path:/data/dict/thuocl_medical.txt}")
+    @Value("${imkqas.rag.query-rewrite.thuocl-dict-path:/data/dict/thuocl_medical.txt}")
     private String thuoclDictPath;
 
     @Value("${imkqas.query-rewrite.synonyms-file:classpath:synonyms.txt}")

@@ -288,7 +288,7 @@ imkqas:
     # 查询预处理配置
     query-rewrite:
       # THUOCL医学词库路径
-      thuocl-dict-path: /data/dict/thuocl_medical.txt
+      thuocl-dict-path: data/dict/thuocl_medical.txt
       # 同义词文件
       synonyms-file: classpath:synonyms.txt
       # 停用词文件
@@ -371,15 +371,15 @@ imkqas:
       # 五维度权重（和为1）
       weights:
         # 权威性权重（证据金字塔等级）
-        authority: 0.27
+        authority: 0.20
         # 时效性权重（指数衰减）
-        timeliness: 0.13
-        # 语义相似度权重（交叉编码器）
-        semantic: 0.32
+        timeliness: 0.15
+        # 语义相似度权重（交叉编码器）—— 消融测试显示小样本下起反作用，降至最低作为 tiebreaker
+        semantic: 0.05
         # 意图匹配度权重（查询意图与文档内容匹配）
-        intent: 0.18
-        # 层级相关性权重（section_title/breadcrumb与查询匹配）
-        hierarchy: 0.10
+        intent: 0.20
+        # 层级相关性权重（section_title/breadcrumb与查询匹配）—— 消融测试确认为最关键因子
+        hierarchy: 0.40
       # 是否启用层级相关性评分
       hierarchy-enabled: true
       # 时效性衰减率 λ
@@ -442,13 +442,13 @@ imkqas:
           HIGH: "⚠️ 您描述的症状较为严重，建议尽快就医。请立即前往医院急诊科或相关专科就诊，不要延误。"
           MEDIUM: "⚠️ 您描述的症状需要引起注意，建议尽快就医。如症状持续或加重，请及时到医疗机构就诊。"
 
-      # ─── ② 置信度门控 ───
+      # ─── ② 置信度门控（基于 LLM 原生置信度） ───
       confidence:
         enabled: true
-        # 硬阻断阈值：低于此值不调用 LLM
-        min-threshold: 0.35
-        # 警告阈值：低于此值 LLM 正常生成但添加免责声明
-        warning-threshold: 0.6
+        # 硬阻断阈值：LLM 置信度低于此值不返回回答
+        min-threshold: 0.3
+        # 警告阈值：LLM 置信度低于此值但高于 min-threshold 时，正常返回但添加免责声明
+        warning-threshold: 0.9
         # 检索结果为空时的响应
         no-retrieval-response: "抱歉，我无法从现有医学资料库中找到与您问题相关的信息。医疗建议需要基于确切的医学知识，建议您咨询专业医生获取准确的诊断和治疗方案。"
         # 低于 min-threshold 时的响应

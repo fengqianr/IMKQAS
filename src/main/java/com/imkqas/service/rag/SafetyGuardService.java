@@ -15,11 +15,11 @@ import java.util.regex.Pattern;
  * 医疗安全兜底服务
  * 提供三层安全防护：
  * 1. 急症关键词预检（检索前）
- * 2. 检索置信度门控（检索后、LLM前）
- * 3. 回答安全校验（LLM后）
+ * 2. LLM 置信度门控（LLM 生成后，基于 LLM 原生置信度）
+ * 3. 回答安全校验（LLM 后）
  *
  * @author 系统
- * @version 1.0
+ * @version 2.0
  */
 @Service
 @RequiredArgsConstructor
@@ -79,50 +79,53 @@ public class SafetyGuardService {
         return SafetyDecision.pass();
     }
 
-    // ==================== ② 置信度门控 ====================
+    // ==================== ② 置信度门控（LLM 原生置信度） ====================
 
     /**
-     * 评估检索结果置信度
-     * 在重排序之后、LLM生成之前调用
+     * 评估 LLM 原生置信度，决定是否阻断或警告
+     * 在 LLM 生成回答之后调用，基于 LLM 同步输出的 confidence 分数进行门控
      *
-     * @param results 重排序后的检索结果列表
+     * @param llmConfidence LLM 返回的原生置信度（0.0~1.0），未返回时默认为 0.0
      * @return ConfidenceDecision：pass / warning / block
      */
-    public ConfidenceDecision assessConfidence(List<?> results) {
+    public ConfidenceDecision assessConfidence(double llmConfidence) {
         if (!safetyConfig.isEnabled() || !safetyConfig.getConfidence().isEnabled()) {
             return ConfidenceDecision.pass(1.0);
         }
-        if (results == null || results.isEmpty()) {
-            log.warn("[安全兜底] 检索结果为空，阻断");
-            confidenceBlockCount.incrementAndGet();
-            return ConfidenceDecision.block(0.0, safetyConfig.getConfidence().getNoRetrievalResponse());
-        }
-
-        double maxScore = results.stream()
-                .mapToDouble(r -> {
-                    if (r instanceof MultiRetrievalService.RetrievalResult) {
-                        Double score = ((MultiRetrievalService.RetrievalResult) r).getScore();
-                        return score != null ? score : 0.0;
-                    }
-                    return 0.0;
-                })
-                .max()
-                .orElse(0.0);
 
         double minThreshold = safetyConfig.getConfidence().getMinThreshold();
         double warningThreshold = safetyConfig.getConfidence().getWarningThreshold();
 
-        if (maxScore < minThreshold) {
-            log.warn("[安全兜底] 置信度过低: maxScore={}, threshold={}", maxScore, minThreshold);
+        if (llmConfidence < minThreshold) {
+            log.warn("[安全兜底] LLM置信度过低: confidence={}, minThreshold={}", llmConfidence, minThreshold);
             confidenceBlockCount.incrementAndGet();
-            return ConfidenceDecision.block(maxScore, safetyConfig.getConfidence().getLowConfidenceResponse());
-        } else if (maxScore < warningThreshold) {
-            log.info("[安全兜底] 置信度偏低: maxScore={}, warningThreshold={}, 将添加免责声明",
-                    maxScore, warningThreshold);
-            return ConfidenceDecision.warning(maxScore, null);
+            return ConfidenceDecision.block(llmConfidence, safetyConfig.getConfidence().getLowConfidenceResponse());
+        } else if (llmConfidence < warningThreshold) {
+            log.info("[安全兜底] LLM置信度偏低: confidence={}, warningThreshold={}, 将添加免责声明",
+                    llmConfidence, warningThreshold);
+            return ConfidenceDecision.warning(llmConfidence, null);
         }
 
-        return ConfidenceDecision.pass(maxScore);
+        log.debug("[安全兜底] LLM置信度正常: confidence={}", llmConfidence);
+        return ConfidenceDecision.pass(llmConfidence);
+    }
+
+    /**
+     * 检查检索结果是否为空，在 LLM 调用前使用
+     *
+     * @param results 检索结果列表
+     * @return 为空时返回阻断响应文本，否则返回 null
+     */
+    public String checkEmptyRetrieval(List<?> results) {
+        if (!safetyConfig.isEnabled() || !safetyConfig.getConfidence().isEnabled()) {
+            return null;
+        }
+        if (results == null || results.isEmpty()) {
+            log.warn("[安全兜底] 检索结果为空，阻断");
+            confidenceBlockCount.incrementAndGet();
+            return safetyConfig.getConfidence().getNoRetrievalResponse();
+        }
+        return null;
     }
 
     // ==================== ③ 回答安全校验 ====================
