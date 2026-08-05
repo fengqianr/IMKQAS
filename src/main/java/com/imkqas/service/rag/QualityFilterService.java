@@ -24,6 +24,18 @@ public interface QualityFilterService {
     FilterResult filter(List<MultiRetrievalService.RetrievalResult> results);
 
     /**
+     * 对检索结果进行质量过滤（含查询上下文）
+     * 当 query 中包含药物+人群实体时，才启用禁忌规则的在线文档检测
+     *
+     * @param results 原始检索结果
+     * @param query   用户查询文本
+     * @return 过滤结果（通过 + 丢弃 + 原因统计）
+     */
+    default FilterResult filter(List<MultiRetrievalService.RetrievalResult> results, String query) {
+        return filter(results);
+    }
+
+    /**
      * 检测高风险查询中的矛盾信息
      * 针对药物-人群对，检测是否存在正反断言冲突
      *

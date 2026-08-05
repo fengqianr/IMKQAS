@@ -95,6 +95,11 @@ public class QualityFilterServiceImpl implements QualityFilterService {
 
     @Override
     public FilterResult filter(List<MultiRetrievalService.RetrievalResult> results) {
+        return filter(results, null);
+    }
+
+    @Override
+    public FilterResult filter(List<MultiRetrievalService.RetrievalResult> results, String query) {
         FilterResult result = new FilterResult();
         if (results == null || results.isEmpty()) {
             return result;
@@ -125,9 +130,9 @@ public class QualityFilterServiceImpl implements QualityFilterService {
                     result.getDiscardedCount(), result.getDiscardReasons());
         }
 
-        // 规则5：禁忌标记过滤（读取chunk预标注的contraindication信息）
+        // 规则5：禁忌标记过滤（仅在query同时包含药物+人群时启用在线检测）
         if (ragConfig.getQualityFilter().isContraindicationRuleEnabled()) {
-            applyContraindicationFilter(result);
+            applyContraindicationFilter(result, query);
         }
 
         if (result.getDiscardedCount() > 0) {
@@ -236,8 +241,8 @@ public class QualityFilterServiceImpl implements QualityFilterService {
 
     // ========== 禁忌标记过滤 ==========
 
-    /** 规则5：读取chunk预标注的禁忌信息，按类型分级处理 */
-    private void applyContraindicationFilter(FilterResult result) {
+    /** 规则5：读取chunk预标注的禁忌信息，按类型分级处理。仅当query含药物+人群时才启用在线实时检测 */
+    private void applyContraindicationFilter(FilterResult result, String query) {
         List<MultiRetrievalService.RetrievalResult> passed = new ArrayList<>(result.getPassed());
         result.getPassed().clear();
 
@@ -258,6 +263,9 @@ public class QualityFilterServiceImpl implements QualityFilterService {
         int downgradedCount = 0;
         int realtimeCompensated = 0;
 
+        // 仅在query同时包含药物和人群实体时，才启用在线实时检测
+        boolean queryHasDrugAndPopulation = hasDrugAndPopulation(query);
+
         for (MultiRetrievalService.RetrievalResult r : passed) {
             DocumentChunk chunk = chunkMap.get(r.getChunkId());
 
@@ -268,9 +276,10 @@ public class QualityFilterServiceImpl implements QualityFilterService {
                 matches = parseContraindicationInfo(chunk.getContraindicationInfo());
             }
 
-            // 补偿路径：预标注未命中时在线实时检测
+            // 补偿路径：预标注未命中时在线实时检测（仅当query含药物+人群时）
             if ((matches == null || matches.isEmpty())
-                    && config.isRealtimeContraindicationEnabled()) {
+                    && config.isRealtimeContraindicationEnabled()
+                    && queryHasDrugAndPopulation) {
                 List<ContraindicationDetectionService.ContraindicationMatch> realtimeMatches =
                         contraindicationDetectionService.detectChunk(r.getContent());
                 if (!realtimeMatches.isEmpty()) {
@@ -300,6 +309,28 @@ public class QualityFilterServiceImpl implements QualityFilterService {
         if (filteredCount > 0 || downgradedCount > 0 || realtimeCompensated > 0) {
             log.info("禁忌标记过滤: 处理={}, 过滤={}, 降权={}, 在线补偿命中={}",
                     passed.size(), filteredCount, downgradedCount, realtimeCompensated);
+        }
+    }
+
+    /**
+     * 检查 query 是否同时包含药物和人群实体
+     * 仅在两者都出现时才值得做禁忌规则的在线文档检测
+     */
+    private boolean hasDrugAndPopulation(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            List<MedicalEntityRecognitionService.MedicalEntity> entities =
+                    entityRecognitionService.recognize(query);
+            boolean hasDrug = entities.stream()
+                    .anyMatch(e -> e.getType() == MedicalEntityRecognitionService.EntityType.DRUG);
+            boolean hasPopulation = entities.stream()
+                    .anyMatch(e -> e.getType() == MedicalEntityRecognitionService.EntityType.POPULATION);
+            return hasDrug && hasPopulation;
+        } catch (Exception e) {
+            log.warn("实体识别失败，跳过禁忌在线检测: query={}", query, e);
+            return false;
         }
     }
 

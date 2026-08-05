@@ -144,7 +144,7 @@ public class QaServiceImpl implements QaService {
 
             // [6] 质量过滤
             long t6 = System.currentTimeMillis();
-            QualityFilterService.FilterResult filterResult = qualityFilterService.filter(retrievalResults);
+            QualityFilterService.FilterResult filterResult = qualityFilterService.filter(retrievalResults, query);
             List<MultiRetrievalService.RetrievalResult> filteredResults = filterResult.getPassed();
             PipelineTraceContext.recordStep("质量过滤", 6, System.currentTimeMillis() - t6);
             log.info("质量过滤: 输入={}, 通过={}, 丢弃={}",
@@ -432,7 +432,7 @@ public class QaServiceImpl implements QaService {
             totalRetrievedDocuments.addAndGet(retrievalResults.size());
 
             long t6 = System.currentTimeMillis();
-            QualityFilterService.FilterResult filterResult = qualityFilterService.filter(retrievalResults);
+            QualityFilterService.FilterResult filterResult = qualityFilterService.filter(retrievalResults, query);
             List<MultiRetrievalService.RetrievalResult> filteredResults = filterResult.getPassed();
             PipelineTraceContext.recordStep("质量过滤", 6, System.currentTimeMillis() - t6,
                     retrievalResults.size(), filteredResults.size(),
