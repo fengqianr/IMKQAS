@@ -205,7 +205,7 @@ public class QaServiceImpl implements QaService {
             if (cached != null) {
                 cacheHit = true;
                 PipelineTraceContext.recordStep("语义缓存(命中)", 10, System.currentTimeMillis() - t10);
-                llmConfidence = 0.5;
+                llmConfidence = cached.getConfidence();
                 answer = cached.getAnswer();
                 log.info("语义缓存命中: query={}, version={}, latency=0ms(L2)",
                         truncate(query, 50), cached.getVersion());
@@ -226,7 +226,7 @@ public class QaServiceImpl implements QaService {
                                 1, 1, Map.of("LLM置信度", String.format("%.2f", llmConfidence)));
 
                         List<String> sources = context.stream().limit(3).collect(Collectors.toList());
-                        semanticCacheService.put(normalizedQuery, sortedFragmentIds, answer, sources);
+                        semanticCacheService.put(normalizedQuery, sortedFragmentIds, answer, sources, llmConfidence);
                         log.debug("语义缓存写入完成: query={}", truncate(query, 50));
                     } finally {
                         ((SemanticCacheServiceImpl) semanticCacheService)
@@ -238,7 +238,7 @@ public class QaServiceImpl implements QaService {
                             semanticCacheService.get(normalizedQuery, sortedFragmentIds);
                     if (retryCached != null) {
                         cacheHit = true;
-                        llmConfidence = 0.5;
+                        llmConfidence = retryCached.getConfidence();
                         answer = retryCached.getAnswer();
                         log.info("语义缓存重试命中: query={}", truncate(query, 50));
                     } else {

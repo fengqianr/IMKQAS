@@ -89,10 +89,11 @@ public class SemanticCacheServiceImpl implements SemanticCacheService {
                 @SuppressWarnings("unchecked")
                 List<String> sources = (List<String>) map.get("sources");
                 long timestamp = ((Number) map.getOrDefault("timestamp", 0L)).longValue();
+                double confidence = ((Number) map.getOrDefault("confidence", 0.5)).doubleValue();
 
                 hits.incrementAndGet();
                 log.debug("语义缓存命中: query={}, version={}", truncate(normalizedQuery), currentVersion);
-                return new CachedAnswer(answer, sources != null ? sources : Collections.emptyList(), timestamp, currentVersion);
+                return new CachedAnswer(answer, sources != null ? sources : Collections.emptyList(), timestamp, currentVersion, confidence);
             }
         } catch (Exception e) {
             log.warn("语义缓存读取异常: key={}", cacheKey, e);
@@ -103,7 +104,7 @@ public class SemanticCacheServiceImpl implements SemanticCacheService {
     }
 
     @Override
-    public void put(String normalizedQuery, List<Long> fragmentIds, String answer, List<String> sources) {
+    public void put(String normalizedQuery, List<Long> fragmentIds, String answer, List<String> sources, double confidence) {
         if (!ragConfig.getSemanticCache().isEnabled()) return;
         if (normalizedQuery == null || answer == null) return;
 
@@ -117,6 +118,7 @@ public class SemanticCacheServiceImpl implements SemanticCacheService {
             value.put("sources", sources != null ? sources : Collections.emptyList());
             value.put("timestamp", System.currentTimeMillis());
             value.put("query", normalizedQuery);
+            value.put("confidence", confidence);
 
             redisService.setWithVersion(cacheKey, value, currentVersion, ttl);
             puts.incrementAndGet();

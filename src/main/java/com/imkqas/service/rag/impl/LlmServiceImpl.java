@@ -54,8 +54,8 @@ public class LlmServiceImpl implements LlmService {
     private OkHttpClient httpClient;
     private ExecutorService asyncExecutor; // 自定义异步线程池
 
-    // 本地缓存（Caffeine）
-    private final Cache<String, String> localCache = Caffeine.newBuilder()
+    // 本地缓存（Caffeine）：存储回答 + 置信度
+    private final Cache<String, GenerateResult> localCache = Caffeine.newBuilder()
             .maximumSize(10000)
             .recordStats()
             .build();
@@ -143,26 +143,28 @@ public class LlmServiceImpl implements LlmService {
             String cacheKey = generateCacheKey(normalizedQuery, context);
 
             // 2.1 检查本地缓存
-            String cachedAnswer = localCache.getIfPresent(cacheKey);
-            if (cachedAnswer != null) {
+            GenerateResult cachedResult = localCache.getIfPresent(cacheKey);
+            if (cachedResult != null) {
                 log.debug("LLM本地缓存命中: query={}, cacheKey={}",
                         query.substring(0, Math.min(query.length(), 50)), cacheKey);
                 updateStats(true, startTime, 0, 0);
-                // 缓存中的回答是已清理的，无法提取置信度，保守返回最低值
-                return new GenerateResult(cachedAnswer, 0.1);
+                return cachedResult;
             }
 
-            // 2.2 检查Redis缓存
+            // 2.2 检查Redis缓存（存储 answer + confidence）
             Object redisCached = redisService.get(cacheKey);
-            if (redisCached instanceof String) {
-                String redisAnswer = (String) redisCached;
+            if (redisCached instanceof Map) {
+                Map<String, Object> map = objectMapper.convertValue(redisCached, Map.class);
+                String redisAnswer = (String) map.get("answer");
+                double redisConfidence = ((Number) map.getOrDefault("confidence", 0.5)).doubleValue();
                 if (redisAnswer != null && !redisAnswer.trim().isEmpty()) {
                     log.debug("LLM Redis缓存命中: query={}, cacheKey={}",
                             query.substring(0, Math.min(query.length(), 50)), cacheKey);
+                    GenerateResult redisResult = new GenerateResult(redisAnswer, redisConfidence);
                     // 回填本地缓存
-                    localCache.put(cacheKey, redisAnswer);
+                    localCache.put(cacheKey, redisResult);
                     updateStats(true, startTime, 0, 0);
-                    return new GenerateResult(redisAnswer, 0.1);
+                    return redisResult;
                 }
             }
         }
@@ -195,10 +197,13 @@ public class LlmServiceImpl implements LlmService {
             // 8. 缓存清理后的回答（多级缓存）
             if (ragConfig.getCache().getLlm().isEnabled() && cleanAnswer != null && !cleanAnswer.trim().isEmpty()) {
                 String cacheKey = generateCacheKey(normalizedQuery, context);
-                // 8.1 写入Redis
-                redisService.set(cacheKey, cleanAnswer, (long) ragConfig.getCache().getLlm().getTtl());
+                // 8.1 写入Redis（存储 answer + confidence）
+                Map<String, Object> cacheEntry = new LinkedHashMap<>();
+                cacheEntry.put("answer", cleanAnswer);
+                cacheEntry.put("confidence", llmConfidence);
+                redisService.set(cacheKey, cacheEntry, (long) ragConfig.getCache().getLlm().getTtl());
                 // 8.2 写入本地缓存
-                localCache.put(cacheKey, cleanAnswer);
+                localCache.put(cacheKey, new GenerateResult(cleanAnswer, llmConfidence));
                 log.debug("LLM回答缓存设置: query={}, cacheKey={}, confidence={}",
                         query.substring(0, Math.min(query.length(), 50)), cacheKey,
                         String.format("%.2f", llmConfidence));
