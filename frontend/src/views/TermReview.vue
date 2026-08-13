@@ -266,8 +266,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminService } from '@/api/services/adminService'
-import type { UnmappedTermItem, AdminStats } from '@/api/services/adminService'
+import { adminService } from '@/api/services/admin.service'
+import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
 
 const terms = ref<UnmappedTermItem[]>([])
 const loading = ref(false)

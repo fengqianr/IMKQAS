@@ -1,6 +1,4 @@
-import axios from 'axios'
-import { API_CONFIG } from '../config'
-import { authService } from './auth.service'
+import request from '../request'
 
 /** 未映射词条项 */
 export interface UnmappedTermItem {
@@ -49,13 +47,6 @@ export interface AdminStats {
 }
 
 class AdminService {
-  private baseURL = API_CONFIG.BASE_URL
-
-  private getAuthHeaders() {
-    const token = authService.getToken()
-    return token ? { Authorization: `Bearer ${token}` } : {}
-  }
-
   /** 分页获取待审核词条 */
   async getUnmappedTerms(params: {
     page?: number
@@ -68,7 +59,7 @@ class AdminService {
     query.append('size', size.toString())
     if (status) query.append('status', status)
 
-    const response = await axios.get<{
+    const response = await request.get<{
       success: boolean
       message: string
       data: {
@@ -78,9 +69,7 @@ class AdminService {
         size: number
         totalPages: number
       }
-    }>(`${this.baseURL}/admin/unmapped-terms?${query.toString()}`, {
-      headers: this.getAuthHeaders()
-    })
+    }>(`/admin/unmapped-terms?${query.toString()}`)
 
     if (response.data.success && response.data.data) {
       return response.data.data
@@ -90,9 +79,8 @@ class AdminService {
 
   /** 获取统计数据 */
   async getStats(): Promise<AdminStats> {
-    const response = await axios.get<{ success: boolean; data: AdminStats }>(
-      `${this.baseURL}/admin/unmapped-terms/stats`,
-      { headers: this.getAuthHeaders() }
+    const response = await request.get<{ success: boolean; data: AdminStats }>(
+      '/admin/unmapped-terms/stats'
     )
     if (response.data.success && response.data.data) {
       return response.data.data
@@ -102,33 +90,21 @@ class AdminService {
 
   /** 单个审核通过 */
   async approveTerm(id: number, standardTerm: string): Promise<void> {
-    await axios.post(
-      `${this.baseURL}/admin/unmapped-terms/${id}/approve`,
-      { standardTerm },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        }
-      }
+    await request.post(
+      `/admin/unmapped-terms/${id}/approve`,
+      { standardTerm }
     )
   }
 
   /** 批量审核通过 */
   async batchApprove(requests: ApproveRequest[]): Promise<{ total: number; success: number; failed: number }> {
-    const response = await axios.post<{
+    const response = await request.post<{
       success: boolean
       message: string
       data: { total: number; success: number; failed: number }
     }>(
-      `${this.baseURL}/admin/unmapped-terms/batch-approve`,
-      requests,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        }
-      }
+      '/admin/unmapped-terms/batch-approve',
+      requests
     )
     if (response.data.success && response.data.data) {
       return response.data.data
@@ -138,23 +114,16 @@ class AdminService {
 
   /** 拒绝词条 */
   async rejectTerm(id: number, reason: string = ''): Promise<void> {
-    await axios.post(
-      `${this.baseURL}/admin/unmapped-terms/${id}/reject`,
-      { reason },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeaders()
-        }
-      }
+    await request.post(
+      `/admin/unmapped-terms/${id}/reject`,
+      { reason }
     )
   }
 
   /** 获取未映射率 */
   async getUnmappedRate(): Promise<AdminStats> {
-    const response = await axios.get<{ success: boolean; data: AdminStats }>(
-      `${this.baseURL}/admin/stats/unmapped-rate`,
-      { headers: this.getAuthHeaders() }
+    const response = await request.get<{ success: boolean; data: AdminStats }>(
+      '/admin/stats/unmapped-rate'
     )
     if (response.data.success && response.data.data) {
       return response.data.data

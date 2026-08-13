@@ -1,5 +1,4 @@
-import axios from 'axios'
-import { API_CONFIG } from '../config'
+import request from '../request'
 import type {
   Conversation,
   Message,
@@ -11,27 +10,13 @@ import type {
   MessageResponse,
   TrashListResponse,
   RestoreResponse
-} from '../types/qa.types'
-import { authService } from './auth.service'
+} from '../types/qa'
 
 class ConversationService {
-  private baseURL = API_CONFIG.BASE_URL
-
-  // 获取认证头
-  private getAuthHeaders() {
-    const token = authService.getToken()
-    return token ? { Authorization: `Bearer ${token}` } : {}
-  }
-
   // 获取对话列表
   async getConversations(): Promise<Conversation[]> {
     try {
-      const response = await axios.get<ConversationListResponse>(
-        `${this.baseURL}/conversations`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.get<ConversationListResponse>('/conversations')
 
       if (response.data.success && response.data.data) {
         // 后端返回分页数据，提取records数组
@@ -50,18 +35,9 @@ class ConversationService {
   }
 
   // 创建对话
-  async createConversation(request: CreateConversationRequest): Promise<Conversation> {
+  async createConversation(payload: CreateConversationRequest): Promise<Conversation> {
     try {
-      const response = await axios.post<ConversationResponse>(
-        `${this.baseURL}/conversations`,
-        request,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...this.getAuthHeaders()
-          }
-        }
-      )
+      const response = await request.post<ConversationResponse>('/conversations', payload)
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -77,12 +53,7 @@ class ConversationService {
   // 获取单个对话
   async getConversation(conversationId: string): Promise<Conversation> {
     try {
-      const response = await axios.get<ConversationResponse>(
-        `${this.baseURL}/conversations/${conversationId}`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.get<ConversationResponse>(`/conversations/${conversationId}`)
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -98,15 +69,9 @@ class ConversationService {
   // 更新对话标题
   async updateConversationTitle(conversationId: string, title: string): Promise<Conversation> {
     try {
-      const response = await axios.put<ConversationResponse>(
-        `${this.baseURL}/conversations/${conversationId}`,
-        { title },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...this.getAuthHeaders()
-          }
-        }
+      const response = await request.put<ConversationResponse>(
+        `/conversations/${conversationId}`,
+        { title }
       )
 
       if (response.data.success && response.data.data) {
@@ -123,12 +88,7 @@ class ConversationService {
   // 删除对话
   async deleteConversation(conversationId: string): Promise<boolean> {
     try {
-      const response = await axios.delete<ConversationResponse>(
-        `${this.baseURL}/conversations/${conversationId}`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.delete<ConversationResponse>(`/conversations/${conversationId}`)
 
       return response.data.success
     } catch (error: any) {
@@ -140,13 +100,9 @@ class ConversationService {
   // 导出对话（PDF）
   async exportConversation(conversationId: string): Promise<Blob> {
     try {
-      const response = await axios.get(
-        `${this.baseURL}/conversations/${conversationId}/export`,
-        {
-          headers: this.getAuthHeaders(),
-          responseType: 'blob'
-        }
-      )
+      const response = await request.get(`/conversations/${conversationId}/export`, {
+        responseType: 'blob'
+      })
 
       return response.data
     } catch (error: any) {
@@ -158,12 +114,7 @@ class ConversationService {
   // 获取对话消息列表
   async getMessages(conversationId: string): Promise<Message[]> {
     try {
-      const response = await axios.get<MessageListResponse>(
-        `${this.baseURL}/messages/by-conversation/${conversationId}`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.get<MessageListResponse>(`/messages/by-conversation/${conversationId}`)
 
       if (response.data.success && response.data.data) {
         // 后端返回分页数据，提取records数组
@@ -182,18 +133,9 @@ class ConversationService {
   }
 
   // 创建消息
-  async createMessage(request: CreateMessageRequest): Promise<Message> {
+  async createMessage(payload: CreateMessageRequest): Promise<Message> {
     try {
-      const response = await axios.post<MessageResponse>(
-        `${this.baseURL}/messages`,
-        request,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...this.getAuthHeaders()
-          }
-        }
-      )
+      const response = await request.post<MessageResponse>('/messages', payload)
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -209,12 +151,7 @@ class ConversationService {
   // 删除消息
   async deleteMessage(messageId: string): Promise<boolean> {
     try {
-      const response = await axios.delete<MessageResponse>(
-        `${this.baseURL}/messages/${messageId}`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.delete<MessageResponse>(`/messages/${messageId}`)
 
       return response.data.success
     } catch (error: any) {
@@ -226,13 +163,9 @@ class ConversationService {
   // 获取回收站中的已删除对话
   async getDeletedConversations(userId?: number): Promise<Conversation[]> {
     try {
-      const response = await axios.get<TrashListResponse>(
-        `${this.baseURL}/conversations/trash`,
-        {
-          params: userId ? { userId } : {},
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.get<TrashListResponse>('/conversations/trash', {
+        params: userId ? { userId } : {}
+      })
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -248,12 +181,9 @@ class ConversationService {
   // 从回收站恢复对话
   async restoreConversation(conversationId: string): Promise<boolean> {
     try {
-      const response = await axios.put<RestoreResponse>(
-        `${this.baseURL}/conversations/${conversationId}/restore`,
-        {},
-        {
-          headers: this.getAuthHeaders()
-        }
+      const response = await request.put<RestoreResponse>(
+        `/conversations/${conversationId}/restore`,
+        {}
       )
 
       return response.data.success

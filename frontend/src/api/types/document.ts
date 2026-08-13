@@ -1,5 +1,5 @@
 // 文档相关类型定义
-import type { ApiResponse } from './auth.types'
+import type { ApiResponse } from './auth'
 
 // 文档状态枚举
 export enum DocumentStatus {

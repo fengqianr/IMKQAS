@@ -1,5 +1,4 @@
-import axios from 'axios'
-import { API_CONFIG, AUTH_CONFIG } from '../config'
+import request from '../request'
 import type {
   Document,
   DocumentPageResponse,
@@ -10,25 +9,16 @@ import type {
   DocumentListResponse,
   DocumentDetailResponse,
   DocumentProcessApiResponse
-} from '../types/document.types'
-import { DocumentStatus } from '../types/document.types'
+} from '../types/document'
+import { DocumentStatus } from '../types/document'
 
 class DocumentService {
-  private baseURL = API_CONFIG.BASE_URL
-
   // 获取文档列表（分页）
   async getDocuments(current = 1, size = 10): Promise<DocumentListResponse> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.get<DocumentApiResponse<DocumentPageResponse>>(
-        `${this.baseURL}/documents`,
-        {
-          params: { current, size },
-          headers: {
-            Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-          }
-        }
-      )
+      const response = await request.get<DocumentApiResponse<DocumentPageResponse>>('/documents', {
+        params: { current, size }
+      })
       return response.data
     } catch (error: any) {
       console.error('获取文档列表失败:', error)
@@ -45,22 +35,15 @@ class DocumentService {
   // 搜索文档
   async searchDocuments(params: DocumentSearchParams): Promise<DocumentListResponse> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.get<DocumentApiResponse<DocumentPageResponse>>(
-        `${this.baseURL}/documents/search`,
-        {
-          params: {
-            keyword: params.keyword,
-            category: params.category,
-            status: params.status,
-            current: params.current || 1,
-            size: params.size || 10
-          },
-          headers: {
-            Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-          }
+      const response = await request.get<DocumentApiResponse<DocumentPageResponse>>('/documents/search', {
+        params: {
+          keyword: params.keyword,
+          category: params.category,
+          status: params.status,
+          current: params.current || 1,
+          size: params.size || 10
         }
-      )
+      })
       return response.data
     } catch (error: any) {
       console.error('搜索文档失败:', error)
@@ -77,15 +60,7 @@ class DocumentService {
   // 获取文档详情
   async getDocument(id: string): Promise<DocumentDetailResponse> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.get<DocumentApiResponse<Document>>(
-        `${this.baseURL}/documents/${id}`,
-        {
-          headers: {
-            Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-          }
-        }
-      )
+      const response = await request.get<DocumentApiResponse<Document>>(`/documents/${id}`)
       return response.data
     } catch (error: any) {
       console.error(`获取文档详情失败 (ID: ${id}):`, error)
@@ -102,8 +77,6 @@ class DocumentService {
   // 上传并处理文档
   async uploadDocument(params: DocumentUploadParams): Promise<DocumentProcessApiResponse> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-
       // 创建FormData
       const formData = new FormData()
       formData.append('file', params.file)
@@ -114,13 +87,12 @@ class DocumentService {
         formData.append('category', params.category)
       }
 
-      const response = await axios.post<DocumentApiResponse<DocumentProcessResponse>>(
-        `${this.baseURL}/rag/process-document`,
+      const response = await request.post<DocumentApiResponse<DocumentProcessResponse>>(
+        '/rag/process-document',
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
+            'Content-Type': 'multipart/form-data'
           }
         }
       )
@@ -140,15 +112,7 @@ class DocumentService {
   // 删除文档
   async deleteDocument(id: string): Promise<DocumentApiResponse> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.delete<DocumentApiResponse>(
-        `${this.baseURL}/documents/${id}`,
-        {
-          headers: {
-            Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-          }
-        }
-      )
+      const response = await request.delete<DocumentApiResponse>(`/documents/${id}`)
       return response.data
     } catch (error: any) {
       console.error(`删除文档失败 (ID: ${id}):`, error)
@@ -165,16 +129,7 @@ class DocumentService {
   // 更新文档
   async updateDocument(id: string, document: Partial<Document>): Promise<DocumentDetailResponse> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.put<DocumentApiResponse<Document>>(
-        `${this.baseURL}/documents/${id}`,
-        document,
-        {
-          headers: {
-            Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-          }
-        }
-      )
+      const response = await request.put<DocumentApiResponse<Document>>(`/documents/${id}`, document)
       return response.data
     } catch (error: any) {
       console.error(`更新文档失败 (ID: ${id}):`, error)
@@ -241,18 +196,14 @@ class DocumentService {
 
   // 获取文档预览URL
   getPreviewUrl(id: string): string {
-    return `${this.baseURL}/documents/${id}/preview`
+    return `${request.defaults.baseURL || ''}/documents/${id}/preview`
   }
 
   // 获取文档预览文件内容（用于PDF等二进制格式）
   async getPreviewBlob(id: string): Promise<Blob | null> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.get(`${this.baseURL}/documents/${id}/preview`, {
-        responseType: 'blob',
-        headers: {
-          Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-        }
+      const response = await request.get(`/documents/${id}/preview`, {
+        responseType: 'blob'
       })
       return response.data
     } catch (error: any) {
@@ -264,12 +215,8 @@ class DocumentService {
   // 获取文档文本预览内容（用于非PDF格式的文本展示）
   async getPreviewText(id: string): Promise<string | null> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.get(`${this.baseURL}/documents/${id}/preview/text`, {
-        responseType: 'text',
-        headers: {
-          Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-        }
+      const response = await request.get(`/documents/${id}/preview/text`, {
+        responseType: 'text'
       })
       return response.data
     } catch (error: any) {
@@ -281,15 +228,9 @@ class DocumentService {
   // 重新处理文档（触发分块处理）
   async reprocessDocument(documentId: string): Promise<DocumentProcessApiResponse> {
     try {
-      const token = localStorage.getItem(AUTH_CONFIG.TOKEN_KEY)
-      const response = await axios.post<DocumentApiResponse<DocumentProcessResponse>>(
-        `${this.baseURL}/rag/chunk-document/${documentId}`,
-        {},
-        {
-          headers: {
-            Authorization: token ? `${AUTH_CONFIG.TOKEN_PREFIX}${token}` : undefined
-          }
-        }
+      const response = await request.post<DocumentApiResponse<DocumentProcessResponse>>(
+        `/rag/chunk-document/${documentId}`,
+        {}
       )
       return response.data
     } catch (error: any) {

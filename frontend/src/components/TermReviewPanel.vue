@@ -45,8 +45,8 @@
       <el-button
         type="primary"
         :disabled="selectedRows.length === 0"
-        @click="showBatchApprove"
         style="margin-left: auto"
+        @click="showBatchApprove"
       >
         批量标注 ({{ selectedRows.length }})
       </el-button>
@@ -58,9 +58,9 @@
       :data="displayTerms"
       row-key="id"
       style="width: 100%; margin-top: 16px"
-      @selection-change="handleSelectionChange"
       max-height="calc(100vh - 380px)"
       size="small"
+      @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="40" />
       <el-table-column prop="term" label="口语表达" min-width="100" show-overflow-tooltip />
@@ -78,8 +78,10 @@
       </el-table-column>
       <el-table-column label="LLM置信度" width="90">
         <template #default="{ row }">
-          <span v-if="row.llmConfidence != null"
-                :style="{ color: row.llmConfidence >= 0.85 ? '#22c55e' : row.llmConfidence >= 0.6 ? '#f59e0b' : '#ef4444' }">
+          <span
+            v-if="row.llmConfidence != null"
+            :style="{ color: row.llmConfidence >= 0.85 ? '#22c55e' : row.llmConfidence >= 0.6 ? '#f59e0b' : '#ef4444' }"
+          >
             {{ (row.llmConfidence * 100).toFixed(0) }}%
           </span>
           <span v-else style="color: #999">-</span>
@@ -139,8 +141,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminService } from '@/api/services/adminService'
-import type { UnmappedTermItem, AdminStats } from '@/api/services/adminService'
+import { adminService } from '@/api/services/admin.service'
+import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
 
 // ========== Props & Emits ==========
 const props = defineProps<{ modelValue: boolean }>()

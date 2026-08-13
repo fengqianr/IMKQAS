@@ -1,5 +1,5 @@
 // 文档分块相关类型定义
-import type { ApiResponse } from './auth.types'
+import type { ApiResponse } from './auth'
 
 // 文档分块实体
 export interface DocumentChunk {

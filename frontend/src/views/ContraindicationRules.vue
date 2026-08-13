@@ -305,7 +305,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { contraindicationService, type ContraindicationRule, type BatchImportResult } from '@/api/services/contraindicationService'
+import { contraindicationService, type ContraindicationRule, type BatchImportResult } from '@/api/services/contraindication.service'
 
 const rules = ref<ContraindicationRule[]>([])
 const loading = ref(false)

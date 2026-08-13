@@ -5,7 +5,7 @@ import type {
   LoginResponse,
   RegisterRequest,
   ApiResponse
-} from '../types/auth.types'
+} from '../types/auth'
 
 class AuthService {
   private baseURL = API_CONFIG.BASE_URL

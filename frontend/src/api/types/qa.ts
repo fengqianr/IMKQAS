@@ -1,5 +1,5 @@
-import type { ApiResponse } from './auth.types'
-import type { AnswerOption } from './interview.types'
+import type { ApiResponse } from './auth'
+import type { AnswerOption } from './interview'
 
 // QA问答请求类型
 export interface QaAskRequest {

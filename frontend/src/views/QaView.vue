@@ -415,8 +415,8 @@ import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
 import { useAuthStore } from '@/stores/auth.store'
 import TermReviewPanel from '@/components/TermReviewPanel.vue'
-import type { Conversation, RetrievalStep } from '@/api/types/qa.types'
-import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview.types'
+import type { Conversation, RetrievalStep } from '@/api/types/qa'
+import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview'
 
 interface Session {
   id: string

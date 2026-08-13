@@ -35,6 +35,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: '智能问答', requiresAuth: false, noLayout: true }
   },
   {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('@/views/ProfileView.vue'),
+    meta: { title: '我的健康档案', requiresAuth: true }
+  },
+  {
     path: '/knowledge',
     name: 'knowledge',
     component: KnowledgeView,
