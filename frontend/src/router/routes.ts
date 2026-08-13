@@ -1,8 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router'
-import LoginView from '@/views/LoginView.vue'
-import QaView from '@/views/QaView.vue'
-import KnowledgeView from '@/views/KnowledgeView.vue'
-import NotFoundView from '@/views/NotFoundView.vue'
+import LoginView from '@/views/auth/LoginView.vue'
+import QaView from '@/views/chat/QaView.vue'
+import KnowledgeView from '@/views/knowledge/KnowledgeView.vue'
+import NotFoundView from '@/views/common/NotFoundView.vue'
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -19,13 +19,13 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/register',
     name: 'register',
-    component: () => import('@/views/RegisterView.vue'),
+    component: () => import('@/views/auth/RegisterView.vue'),
     meta: { title: '注册', guestOnly: true }
   },
   {
     path: '/forgot-password',
     name: 'forgot-password',
-    component: () => import('@/views/ForgotPasswordView.vue'),
+    component: () => import('@/views/auth/ForgotPasswordView.vue'),
     meta: { title: '忘记密码', guestOnly: true }
   },
   {
@@ -37,8 +37,32 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/profile',
     name: 'profile',
-    component: () => import('@/views/ProfileView.vue'),
+    component: () => import('@/views/patient/ProfileView.vue'),
     meta: { title: '我的健康档案', requiresAuth: true }
+  },
+  {
+    path: '/records',
+    name: 'records',
+    component: () => import('@/views/patient/RecordsView.vue'),
+    meta: { title: '问卷记录', requiresAuth: true }
+  },
+  {
+    path: '/patients',
+    name: 'patients',
+    component: () => import('@/views/doctor/PatientSearchView.vue'),
+    meta: { title: '患者检索', requiresAuth: true }
+  },
+  {
+    path: '/patients/:id',
+    name: 'patient-detail',
+    component: () => import('@/views/doctor/PatientDetailView.vue'),
+    meta: { title: '患者详情', requiresAuth: true }
+  },
+  {
+    path: '/drugs',
+    name: 'drugs',
+    component: () => import('@/views/doctor/DrugSearchView.vue'),
+    meta: { title: '药物查询', requiresAuth: true }
   },
   {
     path: '/knowledge',
@@ -49,13 +73,13 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/contraindication-rules',
     name: 'contraindication-rules',
-    component: () => import('@/views/ContraindicationRules.vue'),
+    component: () => import('@/views/clinical/ContraindicationRules.vue'),
     meta: { title: '禁忌规则', requiresAuth: true, noLayout: true }
   },
   {
     path: '/term-review',
     name: 'term-review',
-    component: () => import('@/views/TermReview.vue'),
+    component: () => import('@/views/clinical/TermReview.vue'),
     meta: { title: '词条审核', requiresAuth: true, noLayout: true }
   },
   {

@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import MainLayout from '@/components/layout/MainLayout.vue'
+import MainLayout from '@/views/layout/MainLayout.vue'
 
 const route = useRoute()
 

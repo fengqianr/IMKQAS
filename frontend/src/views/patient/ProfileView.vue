@@ -199,7 +199,7 @@ const addItem = (key: string) => {
 
 // 删除一项病史
 const removeItem = (key: string, index: number) => {
-  ;(form[key as keyof HealthProfile] as string[]).splice(index, 1)
+  (form[key as keyof HealthProfile] as string[]).splice(index, 1)
 }
 
 // 保存档案

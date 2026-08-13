@@ -482,8 +482,8 @@ import { documentService } from '@/api/services/document.service'
 import { documentChunkService } from '@/api/services/document-chunk.service'
 import type { Document as ApiDocument } from '@/api/types/document'
 import type { DocumentChunk } from '@/api/types/document-chunk'
-import ContraindicationRules from '@/views/ContraindicationRules.vue'
-import TermReview from '@/views/TermReview.vue'
+import ContraindicationRules from '@/views/clinical/ContraindicationRules.vue'
+import TermReview from '@/views/clinical/TermReview.vue'
 
 // 类型定义
 interface Category {
