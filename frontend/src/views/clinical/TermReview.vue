@@ -1,24 +1,6 @@
 <template>
   <div class="term-review-page">
-    <!-- 顶部导航栏：匹配原型图 trem.html -->
-    <header class="term-review-header">
-      <div class="custom-flex custom-items-center custom-gap-8">
-        <div class="term-review-logo">Clinical Precision RAG</div>
-        <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
-          <router-link to="/qa" class="term-review-nav-link" :class="$route.path === '/qa' ? 'term-review-nav-link-active' : ''">智能问答</router-link>
-          <router-link to="/knowledge" class="term-review-nav-link" :class="$route.path === '/knowledge' ? 'term-review-nav-link-active' : ''">知识库</router-link>
-          <router-link to="/contraindication-rules" class="term-review-nav-link" :class="$route.path === '/contraindication-rules' ? 'term-review-nav-link-active' : ''">禁忌规则</router-link>
-          <router-link to="/term-review" class="term-review-nav-link" :class="$route.path === '/term-review' ? 'term-review-nav-link-active' : ''">词条审核</router-link>
-        </nav>
-      </div>
-      <div class="custom-flex custom-items-center custom-gap-4">
-        <button class="header-icon-btn material-symbols-outlined">notifications</button>
-        <button class="header-icon-btn material-symbols-outlined">settings</button>
-        <img alt="User Profile" class="header-avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg"/>
-      </div>
-    </header>
-
-    <!-- 主内容区域：填满屏幕剩余空间 -->
+    <!-- 主内容区域（导航由外部布局框架提供） -->
     <main class="term-review-main">
       <div class="term-review-main-inner">
 
@@ -459,65 +441,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ===== 页面根容器：全屏布局 ===== */
+/* ===== 页面根容器：内容区高度 ===== */
 .term-review-page {
-  height: 100vh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   background-color: #f8f9fa; /* surface / background */
 }
 
-/* ===== 顶部导航栏：匹配原型 backdrop-blur + shadow ===== */
-.term-review-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 50;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 12px 40px rgba(0, 71, 141, 0.06);
-  height: 4rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-left: 2rem;
-  padding-right: 2rem;
-}
-
-.term-review-logo {
-  font-family: 'Manrope', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #00478d;
-  letter-spacing: -0.05em;
-}
-
-.term-review-nav-link {
-  font-family: 'Manrope', sans-serif;
-  letter-spacing: -0.025em;
-  font-weight: 600;
-  padding-bottom: 0.25rem;
-  transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  color: #424752;
-  text-decoration: none;
-}
-
-.term-review-nav-link:hover {
-  color: #00478d;
-}
-
-.term-review-nav-link-active {
-  color: #00478d;
-  border-bottom: 2px solid #00478d;
-  font-weight: 700;
-}
-
-/* ===== 主内容区：填满剩余空间 ===== */
+/* ===== 主内容区：占满布局内容区 ===== */
 .term-review-main {
   flex: 1;
-  overflow-y: auto;
-  padding-top: 6rem;   /* 4rem header + 2rem extra */
+  overflow: visible;
+  padding-top: 1.5rem;
   padding-bottom: 3rem;
   padding-left: 2rem;
   padding-right: 2rem;
@@ -947,33 +883,6 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-/* ===== 图标按钮（头部） ===== */
-.header-icon-btn {
-  padding: 0.5rem;
-  color: #424752;
-  border-radius: 9999px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 150ms;
-}
-
-.header-icon-btn:hover {
-  background-color: rgba(231, 232, 233, 0.5);
-}
-
-/* ===== 头像 ===== */
-.header-avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(194, 198, 212, 0.15);
-  object-fit: cover;
-}
-
 /* ===== Material Icons ===== */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -1060,10 +969,6 @@ onMounted(() => {
 
 /* ===== 响应式 ===== */
 @media (max-width: 768px) {
-  .term-review-header {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
   .term-review-main {
     padding-left: 1rem;
     padding-right: 1rem;

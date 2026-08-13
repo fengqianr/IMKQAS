@@ -1,26 +1,6 @@
 <template>
   <div class="contraindication-page">
-    <!-- 顶部导航栏 -->
-    <header class="qa-header">
-      <div class="custom-flex custom-items-center custom-gap-8">
-        <div class="qa-header-logo">
-          Clinical Precision RAG
-        </div>
-        <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
-          <router-link to="/qa" class="qa-nav-link" :class="$route.path === '/qa' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">智能问答</router-link>
-          <router-link to="/knowledge" class="qa-nav-link" :class="$route.path === '/knowledge' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">知识库</router-link>
-          <router-link to="/contraindication-rules" class="qa-nav-link" :class="$route.path === '/contraindication-rules' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">禁忌规则</router-link>
-          <router-link to="/term-review" class="qa-nav-link" :class="$route.path === '/term-review' ? 'qa-nav-link-active' : 'qa-nav-link-inactive'">词条审核</router-link>
-        </nav>
-      </div>
-      <div class="custom-flex custom-items-center custom-gap-4">
-        <button class="qa-icon-btn material-symbols-outlined">notifications</button>
-        <button class="qa-icon-btn material-symbols-outlined">settings</button>
-        <img alt="User Profile" class="qa-header-avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg"/>
-      </div>
-    </header>
-
-    <!-- 主内容区域：填满剩余视口高度 -->
+    <!-- 主内容区域（导航由外部布局框架提供） -->
     <div class="contraindication-content">
 
       <!-- 统计概览 + 操作按钮 -->
@@ -572,22 +552,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ===== 页面根容器：撑满整个视口 ===== */
+/* ===== 页面根容器（嵌于布局内容区，自然撑开高度） ===== */
 .contraindication-page {
-  height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100%;
   background-color: #f8f9fa;
 }
 
-/* ===== 主内容区域：占据 header 下方的全部剩余空间 ===== */
+/* ===== 主内容区域 ===== */
 .contraindication-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 2rem 0;
-  overflow: hidden;
-  margin-top: 4rem;
+  padding: 1.5rem 0 0;
+  overflow: visible;
 }
 
 /* ===== 统计卡片行 ===== */

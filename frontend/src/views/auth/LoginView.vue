@@ -56,13 +56,14 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.store'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const loginFormRef = ref<FormInstance>()
 
@@ -98,7 +99,9 @@ const handleLogin = async () => {
 
     if (result.success) {
       ElMessage.success('登录成功')
-      router.push('/qa')
+      // 回跳守卫记录的原始目标页；无 redirect 时进入智能问答
+      const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/qa'
+      router.replace(redirect)
     } else {
       ElMessage.error(result.message || '登录失败')
     }

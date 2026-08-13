@@ -65,22 +65,40 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: '药物查询', requiresAuth: true }
   },
   {
+    path: '/triage',
+    name: 'triage',
+    component: () => import('@/views/doctor/TriageView.vue'),
+    meta: { title: '批量导诊', requiresAuth: true }
+  },
+  {
     path: '/knowledge',
     name: 'knowledge',
     component: KnowledgeView,
-    meta: { title: '知识库管理', requiresAuth: false, noLayout: true }
+    meta: { title: '知识库管理', requiresAuth: true }
   },
   {
     path: '/contraindication-rules',
     name: 'contraindication-rules',
     component: () => import('@/views/clinical/ContraindicationRules.vue'),
-    meta: { title: '禁忌规则', requiresAuth: true, noLayout: true }
+    meta: { title: '禁忌规则', requiresAuth: true }
   },
   {
     path: '/term-review',
     name: 'term-review',
     component: () => import('@/views/clinical/TermReview.vue'),
-    meta: { title: '词条审核', requiresAuth: true, noLayout: true }
+    meta: { title: '词条审核', requiresAuth: true }
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('@/views/common/UnderConstructionView.vue'),
+    meta: { title: '系统统计', requiresAuth: true }
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: () => import('@/views/common/UnderConstructionView.vue'),
+    meta: { title: '用户管理', requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',

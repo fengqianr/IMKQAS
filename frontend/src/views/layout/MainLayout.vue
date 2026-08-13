@@ -6,7 +6,7 @@
       <div class="sidebar-header">
         <span class="material-symbols-outlined brand-icon">hub</span>
         <div>
-          <h1 class="brand-name">Precision RAG</h1>
+          <h1 class="brand-name">{{ brand }}</h1>
           <p class="brand-sub">Clinical AI System</p>
         </div>
       </div>
@@ -19,7 +19,7 @@
             <router-link
               :to="item.path"
               class="menu-item"
-              :class="isActive(item) ? 'menu-item-active' : 'menu-item-inactive'"
+              :class="isActive(route.path, item) ? 'menu-item-active' : 'menu-item-inactive'"
             >
               <span class="material-symbols-outlined menu-icon">{{ item.icon }}</span>
               <span>{{ item.title }}</span>
@@ -97,13 +97,17 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.store'
+import { ROLE_LABELS, isActive, type MenuItem } from '@/config/menus'
 
-/** 菜单项 */
-interface MenuItem {
-  path: string
-  title: string
-  icon: string
-}
+/**
+ * 布局 props：菜单列表由各端薄壳布局注入（patient/doctor/admin），
+ * 品牌文案可自定义，variant 预留各端密度微调
+ */
+const props = defineProps<{
+  menus: MenuItem[]
+  brand?: string
+  variant?: 'portal' | 'clinical' | 'admin'
+}>()
 
 const router = useRouter()
 const route = useRoute()
@@ -112,58 +116,10 @@ const authStore = useAuthStore()
 // 移动端抽屉开关
 const sidebarOpen = ref(false)
 
-// 三角色菜单定义
-const MENUS: Record<string, MenuItem[]> = {
-  patient: [
-    { path: '/qa', title: '智能问答', icon: 'forum' },
-    { path: '/profile', title: '我的健康档案', icon: 'person' },
-    { path: '/records', title: '问卷记录', icon: 'list_alt' }
-  ],
-  doctor: [
-    { path: '/qa', title: '智能问答', icon: 'forum' },
-    { path: '/patients', title: '患者检索', icon: 'stethoscope' },
-    { path: '/drugs', title: '药物查询', icon: 'medication' },
-    { path: '/triage', title: '批量导诊', icon: 'triage' },
-    { path: '/contraindication-rules', title: '禁忌规则', icon: 'rule' }
-  ],
-  admin: [
-    { path: '/dashboard', title: '系统统计', icon: 'dashboard' },
-    { path: '/users', title: '用户管理', icon: 'manage_accounts' },
-    { path: '/term-review', title: '词条审核', icon: 'fact_check' },
-    { path: '/contraindication-rules', title: '禁忌规则', icon: 'rule' },
-    { path: '/knowledge', title: '知识库', icon: 'library_books' },
-    { path: '/qa', title: '智能问答', icon: 'forum' }
-  ]
-}
-
-// 后端角色枚举 → 前端菜单归属（6 角色归并为 3 类）
-const ROLE_MENU_MAP: Record<string, MenuItem[]> = {
-  PATIENT: MENUS.patient,
-  STUDENT: MENUS.patient,
-  NURSE: MENUS.patient,
-  HEALTH_MANAGER: MENUS.patient,
-  DOCTOR: MENUS.doctor,
-  ADMIN: MENUS.admin
-}
-
-// 角色中文名
-const ROLE_LABELS: Record<string, string> = {
-  PATIENT: '患者',
-  DOCTOR: '医生',
-  ADMIN: '管理员',
-  STUDENT: '学生',
-  NURSE: '护士',
-  HEALTH_MANAGER: '健康管理师'
-}
-
-// 计算属性
-const menuItems = computed(() => ROLE_MENU_MAP[authStore.userRole] || MENUS.patient)
+// 计算属性：菜单来自 props（由薄壳布局注入），角色徽标来自角色映射
+const menuItems = computed(() => props.menus)
 const roleLabel = computed(() => ROLE_LABELS[authStore.userRole] || '访客')
 const userName = computed(() => authStore.user?.username || '用户')
-
-// 菜单激活态：精确匹配或子路径匹配（如 /patients/:id）
-const isActive = (item: MenuItem) =>
-  route.path === item.path || route.path.startsWith(item.path + '/')
 
 // 顶栏操作
 const showNotice = () => ElMessage.info('暂无新通知')
@@ -196,6 +152,7 @@ const handleLogout = async () => {
 <style scoped>
 /* ===== 布局容器 ===== */
 .main-layout {
+  --layout-sidebar-width: 260px;
   min-height: 100vh;
   background: #f8f9fa;
 }
@@ -328,7 +285,7 @@ const handleLogout = async () => {
 
 /* ===== 主体区 ===== */
 .main-content {
-  margin-left: 260px;
+  margin-left: var(--layout-sidebar-width);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -447,6 +404,9 @@ const handleLogout = async () => {
 
 /* ===== 响应式：小屏收起侧边栏 ===== */
 @media (max-width: 1024px) {
+  .main-layout {
+    --layout-sidebar-width: 0px;
+  }
   .sidebar {
     transform: translateX(-100%);
   }

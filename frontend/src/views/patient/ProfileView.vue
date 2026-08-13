@@ -495,7 +495,7 @@ onMounted(loadProfile)
 .action-bar {
   position: fixed;
   bottom: 0;
-  left: 260px;
+  left: var(--layout-sidebar-width, 0px);
   right: 0;
   z-index: 15;
   background: #ffffff;
