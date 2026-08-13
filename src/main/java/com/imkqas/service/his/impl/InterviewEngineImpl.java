@@ -987,6 +987,7 @@ public class InterviewEngineImpl implements InterviewEngine {
                     cache.setTotalScore(totalScore);
                     cache.setScoreInterpretation(riskLevel);
                     cache.setConversationId(convId);
+                    cache.setSessionId(sid);
                     cache.setStatus("completed");
                     qrMapper.insert(cache);
                     log.info("FHIR资源已持久化: sessionId={}, fhirId={}", sid, cache.getFhirId());
@@ -1326,6 +1327,7 @@ public class InterviewEngineImpl implements InterviewEngine {
 
     private Map<String, Object> toHistoryMap(FhirQuestionnaireResponseCache r) {
         Map<String, Object> map = new LinkedHashMap<>();
+        map.put("sessionId", r.getSessionId());
         map.put("fhirId", r.getFhirId());
         map.put("questionnaireId", r.getQuestionnaireId());
         map.put("questionnaireTitle", r.getQuestionnaireTitle());

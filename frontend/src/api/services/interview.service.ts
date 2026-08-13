@@ -13,6 +13,13 @@ import type {
   BatchSubmitResponse
 } from '../types/interview'
 
+/** 评分趋势点（/his/interview/trend 返回） */
+export interface TrendPoint {
+  date: string
+  score: number
+  severity?: string
+}
+
 class InterviewService {
   // 获取问卷建议
   async suggest(userInput: string): Promise<InterviewSuggestion> {
@@ -254,6 +261,20 @@ class InterviewService {
       return (response.data.data || []) as any[]
     } catch (error: any) {
       console.error('获取历史记录失败:', error)
+      return []
+    }
+  }
+
+  // 获取评分趋势数据（用于图表展示）
+  async getTrend(userId: number, questionnaireId: string): Promise<TrendPoint[]> {
+    try {
+      const response = await request.get(
+        '/his/interview/trend',
+        { params: { userId, questionnaireId } }
+      )
+      return (response.data.data || []) as TrendPoint[]
+    } catch (error: any) {
+      console.error('获取评分趋势失败:', error)
       return []
     }
   }
