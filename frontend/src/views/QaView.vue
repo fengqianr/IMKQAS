@@ -413,7 +413,6 @@ import { ElMessage } from 'element-plus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
-import { authService } from '@/api/services/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
 import TermReviewPanel from '@/components/TermReviewPanel.vue'
 import type { Conversation, RetrievalStep } from '@/api/types/qa.types'
@@ -918,7 +917,7 @@ const sendMessage = async () => {
       {
         question: content,
         conversationId: activeSessionId.value,
-        userId: authService.getToken() ? 1 : undefined
+        userId: authStore.userId || undefined
       },
       // onChunk
       (chunk) => {
@@ -1037,7 +1036,7 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
   console.log('[DATA_COLLECTION] startInterviewFlow 开始:', {
     questionnaireId,
     title: _questionnaireTitle,
-    userId: authService.getToken() ? 1 : undefined,
+    userId: authStore.userId || undefined,
     conversationId: activeSessionId.value || undefined
   })
   setInterviewState({ active: true, loading: true })
@@ -1050,7 +1049,7 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
     await interviewService.startLlmInterview(
       {
         questionnaireId,
-        userId: authService.getToken() ? 1 : undefined,
+        userId: authStore.userId || undefined,
         conversationId: activeSessionId.value || undefined
       },
       // onEvent

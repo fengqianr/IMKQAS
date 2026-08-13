@@ -154,7 +154,7 @@ const form = reactive({
   code: ''
 })
 
-const validatePhone = (rule: any, value: string, callback: any) => {
+const validatePhone = (_rule: any, value: string, callback: any) => {
   if (!value) {
     return callback(new Error('请输入手机号'))
   }
@@ -180,7 +180,7 @@ const passwordForm = reactive({
   confirmPassword: ''
 })
 
-const validatePassword = (rule: any, value: string, callback: any) => {
+const validatePassword = (_rule: any, value: string, callback: any) => {
   if (!value) {
     return callback(new Error('请输入密码'))
   }
@@ -193,7 +193,7 @@ const validatePassword = (rule: any, value: string, callback: any) => {
   callback()
 }
 
-const validateConfirmPassword = (rule: any, value: string, callback: any) => {
+const validateConfirmPassword = (_rule: any, value: string, callback: any) => {
   if (!value) {
     return callback(new Error('请确认密码'))
   }

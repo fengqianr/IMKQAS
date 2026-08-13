@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.imkqas.dto.user.HealthProfileRequest;
 import com.imkqas.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,24 +32,26 @@ public class UserController {
     private final UserService service;
 
     /**
-     * 创建用户
+     * 创建用户（仅管理员可操作）
      * @param entity 用户实体
      * @return 创建的用户
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public User create(@RequestBody User entity) {
         service.save(entity);
         return entity;
     }
 
     /**
-     * 更新用户
+     * 更新用户（仅管理员可操作）
      * @param id 用户ID
      * @param entity 用户实体
      * @return 更新后的用户
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public User update(@PathVariable Long id, @RequestBody User entity) {
         entity.setId(id);
         service.updateById(entity);
@@ -56,11 +59,12 @@ public class UserController {
     }
 
     /**
-     * 删除用户
+     * 删除用户（仅管理员可操作）
      * @param id 用户ID
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(@PathVariable Long id) {
         service.removeById(id);
     }
