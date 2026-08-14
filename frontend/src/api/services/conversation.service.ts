@@ -13,10 +13,13 @@ import type {
 } from '../types/qa'
 
 class ConversationService {
-  // 获取对话列表
-  async getConversations(): Promise<Conversation[]> {
+  // 获取对话列表（传入 userId 时按用户过滤，避免不同用户的会话混在一起）
+  async getConversations(userId?: number): Promise<Conversation[]> {
     try {
-      const response = await request.get<ConversationListResponse>('/conversations')
+      // 按用户查询时复用后端已存在的 /conversations/by-user/{userId}，分页拉全量
+      const url = userId ? `/conversations/by-user/${userId}` : '/conversations'
+      const params = userId ? { current: 1, size: 1000 } : undefined
+      const response = await request.get<ConversationListResponse>(url, { params })
 
       if (response.data.success && response.data.data) {
         // 后端返回分页数据，提取records数组

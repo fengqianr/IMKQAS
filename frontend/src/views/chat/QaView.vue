@@ -1,6 +1,5 @@
 <template>
   <div class="qa-view">
-
     <!-- 顶部导航栏 -->
     <header class="qa-header">
       <div class="custom-flex custom-items-center custom-gap-8">
@@ -13,19 +12,20 @@
             :key="item.path"
             :to="item.path"
             :class="['qa-nav-link', isActive(route.path, item) ? 'qa-nav-link-active' : 'qa-nav-link-inactive']"
-          >{{ item.title }}</router-link>
+          >
+            {{ item.title }}
+          </router-link>
         </nav>
       </div>
       <div class="custom-flex custom-items-center custom-gap-4">
         <button class="qa-icon-btn material-symbols-outlined">notifications</button>
         <button class="qa-icon-btn material-symbols-outlined">settings</button>
-        <img alt="User Profile" class="qa-header-avatar" data-alt="close-up professional portrait of a medical doctor in a white coat with a clean clinical background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg"/>
+        <img alt="User Profile" class="qa-header-avatar" data-alt="close-up professional portrait of a medical doctor in a white coat with a clean clinical background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg">
       </div>
     </header>
 
     <!-- 主内容区域（侧边栏 + 聊天区域 + 检索面板） -->
     <div class="qa-main-content">
-
       <!-- 侧边栏 -->
       <aside class="qa-sidebar">
         <div class="custom-p-6 custom-pt-4">
@@ -38,27 +38,29 @@
               <div class="qa-sidebar-subtitle">最近咨询列表</div>
             </div>
           </div>
-          <button @click="createNewSession" class="qa-new-btn">
+          <button class="qa-new-btn" @click="createNewSession">
             <span class="material-symbols-outlined text-sm">add</span>
             新建咨询
           </button>
         </div>
 
         <nav class="custom-flex-1 qa-no-scrollbar custom-overflow-y-auto space-y-1">
-          <div v-for="session in sessions" :key="session.id"
-               @click="switchSession(session.id)"
-               :class="['qa-session-item', session.id === activeSessionId ? 'qa-session-active' : 'qa-session-inactive']">
+          <div
+            v-for="session in sessions" :key="session.id"
+            :class="['qa-session-item', session.id === activeSessionId ? 'qa-session-active' : 'qa-session-inactive']"
+            @click="switchSession(session.id)"
+          >
             <span class="material-symbols-outlined text-lg">{{ session.icon }}</span>
             <span class="qa-session-title">{{ session.title }}</span>
           </div>
         </nav>
 
         <div class="qa-sidebar-footer">
-          <div @click="deleteActiveSession" class="qa-sidebar-footer-item qa-clickable">
+          <div class="qa-sidebar-footer-item qa-clickable" @click="deleteActiveSession">
             <span class="material-symbols-outlined text-lg">delete</span>
             回收站
           </div>
-          <div @click="showReviewPanel = true" v-if="authStore.userRole === 'ADMIN'" class="qa-sidebar-footer-item qa-clickable">
+          <div v-if="authStore.userRole === 'ADMIN'" class="qa-sidebar-footer-item qa-clickable" @click="showReviewPanel = true">
             <span class="material-symbols-outlined text-lg">rate_review</span>
             词条审核
           </div>
@@ -85,8 +87,10 @@
           <!-- 聊天消息列表 -->
           <div class="qa-messages-container">
             <div class="qa-messages-list">
-              <div v-for="message in messages" :key="message.id"
-                   :class="['custom-flex', message.role === 'user' ? 'custom-justify-end' : 'custom-justify-start']">
+              <div
+                v-for="message in messages" :key="message.id"
+                :class="['custom-flex', message.role === 'user' ? 'custom-justify-end' : 'custom-justify-start']"
+              >
                 <!-- 用户消息 -->
                 <div v-if="message.role === 'user'" class="qa-message-user">
                   <p class="qa-message-user-text">{{ message.content }}</p>
@@ -109,7 +113,7 @@
                         <span class="qa-thinking-dot">.</span>
                       </span>
                     </div>
-                    <div v-else class="qa-ai-content text-sm text-on-surface leading-relaxed" v-html="message.content"></div>
+                    <div v-else class="qa-ai-content text-sm text-on-surface leading-relaxed" v-html="message.content" />
                   </div>
                   <!-- 问卷建议卡片 -->
                   <div v-if="message.questionnaire?.type === 'suggestion'" class="qa-questionnaire-card qa-suggestion-card">
@@ -126,13 +130,15 @@
                       </div>
                     </div>
                     <div class="qa-suggestion-actions">
-                      <button @click="startInterviewFlow(message.questionnaire.questionnaireId!, message.questionnaire.questionnaireTitle!)"
-                              :disabled="interviewActive"
-                              class="qa-suggestion-btn qa-suggestion-btn-primary">
+                      <button
+                        :disabled="interviewActive"
+                        class="qa-suggestion-btn qa-suggestion-btn-primary"
+                        @click="startInterviewFlow(message.questionnaire.questionnaireId!, message.questionnaire.questionnaireTitle!)"
+                      >
                         <span class="material-symbols-outlined text-sm">play_arrow</span>
                         {{ interviewActive ? '填表中...' : '开始填表' }}
                       </button>
-                      <button @click="cancelInterview" class="qa-suggestion-btn qa-suggestion-btn-secondary">
+                      <button class="qa-suggestion-btn qa-suggestion-btn-secondary" @click="cancelInterview">
                         忽略
                       </button>
                     </div>
@@ -140,7 +146,7 @@
                   <!-- 问卷问题卡片 -->
                   <div v-if="message.questionnaire?.type === 'question'" class="qa-questionnaire-card qa-question-card">
                     <div class="qa-question-progress-bar">
-                      <div class="qa-question-progress-fill" :style="{ width: ((message.questionnaire.currentIndex! + 1) / message.questionnaire.totalQuestions! * 100) + '%' }"></div>
+                      <div class="qa-question-progress-fill" :style="{ width: ((message.questionnaire.currentIndex! + 1) / message.questionnaire.totalQuestions! * 100) + '%' }" />
                     </div>
                     <div class="qa-question-progress-text">
                       问题 {{ message.questionnaire.currentIndex! + 1 }} / {{ message.questionnaire.totalQuestions }}
@@ -151,11 +157,13 @@
                       可直接点击下方选项，也可在输入框中用自然语言描述您的情况
                     </div>
                     <div class="qa-question-options">
-                      <button v-for="opt in message.questionnaire.options"
-                              :key="opt.code"
-                              @click="submitInterviewAnswer(opt.code, opt.display)"
-                              :disabled="interviewLoading"
-                              class="qa-option-btn">
+                      <button
+                        v-for="opt in message.questionnaire.options"
+                        :key="opt.code"
+                        :disabled="interviewLoading"
+                        class="qa-option-btn"
+                        @click="submitInterviewAnswer(opt.code, opt.display)"
+                      >
                         <span class="qa-option-code">{{ opt.code }}</span>
                         <span class="qa-option-display">{{ opt.display }}</span>
                       </button>
@@ -183,9 +191,11 @@
                       <div class="qa-analysis-summary-title">AI 分析摘要</div>
                       <div class="qa-analysis-summary-content">{{ message.questionnaire.analysisSummary }}</div>
                     </div>
-                    <button v-if="message.questionnaire.analysisId"
-                            @click="showDetailedReport(message)"
-                            class="qa-report-btn">
+                    <button
+                      v-if="message.questionnaire.analysisId"
+                      class="qa-report-btn"
+                      @click="showDetailedReport(message)"
+                    >
                       <span class="material-symbols-outlined text-sm">description</span>
                       查看详细评估报告
                     </button>
@@ -214,37 +224,47 @@
                     </div>
                     <div class="qa-manual-form-title">{{ message.questionnaire.questionnaireTitle || '问卷采集' }}</div>
                     <div class="qa-question-progress-bar">
-                      <div class="qa-question-progress-fill"
-                           :style="{ width: manualFormFillPercent + '%' }"></div>
+                      <div
+                        class="qa-question-progress-fill"
+                        :style="{ width: manualFormFillPercent + '%' }"
+                      />
                     </div>
                     <div class="qa-question-progress-text">
                       已选择 {{ manualFormSelectedCount }} / {{ message.questionnaire.manualFormItems?.length || 0 }} 题
                     </div>
-                    <div v-for="item in message.questionnaire.manualFormItems"
-                         :key="item.linkId"
-                         class="qa-manual-form-item">
+                    <div
+                      v-for="item in message.questionnaire.manualFormItems"
+                      :key="item.linkId"
+                      class="qa-manual-form-item"
+                    >
                       <div class="qa-manual-form-question-text">
                         <span class="qa-manual-form-item-index">{{ item.index + 1 }}.</span>
                         {{ item.text }}
                       </div>
                       <div class="qa-question-options">
-                        <button v-for="opt in item.options"
-                                :key="opt.code"
-                                @click="selectManualFormOption(message.id, item.linkId, opt.code)"
-                                :class="['qa-option-btn',
-                                  manualFormAnswers[message.id]?.[item.linkId] === opt.code
-                                    ? 'qa-option-btn-selected' : '']">
+                        <button
+                          v-for="opt in item.options"
+                          :key="opt.code"
+                          :class="['qa-option-btn',
+                                   manualFormAnswers[message.id]?.[item.linkId] === opt.code
+                                     ? 'qa-option-btn-selected' : '']"
+                          @click="selectManualFormOption(message.id, item.linkId, opt.code)"
+                        >
                           <span class="qa-option-code">{{ opt.code }}</span>
                           <span class="qa-option-display">{{ opt.display }}</span>
-                          <span v-if="manualFormAnswers[message.id]?.[item.linkId] === opt.code"
-                                class="qa-option-check material-symbols-outlined">check</span>
+                          <span
+                            v-if="manualFormAnswers[message.id]?.[item.linkId] === opt.code"
+                            class="qa-option-check material-symbols-outlined"
+                          >check</span>
                         </button>
                       </div>
                     </div>
                     <div class="qa-manual-form-actions">
-                      <button @click="submitAllManualFormAnswers(message)"
-                              :disabled="!isManualFormComplete(message)"
-                              class="qa-suggestion-btn qa-suggestion-btn-primary">
+                      <button
+                        :disabled="!isManualFormComplete(message)"
+                        class="qa-suggestion-btn qa-suggestion-btn-primary"
+                        @click="submitAllManualFormAnswers(message)"
+                      >
                         <span class="material-symbols-outlined text-sm">send</span>
                         提交所有答案
                       </button>
@@ -264,14 +284,16 @@
         <!-- 输入区域 -->
         <div class="qa-input-area">
           <div class="qa-input-wrapper">
-            <textarea v-model="inputText" @keyup.enter="sendMessage"
-                      @compositionstart="isComposing = true"
-                      @compositionend="isComposing = false"
-                      class="qa-input-field"
-                      placeholder="输入临床问题或上传病例附件..." rows="1"></textarea>
+            <textarea
+              v-model="inputText" class="qa-input-field"
+              placeholder="输入临床问题或上传病例附件..."
+              rows="1"
+              @keyup.enter="sendMessage"
+              @compositionstart="isComposing = true" @compositionend="isComposing = false"
+            />
             <div class="qa-input-actions">
               <button class="qa-input-btn material-symbols-outlined">attach_file</button>
-              <button type="button" @click="sendMessage" class="qa-send-btn">
+              <button type="button" class="qa-send-btn" @click="sendMessage">
                 <span class="material-symbols-outlined text-sm">send</span>
               </button>
             </div>
@@ -290,10 +312,12 @@
             知识检索路径
           </h3>
           <div>
-            <div v-for="(step, index) in retrievalSteps" :key="index"
-                 v-show="expandedSteps || index < 3"
-                 class="qa-retrieval-step">
-              <div :class="['qa-step-dot', `qa-step-dot-${getStepColor(step)}`]"></div>
+            <div
+              v-for="(step, index) in retrievalSteps" v-show="expandedSteps || index < 3"
+              :key="index"
+              class="qa-retrieval-step"
+            >
+              <div :class="['qa-step-dot', `qa-step-dot-${getStepColor(step)}`]" />
               <div :class="['qa-step-title', `qa-step-title-${getStepColor(step)}`]">{{ step.stepName }}</div>
               <div class="qa-step-card">
                 <div class="qa-step-card-header">
@@ -310,15 +334,16 @@
                 </div>
               </div>
             </div>
-            <button v-if="retrievalSteps.length > 3"
-                    @click="expandedSteps = !expandedSteps"
-                    class="qa-expand-toggle">
+            <button
+              v-if="retrievalSteps.length > 3"
+              class="qa-expand-toggle"
+              @click="expandedSteps = !expandedSteps"
+            >
               {{ expandedSteps ? '收起' : `展开全部 ${retrievalSteps.length} 步` }}
             </button>
           </div>
         </div>
       </aside>
-
     </div>
 
     <!-- 详细评估报告弹窗 -->
@@ -326,7 +351,7 @@
       <div class="qa-report-dialog">
         <div class="qa-report-dialog-header">
           <h3 class="qa-report-dialog-title">AI 详细评估报告</h3>
-          <button @click="showReportDialog = false" class="qa-report-dialog-close">
+          <button class="qa-report-dialog-close" @click="showReportDialog = false">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -411,7 +436,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ROLE_MENU_MAP, isActive, type MenuItem } from '@/config/menus'
 import { qaService } from '@/api/services/qa.service'
@@ -419,6 +444,16 @@ import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
 import { useAuthStore } from '@/stores/auth.store'
 import TermReviewPanel from '@/components/TermReviewPanel.vue'
+import {
+  listGuestSessions,
+  getGuestSession,
+  createGuestSession,
+  saveGuestSession,
+  removeGuestSession,
+  hasGuestSessions,
+  GUEST_SESSION_LIMIT
+} from '@/utils/guest-session'
+import { syncGuestSessionsToAccount } from '@/utils/guest-sync'
 import type { Conversation, RetrievalStep } from '@/api/types/qa'
 import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview'
 
@@ -557,18 +592,26 @@ const authStore = useAuthStore()
 
 // 顶栏导航项：按当前登录角色的菜单渲染（与侧边栏一致，随路由高亮）
 const route = useRoute()
+const router = useRouter()
 const navItems = computed<MenuItem[]>(() => ROLE_MENU_MAP[authStore.userRole] || [])
+
+// 游客模式判断：未登录时问答会话保存在 localStorage，不落后端公共池
+const isGuest = computed(() => !authStore.isAuthenticated)
 
 // IME 组合输入状态（防止中文输入法 Enter 确认时重复触发 sendMessage）
 const isComposing = ref(false)
 // 防抖时间戳（防止同一毫秒内重复触发）
 let lastSendTime = 0
 
-// 删除当前活跃会话（移入回收站）
+// 删除当前活跃会话（游客模式本地删除；登录模式移入回收站）
 const deleteActiveSession = async () => {
   if (!activeSessionId.value) return
   try {
-    await conversationService.deleteConversation(activeSessionId.value)
+    if (isGuest.value) {
+      removeGuestSession(activeSessionId.value)
+    } else {
+      await conversationService.deleteConversation(activeSessionId.value)
+    }
     // 从侧边栏移除
     sessions.value = sessions.value.filter(s => s.id !== activeSessionId.value)
     // 切换到第一个剩余会话
@@ -640,11 +683,24 @@ const getStatusLabel = (status: string): string => {
   }
 }
 
-// 加载会话列表
+// 加载会话列表（游客模式读本地；登录模式按用户拉取，避免不同用户会话混在一起）
 const loadConversations = async () => {
   try {
     loadingSessions.value = true
-    const conversations = await conversationService.getConversations()
+    let conversations: Conversation[]
+    if (isGuest.value) {
+      conversations = listGuestSessions().map(s => ({
+        id: s.localId,
+        userId: 0,
+        title: s.title,
+        type: 'general' as const,
+        createdAt: s.createdAt,
+        updatedAt: s.createdAt,
+        messageCount: s.messages.length
+      }))
+    } else {
+      conversations = await conversationService.getConversations(authStore.userId)
+    }
     sessions.value = conversations.map(conv => ({
       id: conv.id.toString(),
       title: conv.title,
@@ -691,10 +747,31 @@ const getSessionIcon = (title: string): string => {
   return 'clinical_notes'
 }
 
-// 加载会话消息
+// 加载会话消息（游客模式读本地；登录模式读后端 + 重建访谈卡片）
 const loadMessages = async (sessionId: string) => {
   try {
     loadingMessages.value = true
+    // 游客模式：从本地会话读取消息（无访谈数据，跳过访谈历史加载）
+    if (isGuest.value) {
+      const localSession = getGuestSession(sessionId)
+      if (!localSession) {
+        messages.value = []
+        return
+      }
+      messages.value = localSession.messages.map(msg => {
+        let content = msg.content
+        if (msg.role === 'assistant' && msg.sourceReferences) {
+          content += buildReferenceSection(msg.sourceReferences)
+        }
+        return {
+          id: msg.id,
+          role: msg.role,
+          content,
+          sourceReferences: msg.sourceReferences
+        }
+      })
+      return
+    }
     // sessionId就是conversationId
     const messagesList = await conversationService.getMessages(sessionId)
     const historyMessages: ChatMessage[] = messagesList.map(msg => {
@@ -818,12 +895,31 @@ const switchSession = async (sessionId: string) => {
   await loadMessages(sessionId)
 }
 
-// 创建新会话
+// 创建新会话（游客模式本地创建；登录模式归属当前用户）
 const createNewSession = async () => {
+  // 游客模式：在本地创建会话
+  if (isGuest.value) {
+    const title = `新咨询 ${new Date().toLocaleDateString()}`
+    const created = createGuestSession(title)
+    if (!created) {
+      ElMessage.warning(`本地会话已达上限（${GUEST_SESSION_LIMIT} 个），请删除旧会话或登录账号`)
+      return
+    }
+    sessions.value.push({
+      id: created.localId,
+      title: created.title,
+      icon: 'clinical_notes'
+    })
+    activeSessionId.value = created.localId
+    messages.value = []
+    inputText.value = ''
+    return
+  }
   try {
     const newConversation = await conversationService.createConversation({
       title: `新咨询 ${new Date().toLocaleDateString()}`,
-      type: 'general'
+      type: 'general',
+      userId: authStore.userId || undefined
     })
 
     sessions.value.push({
@@ -848,6 +944,24 @@ const createNewSession = async () => {
     activeSessionId.value = newId
     messages.value = []
     inputText.value = ''
+  }
+}
+
+// 保存 AI 消息：游客模式写入本地会话，登录模式写入后端
+const persistAssistantMessage = (content: string, sourceReferences?: string) => {
+  if (isGuest.value) {
+    const localSession = getGuestSession(activeSessionId.value!)
+    if (localSession) {
+      localSession.messages.push({ id: Date.now().toString(), role: 'assistant', content, sourceReferences })
+      saveGuestSession(localSession)
+    }
+  } else {
+    conversationService.createMessage({
+      conversationId: activeSessionId.value!,
+      content,
+      role: 'assistant',
+      sourceReferences
+    }).catch(err => console.error('保存AI消息失败:', err))
   }
 }
 
@@ -901,32 +1015,52 @@ const sendMessage = async () => {
   let pendingSuggestion: any = null
 
   try {
-    // 保存用户消息到后端
-    conversationService.createMessage({
-      conversationId: activeSessionId.value,
-      content: content,
-      role: 'user'
-    }).catch(err => console.error('保存用户消息失败:', err))
+    // 保存用户消息（游客模式存本地，登录模式写入后端）
+    if (isGuest.value) {
+      const localSession = getGuestSession(activeSessionId.value)
+      if (localSession) {
+        localSession.messages.push({ id: userMessage.id, role: 'user', content })
+        saveGuestSession(localSession)
+      }
+    } else {
+      conversationService.createMessage({
+        conversationId: activeSessionId.value,
+        content: content,
+        role: 'user'
+      }).catch(err => console.error('保存用户消息失败:', err))
+    }
 
-    // 首条消息时自动更新对话标题
+    // 首条消息时自动更新对话标题（游客模式本地更新）
     const isFirstMessage = messages.value.length === 2 // 用户消息 + AI占位
     if (isFirstMessage) {
       const newTitle = content.length > 30 ? content.substring(0, 30) + '...' : content
-      conversationService.updateConversationTitle(activeSessionId.value, newTitle)
-        .then(() => {
-          const session = sessions.value.find(s => s.id === activeSessionId.value)
-          if (session) session.title = newTitle
-        })
-        .catch(() => {})
+      if (isGuest.value) {
+        const localSession = getGuestSession(activeSessionId.value)
+        if (localSession) {
+          localSession.title = newTitle
+          saveGuestSession(localSession)
+        }
+        const session = sessions.value.find(s => s.id === activeSessionId.value)
+        if (session) session.title = newTitle
+      } else {
+        conversationService.updateConversationTitle(activeSessionId.value, newTitle)
+          .then(() => {
+            const session = sessions.value.find(s => s.id === activeSessionId.value)
+            if (session) session.title = newTitle
+          })
+          .catch(() => {})
+      }
     }
 
-    // 调用流式问答
+    // 调用流式问答（游客模式匿名调用，不带会话归属；登录模式携带会话与用户）
     qaService.streamAsk(
-      {
-        question: content,
-        conversationId: activeSessionId.value,
-        userId: authStore.userId || undefined
-      },
+      isGuest.value
+        ? { question: content }
+        : {
+            question: content,
+            conversationId: activeSessionId.value,
+            userId: authStore.userId || undefined
+          },
       // onChunk
       (chunk) => {
         if (chunk.type === 'text' && chunk.content) {
@@ -1004,19 +1138,9 @@ const sendMessage = async () => {
           const refSection = buildReferenceSection(JSON.stringify(sourceRefs))
           const msg = messages.value.find(m => m.id === aiMsgId)
           if (msg) msg.content = streamingContent + refSection
-          // 异步保存AI消息
-          conversationService.createMessage({
-            conversationId: activeSessionId.value!,
-            content: streamingContent,
-            role: 'assistant',
-            sourceReferences: JSON.stringify(sourceRefs)
-          }).catch(err => console.error('保存AI消息失败:', err))
+          persistAssistantMessage(streamingContent, JSON.stringify(sourceRefs))
         } else {
-          conversationService.createMessage({
-            conversationId: activeSessionId.value!,
-            content: streamingContent,
-            role: 'assistant'
-          }).catch(err => console.error('保存AI消息失败:', err))
+          persistAssistantMessage(streamingContent)
         }
       }
     )
@@ -1031,6 +1155,12 @@ const sendMessage = async () => {
 
 // 开始问卷访谈流程
 const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: string) => {
+  // 游客需登录后才能填写问卷（涉及健康数据归属，需同步到账号）
+  if (isGuest.value) {
+    ElMessage.info('填写问卷需登录账号，请先登录')
+    router.push({ path: '/login', query: { redirect: '/qa' } })
+    return
+  }
   if (interviewActive.value) {
     console.warn('[DATA_COLLECTION] startInterviewFlow: 访谈已活跃,跳过')
     ElMessage.warning('当前有正在进行的问卷访谈，请先完成或取消')
@@ -1461,6 +1591,23 @@ const scrollToBottom = () => {
 onMounted(() => {
   loadConversations()
   window.addEventListener('beforeunload', handleBeforeUnload)
+  // 登录后静默同步本地游客会话到账号（自动触发，无需用户操作；失败保留本地可下次重试）
+  if (!isGuest.value && hasGuestSessions()) {
+    syncGuestSessionsToAccount().then((result) => {
+      if (result.total === 0) return
+      if (result.failed === 0) {
+        ElMessage.success(`已同步 ${result.succeeded} 个游客会话到您的账号`)
+        loadConversations()
+      } else {
+        ElMessage.warning(
+          result.succeeded > 0
+            ? `已同步 ${result.succeeded} 个游客会话，${result.failed} 个失败（本地已保留，稍后重试）`
+            : '游客会话同步失败，请检查网络后重试'
+        )
+        if (result.succeeded > 0) loadConversations()
+      }
+    })
+  }
 })
 
 onUnmounted(() => {

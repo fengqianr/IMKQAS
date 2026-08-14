@@ -232,6 +232,8 @@ export interface Message {
 export interface CreateConversationRequest {
   title?: string
   type?: 'general' | 'diagnosis' | 'consultation'
+  /** 会话归属用户（后端 Conversation 实体直接收 body，传此字段即落库） */
+  userId?: number
 }
 
 export interface CreateMessageRequest {
