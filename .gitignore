@@ -65,5 +65,8 @@ temp/
 # 上传的文档文件 (生产环境中由用户上传)
 uploads/
 
+# 浏览器自动化测试产物 (Playwright MCP 快照与日志)
+.playwright-mcp/
+
 # Git 工作树目录 (避免提交工作树内容)
 .worktrees/
