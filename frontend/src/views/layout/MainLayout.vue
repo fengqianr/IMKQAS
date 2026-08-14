@@ -187,10 +187,22 @@ const handleLogout = async () => {
 }
 
 .brand-name {
-  font-size: 1.125rem;
+  font-size: 1.0rem;
   font-weight: 700;
   color: #005eb8;
   letter-spacing: -0.01em;
+  /* 重置 h1 默认外边距与行高，并禁止换行，防止在固定高度品牌区向上溢出被裁剪 */
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 品牌文字容器允许在 flex 中收缩，配合 h1 的省略号截断 */
+.sidebar-header > div {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .brand-sub {
@@ -293,7 +305,7 @@ const handleLogout = async () => {
 
 /* ===== 顶栏 ===== */
 .topbar {
-  position: sticky;
+  /* position: sticky; */
   top: 0;
   z-index: 20;
   height: 4rem;

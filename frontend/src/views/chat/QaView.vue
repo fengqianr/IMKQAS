@@ -7,11 +7,13 @@
         <div class="qa-header-logo">
           Clinical Precision RAG
         </div>
-        <nav class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
-          <a class="qa-nav-link qa-nav-link-active" href="/qa">智能问答</a>
-          <a class="qa-nav-link qa-nav-link-inactive" href="/knowledge">知识库</a>
-          <a class="qa-nav-link qa-nav-link-inactive" href="/contraindication-rules">禁忌规则</a>
-          <a class="qa-nav-link qa-nav-link-inactive" href="/term-review">词条审核</a>
+        <nav v-if="navItems.length" class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
+          <router-link
+            v-for="item in navItems"
+            :key="item.path"
+            :to="item.path"
+            :class="['qa-nav-link', isActive(route.path, item) ? 'qa-nav-link-active' : 'qa-nav-link-inactive']"
+          >{{ item.title }}</router-link>
         </nav>
       </div>
       <div class="custom-flex custom-items-center custom-gap-4">
@@ -409,7 +411,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { ROLE_MENU_MAP, isActive, type MenuItem } from '@/config/menus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
@@ -550,6 +554,10 @@ function handleBeforeUnload() {
 // 词条审核面板
 const showReviewPanel = ref(false)
 const authStore = useAuthStore()
+
+// 顶栏导航项：按当前登录角色的菜单渲染（与侧边栏一致，随路由高亮）
+const route = useRoute()
+const navItems = computed<MenuItem[]>(() => ROLE_MENU_MAP[authStore.userRole] || [])
 
 // IME 组合输入状态（防止中文输入法 Enter 确认时重复触发 sendMessage）
 const isComposing = ref(false)
