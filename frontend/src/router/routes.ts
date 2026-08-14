@@ -95,13 +95,13 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: () => import('@/views/common/UnderConstructionView.vue'),
+    component: () => import('@/views/admin/DashboardView.vue'),
     meta: { title: '系统统计', requiresAuth: true, roles: ['ADMIN'] }
   },
   {
     path: '/users',
     name: 'users',
-    component: () => import('@/views/common/UnderConstructionView.vue'),
+    component: () => import('@/views/admin/UserManagementView.vue'),
     meta: { title: '用户管理', requiresAuth: true, roles: ['ADMIN'] }
   },
   {
