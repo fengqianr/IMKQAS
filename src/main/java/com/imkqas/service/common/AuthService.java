@@ -4,6 +4,7 @@ import com.imkqas.dto.LoginRequest;
 import com.imkqas.dto.LoginResponse;
 import com.imkqas.dto.RegisterRequest;
 import com.imkqas.entity.User;
+import com.imkqas.service.his.FhirPatientService;
 import com.imkqas.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class AuthService {
     private final CodeService codeService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final FhirPatientService fhirPatientService;
 
     @Value("${imkqas.security.jwt.expiration:86400000}")
     private Long jwtExpiration;
@@ -284,6 +286,15 @@ public class AuthService {
         boolean saved = userService.save(user);
         if (saved) {
             log.info("用户注册成功: userId={}, username={}", user.getId(), user.getUsername());
+            // 建用户后同步建立 FHIR 患者缓存（fhir_id=pat-{id}），注册后即可被医生端检索；
+            // 性别未知传 null -> mapGender -> unknown。缓存同步失败不阻断注册主流程。
+            try {
+                fhirPatientService.upsertLocalPatient(
+                        user.getId(), user.getPhone(), request.getName(), null);
+            } catch (Exception e) {
+                log.error("注册同步FHIR患者缓存失败: userId={}, name={}",
+                        user.getId(), request.getName(), e);
+            }
         } else {
             log.error("用户注册失败: username={}", request.getUsername());
         }

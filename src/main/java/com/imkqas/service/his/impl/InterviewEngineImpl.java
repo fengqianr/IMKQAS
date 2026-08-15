@@ -1210,6 +1210,9 @@ public class InterviewEngineImpl implements InterviewEngine {
         if (includeSessionId) {
             cache.setSessionId(sid);
         }
+        // 统一 patient_fhir_id 为 pat-{userId}，规避 converter 从 subject.reference 提取的历史格式差异
+        // （null / 'Patient/pat-x' / 'pat-x'），保证医生端按患者关联可稳定命中
+        cache.setPatientFhirId("pat-" + uid);
         cache.setStatus("completed");
         qrMapper.insert(cache);
         return cache.getFhirId();

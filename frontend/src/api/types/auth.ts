@@ -19,6 +19,8 @@ export interface LoginResponse {
 // 注册请求
 export interface RegisterRequest {
   username: string
+  /** 真实姓名（必填，注册即同步至医生端患者档案） */
+  name: string
   password: string
   phone: string
   confirmPassword: string

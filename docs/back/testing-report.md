@@ -499,4 +499,263 @@ src/test/
 
 ---
 
+## 10. 2026-08-15 个人中心与身份同步功能端到端验证
+
+> 本次验证针对「/qa 头像下拉 + 个人中心 + 身份同步 + 注册打通 + 历史问题修复」功能批次，采用浏览器端到端 + 数据库核对方式验证。
+
+### 10.1 验证范围
+
+| 模块 | 改动 | 验证方式 |
+|------|------|----------|
+| 个人中心 `/user` | 新建 UserCenterView + identity 接口 | 浏览器编辑保存 + GET 回显 |
+| /qa 头像下拉 | 游客登录 / 已登录个人中心+退出 | 浏览器点击流 |
+| 身份同步 | users.identity JSON 列 ↔ fhir_patient_cache | 数据库核对 + 医生端检索 |
+| 注册打通 | RegisterRequest.name + 注册即建患者档案 | 浏览器注册 + 医生端检索 |
+| LocalDateTime 回归 | FhirJacksonConfig `modules()`→`modulesToInstall()` | 接口 JSON 合法性 |
+| resource_json 陈旧（新发现） | FhirConverter.toFhirPatient 字段优先重建 | 修复前后接口对比 |
+
+### 10.2 端到端验证结果
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| 游客 /qa 头像下拉 | ✅ 通过 | 仅「登录」，点击跳 `/login?redirect=/qa` |
+| patient_li 登录首字母圆徽 + 下拉 | ✅ 通过 | 头像显示「李」，下拉含「个人中心」「退出登录」 |
+| 个人中心填写完整身份保存 | ✅ 通过 | PUT `/api/users/4/identity` 200，展示态 Hero「李健康 男\|41岁」，证件号脱敏 |
+| MainLayout 退出登录 | ✅ 通过 | 确认弹窗 → 清 token → 跳 /login |
+| 医生端按姓名检索 | ✅ 通过 | `/patients` 搜索「李健康」命中 pat-4 |
+| 医生端按证件号检索 | ✅ 通过 | 搜索「110101198506151234」命中 pat-4 |
+| 医生端按手机号检索 | ✅ 通过 | 搜索「13600000000」命中 pat-4 |
+| 患者详情页新样式 | ✅ 通过 | 品牌色 #0891b2、Hero 状态徽标「新患者」、四 Tab + AI 摘要侧栏，基本信息显示出生日期/联系电话(脱敏)/证件号(脱敏)/家庭住址 |
+| 注册新患者（真实姓名必填） | ✅ 通过 | 注册「wangxiaoming/王小明」成功，医生端立即检索到（gender=unknown） |
+| LocalDateTime 序列化回归 | ✅ 通过 | `GET /api/conversations/by-user/4`、`GET /api/his/interview/history` 均返回合法 JSON |
+| 编译/构建 | ✅ 通过 | `mvn clean package -DskipTests` 无错误；前端 type-check + vite build 通过 |
+
+### 10.3 新发现并修复的缺陷
+
+**`FhirConverter.toFhirPatient` 优先从 `resource_json` 解析导致接口返回陈旧数据**
+
+- 现象：个人中心保存完整身份后，`users.identity` 已更新为「李健康」，`fhir_patient_cache` 各列也已更新（given_name=李健康/birth_date/identifier 等），但医生端接口仍返回旧姓名「李明」。
+- 根因：`toFhirPatient` 判断 `resource_json` 非空即直接 `parseResource(resource_json)`，忽略字段列；而 7 参 upsert 用 `toJson(toFhirPatient(cache))` 重建 resource_json 时又读到同一陈旧 JSON，导致资源陈旧且自我延续。
+- 修复：改为**优先从字段列重建**，`resource_json` 仅在字段无核心内容时兜底（不影响 HIS 同步资源）。修复后接口立即返回最新字段，无需数据修复。
+- 验证：修复前 `GET /api/his/fhir/Patient/pat-4` 返回 given=李明；修复后返回 given=李健康 + identifier + birthDate + address 全量正确。
+
+### 10.4 已知边界
+
+- `GET /api/users/{id}` 直接返回裸 User（含 password/identity 等），`/api/users/**` 无 `@PreAuthorize` 所有权校验——建议后续统一加「当前登录用户与 path id 一致」校验。
+- `users.role ENUM('USER','ADMIN')` 与代码 Role 枚举（PATIENT/DOCTOR/ADMIN）不一致，历史遗留。
+- `/auth/me` 仅返回 `{id, role}`，刷新后 /qa 首字母徽退化为用户名首字符、个人中心 phone 依赖 GET identity 回填。
+- 本次注册测试产生的数据（wangxiaoming/王小明）保留在远程库，未做清理；本批次改动未提交 git，待最终统一提交。
+
+---
+
+## 11. 2026-08-15 缺陷修复：医生/管理员端隐藏「个人中心」入口
+
+> 用户反馈缺陷：医生端打开个人中心时应显示医生个人信息，但后端无医生信息表。经确认决策：医生/管理员不需要个人中心，直接隐藏入口。
+
+### 11.1 修复内容
+
+| 文件 | 改动 |
+|------|------|
+| `frontend/src/views/layout/MainLayout.vue` | 顶栏下拉「个人中心」项加 `v-if="isPatientSide"`（`isPatientSide` = `ROLE_TO_LAYOUT[userRole] === 'patient'`），医生/管理员不渲染 |
+| `frontend/src/views/chat/QaView.vue` | /qa 顶栏头像下拉「个人中心」项同样加 `v-if="isPatientSide"` |
+| `frontend/src/router/routes.ts` | `/user` 路由 `meta.roles` 由 `ALL_ROLES` 改为 `PATIENT_ROLES`（PATIENT/STUDENT/NURSE/HEALTH_MANAGER），DOCTOR/ADMIN 访问被守卫重定向到 /qa |
+
+### 11.2 验证结果
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| 医生端 /qa 头像下拉 | ✅ 通过 | doctor_wang 登录后下拉仅「退出登录」，无「个人中心」 |
+| 医生端 MainLayout 顶栏下拉 | ✅ 通过 | /patients 等页面下拉仅「退出登录」 |
+| 医生手动访问 /user | ✅ 通过 | 路由守卫 roles 白名单拦截，重定向 /qa 并提示无权访问 |
+| 患者端下拉不受影响 | ✅ 通过 | patient_li 下拉仍含「个人中心」+「退出登录」，/user 可正常访问，身份信息完整展示 |
+
+### 11.3 说明
+
+- 后端未新增医生信息存储表（按用户决策「不需要」），仅在前端/路由层对医生、管理员隐藏入口。
+- 「退出登录」保留在两种角色的下拉中，个人中心「退出个人中心/返回首页」逻辑仍由 MainLayout 壳 + 页面内「返回首页」按钮承担。
+
+---
+
+## 12. 2026-08-15 缺陷修复：医生端患者详情页缺失健康档案与问卷记录
+
+> 用户反馈缺陷：医生端患者详情页看不见患者的档案——没有健康档案信息、问卷记录等。
+
+### 12.1 根因分析
+
+| 问题 | 根因 |
+|------|------|
+| 健康档案不可见 | 详情页 `PatientDetailView` 仅调用 `fhirService`（FHIR 资源），从未读取 `users.health_profile`（患者健康档案 JSON 列，含过敏史/慢性病史/用药史/手术史/家族病史） |
+| 问卷记录只显示 1 条 | 详情页原按 `patient_fhir_id` 精确匹配（`findByPatient`），而历史落库格式混乱：`null` / `'Patient/pat-4'` / `'pat-4'` 三种并存（converter 从 `subject.reference` 提取格式不稳定、部分问卷 subject 缺失），导致按 `pat-4` 只能命中 1/3 条；患者端 `/records` 按 `local_user_id` 查询不受影响 |
+
+### 12.2 修复内容
+
+**后端**
+
+| 文件 | 改动 |
+|------|------|
+| `FhirQuestionnaireResponseService(+Impl)` | 新增 `findByLocalUserId(Long)`：按 `local_user_id` 查询患者全部问卷记录（绕开 `patient_fhir_id` 格式问题） |
+| `FhirPatientService(+Impl)` | 新增 `findCacheByFhirId(String)`：返回缓存实体含 `local_user_id` |
+| `FhirPatientController` | 新增 `GET /api/his/fhir/Patient/{fhirId}/overview` 聚合接口：一次返回 `{patient, localUserId, hasHealthProfile, healthProfile, questionnaireResponses}`；本地患者经 `local_user_id` 关联 `users.health_profile` 与问卷记录，HIS 导入患者返回空占位 |
+| `InterviewEngineImpl.persistQuestionnaireResponse` | 落库前强制 `patient_fhir_id = "pat-{userId}"`，统一格式防复发 |
+
+**前端**
+
+| 文件 | 改动 |
+|------|------|
+| `fhir.service.ts` | 新增 `PatientOverview`/`PatientOverviewRecord` 类型 + `getPatientOverview(fhirId)` |
+| `PatientDetailView.vue` | Tab 由 4 个增至 5 个（新增「健康档案」）；数据加载改为聚合接口（patient + healthProfile + questionnaireRecords）+ 病情/检验；问卷记录 Tab 改为结构化列表（标题/评分/严重程度/日期）；AI 智能摘要纳入健康档案（慢性病/过敏/用药） |
+
+### 12.3 验证结果（浏览器端到端）
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| 医生查看 pat-4 健康档案 | ✅ 通过 | 基本资料（李明/男/62岁）+ 过敏史青霉素 + 慢性病史高血压 + 用药史阿司匹林 + 手术史阑尾切除术 + 家族病史暂无 |
+| 医生查看 pat-4 问卷记录 | ✅ 通过 | 显示 3 条 ISI 失眠严重指数量表（15分·中度失眠×2、23分·重度失眠），修复前仅 1 条 |
+| AI 智能摘要 | ✅ 通过 | 纳入健康档案：「慢性病：高血压、过敏：青霉素、用药：阿司匹林、3 份问卷」 |
+| 王小明（无档案）空态 | ✅ 通过 | 健康档案「患者未填写健康档案」、问卷记录「暂无问卷记录」 |
+| 后端编译/打包 | ✅ 通过 | `mvn package -DskipTests` 无错误，重启后 overview 接口正常响应 |
+| 前端 type-check / build | ✅ 通过 | `vue-tsc --noEmit` 与 `vite build` 均通过 |
+
+### 12.4 已知边界
+
+- `users.health_profile` 为历史数据（李明/62岁），与个人中心 `identity`（李健康/41岁）不一致：健康档案是旧提交、身份信息是最近更新的，前端按各自数据源展示，未做强行统一。
+- 问卷记录 Tab 展示结构化汇总（标题/评分/严重程度/日期），**不含每份问卷的问答明细**（明细在 `resource_json`，本次未展开；如需可后续按 `sessionId` 调 `/his/interview/{sessionId}/messages` 或 `/analysis` 展示）。
+- 本批次改动未提交 git，待最终统一提交。
+
+---
+
+## 13. 2026-08-15 缺陷修复：雪花 ID 精度丢失导致患者无法保存档案
+
+> 用户反馈缺陷：患者账号 p2 登录后无法保存健康档案/身份信息。
+
+### 13.1 根因分析
+
+| 问题 | 根因 |
+|------|------|
+| 保存档案请求 404 | 主键使用雪花算法生成（如 `userId=2088194171323465729`），超过 JS Number 安全整数上限 `2^53-1 ≈ 9007199254740991`。前端 Axios 默认用 `JSON.parse` 反序列化响应体，超限 Long 被转成 double 丢失精度（末位舍入为 `2088194171323465700`），按 userId 拼接的请求路径查不到数据（HTTP 404），表现为「健康档案/身份信息加载失败、保存失败」 |
+
+### 13.2 修复内容
+
+**后端**
+
+| 文件 | 改动 |
+|------|------|
+| `config/LongToStringJacksonConfig.java`（新增） | 全局将 `Long`/`long` 序列化为字符串，规避雪花 ID 精度丢失；反序列化时 Jackson 自动支持 String→Long，不影响以 Long 接收的请求体 |
+| `controller/rag/RagControllerTest.java:88` | 断言 `$.documentId` 改为字符串 `"1"`（Long 全局转字符串） |
+| `controller/triage/DepartmentTriageControllerTest.java:123-124` | 断言 `$.userId`/`$.processingTimeMs` 改为字符串比较 |
+
+### 13.3 关键教训：FHIR 序列化回归
+
+首版用 `builder.modulesToInstall(module)` 追加 SimpleModule 实现 Long→String，导致与 `FhirJacksonConfig` 的 FHIR 资源模块**合并时破坏序列化器注册**——Patient 等资源退化为标准 Jackson 递归序列化，自引用链展开至 1000 层上限，抛 `Document nesting depth (1001) exceeds the maximum allowed (1000)` 并产出损坏 JSON，医生端搜索患者全挂。
+
+**修复**：改用 `builder.serializerByType(Long.class, ToStringSerializer.instance)` 直接做类型映射，不经过模块合并，不干扰 FHIR 模块。修复后张平/李健康搜索恢复合法 JSON。
+
+### 13.4 前端适配（Long 变字符串后的类型归一）
+
+| 文件 | 改动 |
+|------|------|
+| `views/chat/QaView.vue` | 会话消息按雪花 ID 排序改用 `BigInt` 精确比较（超出 Number 安全整数范围） |
+| `views/clinical/ContraindicationRules.vue` | `total` 由字符串转 Number 归一后再比较（避免 `"0" === 0` 为 false 导致除 0 得 Infinity） |
+| `views/admin/DashboardView.vue` | 统计数值 `Number()` 归一后再做千分位格式化 |
+
+### 13.5 验证结果
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| 后端编译/打包 | ✅ 通过 | `mvn package -DskipTests` 无错误 |
+| RagControllerTest | ✅ 通过 | 4 个测试全过，证明 Long→String 断言生效 |
+| DepartmentTriageControllerTest | ⚠️ 无法本地运行 | 属既有环境问题：H2 不兼容 schema.sql 的 MySQL 索引语法 `INDEX idx_title (title(100))`（`expected "ASC, DESC, NULLS, ,, )"`），与本次改动无关 |
+| p2 保存健康档案 | ✅ 通过 | PUT `/api/users/2088194171323465729/health-profile` 精确 ID，DB 落库（age30/张平/MALE/青霉素/高血压/阿司匹林/阑尾切除术/高血压（父系）） |
+| p2 保存身份信息 | ✅ 通过 | PUT `/api/users/2088194171323465729/identity` 精确 ID，`fhir_patient_cache` 同步（given_name=张平/idcard/110101199001011234/北京市朝阳区/LOCAL） |
+| FHIR 搜索回归 | ✅ 通过 | 医生端搜索张平/李健康恢复合法 JSON（修复前 194KB 损坏 JSON、报 nesting depth 1001） |
+| 医生端详情页 | ✅ 通过 | `/patients/pat-2088194171323465729` 健康档案 Tab 显示张平 5 项医疗史（青霉素/高血压/阿司匹林/阑尾切除术/高血压（父系））+ AI 摘要；问卷记录 Tab 空态「暂无问卷记录」正常 |
+| 前端 type-check / build | ✅ 通过 | `vue-tsc --noEmit` 与 `vite build` 均通过 |
+
+### 13.6 已知边界
+
+- `DepartmentTriageControllerTest` 无法在本地运行（H2 不兼容 schema.sql 索引语法），需远程环境或调整 schema 后执行。
+- 本批次改动未提交 git，待最终统一提交。
+
+---
+
+## 14. 2026-08-15 缺陷修复：管理员端编辑账号误清档案 + 患者端健康档案联动
+
+> 用户反馈缺陷：p2 账号疑似在管理员端被编辑后，健康档案丢失。
+
+### 14.1 根因分析
+
+| 问题 | 根因 |
+|------|------|
+| 管理员编辑一次账号即清空患者档案 | `UserController.update`（PUT `/api/users/{id}`）整实体更新，而 `User.java` 的 `healthProfile`/`identity` 字段标注 `updateStrategy = FieldStrategy.IGNORED`（删除档案需置空列）。MyBatis-Plus 对 IGNORED 字段**无条件写入 SET 子句**，前端请求体不含这两列 → null → 管理员改任意账号字段（哪怕只改角色）即把健康档案与身份 JSON 置空 |
+| 管理员改手机号后医生端搜不到患者 | 改号只更新 `users.phone`，`fhir_patient_cache.phone` 停留旧值，医生端按新手机号检索无结果 |
+
+### 14.2 修复内容
+
+**后端**
+
+| 文件 | 改动 |
+|------|------|
+| `controller/UserController.java:update()` | 改为**白名单部分更新**：先 `getById` 查询现有用户，仅合并 `username/phone/role/password`（password 留空不修改），再 `updateById(existing)`——existing 携带完整 `healthProfile`/`identity` 原值，不再触发 IGNORED 置空；手机号变化时调 `fhirPatientService.updatePhone(id, newPhone)` 同步缓存 |
+| `controller/UserController.java:updateHealthProfile()` | 人口学字段**三级兜底**：请求值 > identity（个人中心） > 原健康档案。姓名/性别回退 identity；年龄由 identity 出生日期 `Period.between` 计算，出生日期缺失时回退原档案手填年龄（避免抹掉历史值）。保存后仍同步 FHIR 患者缓存（姓名/性别兜底后全空则跳过） |
+| `controller/UserController.java` | 新增私有辅助方法 `parseIdentity` / `parseHealthProfile`；health_profile 序列化用独立 `new ObjectMapper()`（无 LocalDate 字段，兼容测试环境） |
+| `dto/user/HealthProfileRequest.java` | `name`/`age`/`gender` 由必填改为**可选**（去除 `@NotBlank`/`@NotNull`），注明「人口学字段由 identity 兜底，健康档案仅维护病史」 |
+| `service/his/FhirPatientService.java` + `impl/FhirPatientServiceImpl.java` | 新增 `updatePhone(userId, newPhone)`：按 `fhir_id="pat-"+userId` 查缓存行，存在则更新 phone + 重建 `resource_json` + `updateById`，不存在则 no-op，`@Transactional` |
+
+**前端**
+
+| 文件 | 改动 |
+|------|------|
+| `api/services/user.service.ts` | `HealthProfile` 接口 `name`/`age`/`gender` 改为可选，注释说明人口学由个人中心维护 |
+| `views/patient/ProfileView.vue` | 「基础信息」改为**只读回显**（姓名/性别/年龄来自个人中心 identity，年龄由出生日期计算）；无身份信息时提示「去个人中心」；表单仅保留 5 类病史编辑；保存只提交病史 |
+
+**单元测试**：`UserControllerTest` 由 7 个增至 **9 个**，新增 `testUpdateHealthProfile_IdentityFallback`（identity 兜底姓名/性别，年龄按出生日期计算）与 `testUpdateHealthProfile_OldProfileAgeFallback`（identity 无出生日期时回退原档案年龄）。测试类改造：`@InjectMocks` 改为手动构造 `new UserController(userService, fhirPatientService, objectMapper)`，注入带 `JavaTimeModule` 的真实 ObjectMapper（原测试 `fhirPatientService`/`objectMapper` 为 null 靠 try-catch 吞异常才通过，无法验证兜底逻辑）。
+
+### 14.3 验证结果
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| 后端单元测试 | ✅ 通过 | `UserControllerTest` 9/9、`UserControllerIntegrationTest` 4/4，BUILD SUCCESS |
+| 前端 type-check / build | ✅ 通过 | `vue-tsc --noEmit` 与 `vite build` 均通过 |
+| 管理员编辑不清空（Playwright E2E） | ✅ 通过 | admin 登录改 p2 手机号 `13678292736→13600001111` 后，DB 中 `health_profile`（青霉素/张平/MALE/age30）与 `identity`（张平/证件号/地址）均完整未清空；医生端按新手机号 `13600001111` 检索命中张平 |
+| 手机号同步 fhir 缓存 | ✅ 通过 | `fhir_patient_cache.phone` 同步为新号，医生端 `/patients` 列表显示 `136-****-1111`；改回原号后 DB（含 `resource_json`）同步恢复为 `13678292736` |
+| p2 健康档案回显（Playwright E2E） | ✅ 通过 | p2 登录 → `/profile` 基础信息只读回显姓名=张平/性别=男/年龄=—（identity 出生日期为空）；编辑病史「骨折手术」保存成功，随后删除还原 |
+| health-profile JSON 兜底 | ✅ 通过 | `GET /api/users/2088194171323465729/health-profile` 返回 `name:"张平"`/`gender:"MALE"`（identity 兜底）/`age:30`（identity 出生日期为空，回退原档案） |
+| 医生端一致性（Playwright E2E） | ✅ 通过 | doctor_wang → `/patients/pat-2088194171323465729` 健康档案 Tab：姓名=张平、性别=男、年龄=30 岁，5 项病史完整；姓名/性别与个人中心一致 |
+
+### 14.4 已知边界
+
+- **年龄展示差异**：p2 的 identity 出生日期为空（个人中心未填），故个人中心/健康档案页显示年龄「—」，而医生端健康档案 Tab 显示历史档案保留的 30 岁。用户补填出生日期后，保存健康档案时年龄自动按出生日期计算，两端即一致。属历史数据边界，非代码缺陷。
+- **安全加固未做**：管理员 `create`/`update` 密码明文、用户名/手机号唯一性校验、`GET /users` 返回 password/healthProfile/identity 敏感字段、删除用户清理 `fhir_patient_cache` 等均属「安全加固」范畴，本次按用户决策仅做核心修复，未扩展。
+- `User.java` 的 `FieldStrategy.IGNORED` 注解保持不动（`deleteHealthProfile` 仍依赖置空列），因 `update` 已改为查 existing 合并，不再触发误清。
+- 本批次改动未提交 git，待最终统一提交。
+
+---
+
+## 15. 2026-08-15 缺陷修复：医生端患者检索「总数 4」与「列表 3」不一致
+
+### 15.1 根因分析
+
+| 问题 | 根因 |
+|------|------|
+| 患者检索页总数 4 但列表 3 | `FhirPatientServiceImpl.count()` 用 `selectCount(null)` 统计 `fhir_patient_cache` **全部行**（4 行）；列表走 `/search?name=`（空串）用 `family_name LIKE '%%' OR given_name LIKE '%%'`，而 MySQL 中 **`NULL LIKE '%%'` 结果为 NULL（不匹配）**，无姓名行被排除 → 列表 3 行 |
+| `pat-1` 为何存在 | 该行为 **admin 账号**（userId=1）的历史残留：admin 健康档案 `name=null, gender=MALE`，早期 `upsertLocalPatient` 的同步条件只要求 name/gender **任一有值**，gender 非空即建立无姓名缓存行 |
+
+### 15.2 修复内容
+
+`impl/FhirPatientServiceImpl.java:count()`：改为与医生端列表同口径——仅统计有姓名（`given_name IS NOT NULL OR family_name IS NOT NULL`）的患者，消除「总数与列表口径不一致」。未删除 admin 缓存行（保留手机号/证件号检索能力，可逆修复）。
+
+### 15.3 验证结果
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| 后端编译 | ✅ 通过 | `mvn compile` 无错误 |
+| count 接口 | ✅ 通过 | 重启后 `GET /api/his/fhir/Patient/count` 返回 `"data":"3"`，与列表一致 |
+| 前端页面 | ✅ 通过 | 患者检索页显示「系统患者总数: 3 位」=「检索结果 (3)」 |
+
+### 15.4 附带修正
+
+验证时发现 p2 的 `identity.birthDate=2000-01-03`（26 岁）与 `health_profile.age=30` 不一致（健康档案页已按出生日期显示 26，但健康档案 JSON 残留旧值 30，医生端健康档案 Tab 会读到 30）。已按「年龄由个人中心出生日期统一计算」的既定决策，将 `health_profile.age` 修正为 26，`GET /overview` 确认返回 `age:26`。个人中心/医生端列表/医生端健康档案 Tab 三处年龄现完全一致。
+
+---
+
 *本测试报告将随测试进展持续更新。建议开发团队定期查看并根据报告中的改进建议优化测试策略。*

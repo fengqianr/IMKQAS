@@ -304,7 +304,8 @@ const statsAbsolute = ref(0)
 const statsNewThisMonth = ref(0)
 
 const absolutePercent = computed(() => {
-  if (statsTotal.value === 0) return '0.0'
+  // total 由后端 Long 序列化为字符串，需 Number 归一后再比较（避免 "0" === 0 为 false 导致除以 0 得 Infinity）
+  if (Number(statsTotal.value) === 0) return '0.0'
   return ((statsAbsolute.value / statsTotal.value) * 100).toFixed(1)
 })
 

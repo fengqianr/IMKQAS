@@ -19,21 +19,22 @@
           <span class="material-symbols-outlined stat-icon primary">person</span>
           <span>用户总数</span>
         </div>
-        <div class="stat-value">{{ userTotal.toLocaleString() }}</div>
+        <!-- total 由后端 Long 序列化为字符串，Number() 归一后才有千分位格式化 -->
+        <div class="stat-value">{{ Number(userTotal).toLocaleString() }}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">
           <span class="material-symbols-outlined stat-icon primary">description</span>
           <span>文档总数</span>
         </div>
-        <div class="stat-value">{{ docTotal.toLocaleString() }}</div>
+        <div class="stat-value">{{ Number(docTotal).toLocaleString() }}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">
           <span class="material-symbols-outlined stat-icon primary">analytics</span>
           <span>分诊请求数</span>
         </div>
-        <div class="stat-value">{{ triageTotal.toLocaleString() }}</div>
+        <div class="stat-value">{{ Number(triageTotal).toLocaleString() }}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">

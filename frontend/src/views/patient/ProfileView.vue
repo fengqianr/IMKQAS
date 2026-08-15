@@ -27,31 +27,36 @@
 
     <!-- 表单态 -->
     <div v-else class="form-card">
-      <!-- 基础信息 -->
+      <!-- 基础信息：只读回显，由个人中心统一维护 -->
       <section class="form-section">
         <h2 class="section-title">
           <span class="material-symbols-outlined">person</span>
           基础信息
         </h2>
-        <div class="basic-grid">
+        <div v-if="identityInfo && identityInfo.name" class="basic-grid">
+          <div class="field">
+            <label class="field-label">姓名</label>
+            <div class="field-value">{{ identityInfo.name }}</div>
+          </div>
           <div class="field">
             <label class="field-label">年龄（岁）</label>
-            <el-input-number
-              v-model="form.age"
-              :min="0"
-              :max="150"
-              controls-position="right"
-              class="age-input"
-            />
+            <div class="field-value">{{ computedAge != null ? computedAge : '—' }}</div>
           </div>
           <div class="field">
             <label class="field-label">性别</label>
-            <el-radio-group v-model="form.gender">
-              <el-radio value="MALE">男</el-radio>
-              <el-radio value="FEMALE">女</el-radio>
-              <el-radio value="OTHER">其他</el-radio>
-            </el-radio-group>
+            <div class="field-value">{{ computedGenderText || '—' }}</div>
           </div>
+          <div class="field identity-hint">
+            <span class="identity-hint-text">如需修改请前往个人中心</span>
+          </div>
+        </div>
+        <div v-else class="identity-empty">
+          <span class="material-symbols-outlined">person_off</span>
+          <p>请先到个人中心完善身份信息</p>
+          <button class="btn-link" @click="goUserCenter">
+            <span class="material-symbols-outlined">open_in_new</span>
+            去个人中心
+          </button>
         </div>
       </section>
 
@@ -125,10 +130,12 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
-import { userService, type HealthProfile } from '@/api/services/user.service'
+import { userService, type HealthProfile, type IdentityInfo } from '@/api/services/user.service'
 
 const authStore = useAuthStore()
+const router = useRouter()
 const userId = computed(() => authStore.userId)
 
 // 页面状态
@@ -136,16 +143,56 @@ const loading = ref(true)
 const saving = ref(false)
 const hasProfile = ref(false)
 
-// 表单数据
+// 个人身份信息（人口学字段只读回显，由个人中心统一维护）
+const identityInfo = ref<IdentityInfo | null>(null)
+const computedAge = computed(() => calcAge(identityInfo.value?.birthDate))
+const computedGenderText = computed(() => genderText(identityInfo.value?.gender))
+
+// 表单数据：仅病史（人口学字段由 identity 回显，不在本页编辑）
 const form = reactive<HealthProfile>({
-  age: 30,
-  gender: 'MALE',
   allergies: [],
   chronicDiseases: [],
   medicationHistory: [],
   surgicalHistory: [],
   familyHistory: []
 })
+
+/**
+ * 由出生日期计算年龄
+ * @param birthDate 出生日期 yyyy-MM-dd
+ * @returns 年龄；无出生日期或解析失败返回 null
+ */
+const calcAge = (birthDate?: string): number | null => {
+  if (!birthDate) return null
+  const birth = new Date(birthDate)
+  if (isNaN(birth.getTime())) return null
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+
+/**
+ * 性别枚举转中文显示
+ * @param gender MALE/FEMALE/OTHER
+ * @returns 中文性别；未知返回空串
+ */
+const genderText = (gender?: string): string => {
+  if (gender === 'MALE') return '男'
+  if (gender === 'FEMALE') return '女'
+  if (gender === 'OTHER') return '其他'
+  return ''
+}
+
+/**
+ * 跳转个人中心完善身份信息
+ */
+const goUserCenter = () => {
+  router.push('/user')
+}
 
 // 医疗史字段的输入草稿
 const draftInputs = reactive<Record<string, string>>({
@@ -165,13 +212,27 @@ const historyFields = [
   { key: 'familyHistory' as const, label: '家族病史', placeholder: '如：高血压（父系）' }
 ]
 
-// 加载健康档案
+// 加载健康档案（并行加载身份信息用于人口学字段回显）
 const loadProfile = async () => {
   loading.value = true
   try {
-    const result = await userService.getHealthProfile(userId.value)
-    if (result.hasHealthProfile && result.healthProfile) {
-      Object.assign(form, result.healthProfile)
+    const [identityResult, profileResult] = await Promise.all([
+      userService.getIdentity(userId.value).catch(() => null),
+      userService.getHealthProfile(userId.value)
+    ])
+    if (identityResult?.hasIdentity && identityResult.identity) {
+      identityInfo.value = identityResult.identity
+    }
+    if (profileResult.hasHealthProfile && profileResult.healthProfile) {
+      // 只回填病史字段（人口学字段由 identity 提供，不覆盖）
+      const hp = profileResult.healthProfile
+      Object.assign(form, {
+        allergies: hp.allergies ?? [],
+        chronicDiseases: hp.chronicDiseases ?? [],
+        medicationHistory: hp.medicationHistory ?? [],
+        surgicalHistory: hp.surgicalHistory ?? [],
+        familyHistory: hp.familyHistory ?? []
+      })
       hasProfile.value = true
     } else {
       hasProfile.value = false
@@ -202,16 +263,8 @@ const removeItem = (key: string, index: number) => {
   (form[key as keyof HealthProfile] as string[]).splice(index, 1)
 }
 
-// 保存档案
+// 保存档案（人口学字段由个人中心兜底，仅提交病史）
 const handleSave = async () => {
-  if (form.age === null || form.age === undefined || form.age < 0) {
-    ElMessage.warning('请输入正确的年龄')
-    return
-  }
-  if (!form.gender) {
-    ElMessage.warning('请选择性别')
-    return
-  }
   saving.value = true
   try {
     await userService.updateHealthProfile(userId.value, { ...form })
@@ -239,10 +292,8 @@ const handleDelete = async () => {
     await userService.deleteHealthProfile(userId.value)
     ElMessage.success('健康档案已删除')
     hasProfile.value = false
-    // 重置表单
+    // 重置表单（仅病史，人口学字段由 identity 回显保持不变）
     Object.assign(form, {
-      age: 30,
-      gender: 'MALE',
       allergies: [],
       chronicDiseases: [],
       medicationHistory: [],
@@ -425,6 +476,64 @@ onMounted(loadProfile)
   font-size: 0.8125rem;
   font-weight: 600;
   color: #4a5f83;
+}
+
+/* ===== 身份信息只读回显 ===== */
+.field-value {
+  font-size: 0.9375rem;
+  color: #191c1d;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+.identity-hint {
+  justify-content: flex-end;
+}
+
+.identity-hint-text {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  align-self: flex-end;
+  padding-bottom: 0.5rem;
+}
+
+.identity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: #727783;
+  font-size: 0.875rem;
+}
+
+.identity-empty .material-symbols-outlined {
+  font-size: 2rem;
+  color: #94a3b8;
+}
+
+.identity-empty p {
+  margin: 0;
+}
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 1rem;
+  color: #005eb8;
+  background: none;
+  border: 1px solid rgba(0, 94, 184, 0.3);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms;
+}
+
+.btn-link:hover {
+  background: #eef4fb;
 }
 
 .age-input {

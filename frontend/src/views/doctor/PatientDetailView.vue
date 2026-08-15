@@ -17,7 +17,7 @@
     </div>
 
     <template v-else>
-      <!-- 患者快速信息头 -->
+      <!-- 患者快速信息 Hero -->
       <div class="quick-header">
         <div class="quick-left">
           <div class="quick-avatar">{{ patientInitial(patient) }}</div>
@@ -31,11 +31,19 @@
               <span class="meta-dot" />
               <span>{{ ageText }} 岁</span>
               <span class="meta-dot" />
-              <span class="patient-id">ID: {{ patient?.id }}</span>
+              <span class="patient-id">患者编号: {{ patient?.id }}</span>
+            </div>
+            <div class="hero-tags">
+              <span class="hero-status" :class="'hero-status-' + statusMeta.tone">{{ statusMeta.text }}</span>
+              <span class="hero-recent">{{ recentVisitText }}</span>
             </div>
           </div>
         </div>
         <div class="quick-actions">
+          <button class="btn-primary" @click="handleNewConsult">
+            <span class="material-symbols-outlined">add</span>
+            新建问诊
+          </button>
           <button class="btn-outline" @click="handlePrint">
             <span class="material-symbols-outlined">print</span>
             打印报告
@@ -43,6 +51,9 @@
         </div>
       </div>
 
+      <!-- 主体：Tab 区 + AI 摘要侧栏 -->
+      <div class="detail-body">
+        <div class="detail-main">
       <!-- Tab 导航 -->
       <div class="tab-nav">
         <button
@@ -58,41 +69,68 @@
 
       <!-- Tab 内容：基本信息 -->
       <div v-if="activeTab === 'basic'" class="tab-content">
-        <div class="basic-grid">
-          <!-- 核心信息 -->
-          <div class="info-card core-card">
-            <h2 class="card-title">
-              <span class="material-symbols-outlined">id_card</span>
-              核心信息
-            </h2>
+        <!-- 核心信息 -->
+        <div class="info-card core-card">
+          <h2 class="card-title">
+            <span class="material-symbols-outlined">id_card</span>
+            核心信息
+          </h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">出生日期</span>
+              <span class="info-value">{{ formatDate(patient?.birthDate) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">联系电话</span>
+              <span class="info-value">{{ maskPhone(phoneOf) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">证件号码</span>
+              <span class="info-value">{{ maskIdNumber(identifierOf?.value) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">家庭住址</span>
+              <span class="info-value">{{ addressOf }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 内容：健康档案 -->
+      <div v-else-if="activeTab === 'health'" class="tab-content">
+        <div v-if="hasHealthProfile && healthProfile" class="info-card core-card">
+          <h2 class="card-title">
+            <span class="material-symbols-outlined">health_and_safety</span>
+            健康档案
+          </h2>
+          <div class="hp-section">
+            <h3 class="hp-label">基本资料</h3>
             <div class="info-grid">
               <div class="info-item">
-                <span class="info-label">出生日期</span>
-                <span class="info-value">{{ formatDate(patient?.birthDate) }}</span>
+                <span class="info-label">姓名</span>
+                <span class="info-value">{{ healthProfile.name || '—' }}</span>
               </div>
               <div class="info-item">
-                <span class="info-label">联系电话</span>
-                <span class="info-value">{{ maskPhone(phoneOf) }}</span>
+                <span class="info-label">性别</span>
+                <span class="info-value">{{ healthGenderText(healthProfile.gender) }}</span>
               </div>
               <div class="info-item">
-                <span class="info-label">证件号码</span>
-                <span class="info-value">{{ maskIdNumber(identifierOf?.value) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">家庭住址</span>
-                <span class="info-value">{{ addressOf }}</span>
+                <span class="info-label">年龄</span>
+                <span class="info-value">{{ healthProfile.age != null ? healthProfile.age + ' 岁' : '—' }}</span>
               </div>
             </div>
           </div>
-
-          <!-- AI 智能摘要（由现有病情/检验/问卷数据自动拼装） -->
-          <div class="info-card ai-card">
-            <h2 class="ai-title">
-              <span class="material-symbols-outlined">auto_awesome</span>
-              AI 智能摘要
-            </h2>
-            <p class="ai-text">{{ aiSummary }}</p>
+          <div v-for="group in healthGroups" :key="group.label" class="hp-section">
+            <h3 class="hp-label">{{ group.label }}</h3>
+            <ul v-if="group.items.length" class="hp-list">
+              <li v-for="(item, i) in group.items" :key="i" class="hp-item">{{ item }}</li>
+            </ul>
+            <p v-else class="hp-empty">暂无{{ group.label }}</p>
           </div>
+        </div>
+        <div v-else class="empty-inline">
+          <span class="material-symbols-outlined">health_and_safety</span>
+          患者未填写健康档案
         </div>
       </div>
 
@@ -143,28 +181,20 @@
       </div>
 
       <!-- Tab 内容：问卷记录 -->
-      <div v-else class="tab-content">
-        <div v-if="questionnaires.length" class="list-card">
-          <div v-for="qr in questionnaires" :key="qr.id" class="list-item">
-            <div class="list-item-head clickable" @click="toggleQR(qr.id)">
+      <div v-else-if="activeTab === 'questionnaire'" class="tab-content">
+        <div v-if="questionnaireRecords.length" class="list-card">
+          <div v-for="qr in questionnaireRecords" :key="qr.fhirId || qr.sessionId" class="list-item">
+            <div class="list-item-head">
               <div class="qr-title-wrap">
                 <span class="material-symbols-outlined qr-icon">assignment</span>
-                <span class="item-title">{{ questionnaireLabel(qr) }}</span>
+                <span class="item-title">{{ qr.questionnaireTitle || '问卷记录' }}</span>
               </div>
               <div class="qr-meta">
-                <span class="status-badge neutral">{{ questionnaireStatusText(qr.status) }}</span>
-                <span v-if="qr.authored">{{ formatDate(qr.authored) }}</span>
-                <span class="material-symbols-outlined expand-icon" :class="{ expanded: expandedQR === qr.id }">
-                  expand_more
+                <span class="score-badge" :class="severityTone(qr.severity)">
+                  {{ qr.score != null ? qr.score + ' 分' : '—' }} · {{ qr.severity || '未知' }}
                 </span>
+                <span v-if="qr.authoredDate">{{ formatDate(qr.authoredDate) }}</span>
               </div>
-            </div>
-            <div v-if="expandedQR === qr.id" class="qr-detail">
-              <div v-for="(qa, i) in flattenQR(qr.item)" :key="i" class="qr-row">
-                <div class="qr-question">{{ qa.question }}</div>
-                <div class="qr-answer">{{ qa.answer }}</div>
-              </div>
-              <div v-if="!flattenQR(qr.item).length" class="qr-empty">该问卷无回答明细</div>
             </div>
           </div>
         </div>
@@ -173,6 +203,19 @@
           暂无问卷记录
         </div>
       </div>
+        </div>
+
+        <!-- AI 智能摘要侧栏（常驻，由病情/检验/问卷数据自动拼装） -->
+        <aside class="detail-aside">
+          <div class="ai-card">
+            <h2 class="ai-title">
+              <span class="material-symbols-outlined">auto_awesome</span>
+              AI 智能摘要
+            </h2>
+            <p class="ai-text">{{ aiSummary }}</p>
+          </div>
+        </aside>
+      </div>
     </template>
   </div>
 </template>
@@ -180,13 +223,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { fhirService } from '@/api/services/fhir.service'
+import { fhirService, type PatientOverviewRecord } from '@/api/services/fhir.service'
+import type { HealthProfile } from '@/api/services/user.service'
 import {
   type FhirPatient,
   type FhirCondition,
   type FhirObservation,
-  type FhirQuestionnaireResponse,
-  type FhirQuestionnaireResponseItem,
   patientInitial,
   patientName,
   genderText,
@@ -203,9 +245,7 @@ import {
   observationName,
   observationValue,
   observationStatusText,
-  hasAbnormal,
-  questionnaireStatusText,
-  answerText
+  hasAbnormal
 } from '@/api/types/fhir'
 
 const route = useRoute()
@@ -219,13 +259,16 @@ const loading = ref(true)
 const patient = ref<FhirPatient | null>(null)
 const conditions = ref<FhirCondition[]>([])
 const observations = ref<FhirObservation[]>([])
-const questionnaires = ref<FhirQuestionnaireResponse[]>([])
+// 健康档案与问卷记录来自聚合接口 /his/fhir/Patient/{fhirId}/overview
+const hasHealthProfile = ref(false)
+const healthProfile = ref<HealthProfile | null>(null)
+const questionnaireRecords = ref<PatientOverviewRecord[]>([])
 const activeTab = ref('basic')
-const expandedQR = ref<string | null>(null)
 
 /** Tab 配置 */
 const tabs = [
   { key: 'basic', label: '基本信息' },
+  { key: 'health', label: '健康档案' },
   { key: 'condition', label: '病情记录' },
   { key: 'observation', label: '检验与观察' },
   { key: 'questionnaire', label: '问卷记录' }
@@ -259,12 +302,18 @@ const statusOf = (c: FhirCondition) => clinicalStatusMeta(c.clinicalStatus?.codi
 const statusTextOf = (c: FhirCondition) => statusOf(c).text
 const statusColorOf = (c: FhirCondition) => statusOf(c).color
 
-/** AI 摘要：由已有病情/检验/问卷数据自动拼装 */
+/** AI 摘要：由健康档案/病情/检验/问卷数据自动拼装 */
 const aiSummary = computed(() => {
   const parts: string[] = []
+  const hp = healthProfile.value
+  if (hp) {
+    if (hp.chronicDiseases?.length) parts.push(`慢性病：${hp.chronicDiseases.join('、')}`)
+    if (hp.allergies?.length) parts.push(`过敏：${hp.allergies.join('、')}`)
+    if (hp.medicationHistory?.length) parts.push(`用药：${hp.medicationHistory.join('、')}`)
+  }
   if (conditions.value.length) parts.push(`共 ${conditions.value.length} 条病情记录`)
   if (observations.value.length) parts.push(`${observations.value.length} 条检验观察`)
-  if (questionnaires.value.length) parts.push(`${questionnaires.value.length} 份问卷`)
+  if (questionnaireRecords.value.length) parts.push(`${questionnaireRecords.value.length} 份问卷`)
   const dates = observations.value.map(o => o.effectiveDateTime).filter(Boolean) as string[]
   if (dates.length) {
     parts.push(`最近检验 ${formatDate(dates.sort().reverse()[0])}`)
@@ -275,41 +324,54 @@ const aiSummary = computed(() => {
   return `患者当前共有${parts.join('、')}。建议结合上述记录持续关注健康状况。`
 })
 
-/** 问卷标题 */
-const questionnaireLabel = (qr: FhirQuestionnaireResponse) => {
-  const ref = qr.questionnaire
-  const id = ref && ref.includes('/') ? ref.split('/').pop() : ref
-  return `问卷记录${id ? ` #${id}` : ''}`
+/** Hero 当前状态徽标：依据临床记录与健康档案推断（有病情→在管；有检验/问卷→随访中；否则新患者） */
+const statusMeta = computed<{ text: string; tone: string }>(() => {
+  if (conditions.value.length) return { text: '在管患者', tone: 'active' }
+  if (observations.value.length || questionnaireRecords.value.length) return { text: '随访中', tone: 'follow' }
+  return { text: '新患者', tone: 'new' }
+})
+
+/** 最近一条临床记录时间（检验/问卷的最近时间，用于 Hero 展示） */
+const recentVisitText = computed(() => {
+  const dates: string[] = []
+  observations.value.forEach(o => {
+    if (o.effectiveDateTime) dates.push(o.effectiveDateTime)
+  })
+  questionnaireRecords.value.forEach(qr => {
+    if (qr.authoredDate) dates.push(qr.authoredDate)
+  })
+  if (!dates.length) return '暂无就诊记录'
+  const latest = dates.sort().reverse()[0]
+  return `最近记录 ${formatDate(latest)}`
+})
+
+// ==================== 健康档案辅助 ====================
+
+/** 健康档案性别显示：MALE/FEMALE/OTHER -> 男/女/其他 */
+const healthGenderText = (g?: string) => {
+  if (!g) return '—'
+  return ({ MALE: '男', FEMALE: '女', OTHER: '其他' } as Record<string, string>)[g] || g
 }
 
-/** 展开/收起问卷明细 */
-const toggleQR = (id?: string) => {
-  if (!id) return
-  expandedQR.value = expandedQR.value === id ? null : id
-}
+/** 健康档案分组展示（过滤空值项） */
+const healthGroups = computed(() => {
+  const hp = healthProfile.value
+  const mk = (label: string, items?: string[]) => ({ label, items: items?.filter(Boolean) || [] })
+  return [
+    mk('过敏史', hp?.allergies),
+    mk('慢性病史', hp?.chronicDiseases),
+    mk('用药史', hp?.medicationHistory),
+    mk('手术史', hp?.surgicalHistory),
+    mk('家族病史', hp?.familyHistory)
+  ]
+})
 
-/** 问答对 */
-interface QnAPair {
-  question: string
-  answer: string
-}
-
-/** 将问卷 item 树扁平化为问答对列表 */
-const flattenQR = (items?: FhirQuestionnaireResponseItem[]): QnAPair[] => {
-  const result: QnAPair[] = []
-  const walk = (list?: FhirQuestionnaireResponseItem[]) => {
-    if (!list) return
-    for (const it of list) {
-      const question = it.text || it.linkId || ''
-      const answer = it.answer?.map(answerText).filter(Boolean).join('、')
-      if (question) {
-        result.push({ question, answer: answer || '—' })
-      }
-      walk(it.item)
-    }
-  }
-  walk(items)
-  return result
+/** 问卷严重程度色系（重度红/中度橙/其余灰蓝） */
+const severityTone = (s?: string | null) => {
+  if (!s) return ''
+  if (s.includes('重度') || s.includes('严重')) return 'severity-high'
+  if (s.includes('中度')) return 'severity-mid'
+  return 'severity-low'
 }
 
 // ==================== 动作 ====================
@@ -323,26 +385,32 @@ const goBack = () => {
   }
 }
 
+// 新建问诊：跳转智能问答页
+const handleNewConsult = () => {
+  router.push('/qa')
+}
+
 // 打印报告（浏览器打印当前页面）
 const handlePrint = () => {
   window.print()
 }
 
-// 初始化：并行加载患者档案与三类临床记录
+// 初始化：并行加载患者档案概览（含健康档案与问卷记录）与病情/检验记录
 onMounted(async () => {
   loading.value = true
   try {
     const id = fhirId.value
-    const [p, cs, obs, qrs] = await Promise.all([
-      fhirService.getPatient(id),
+    const [overview, cs, obs] = await Promise.all([
+      fhirService.getPatientOverview(id),
       fhirService.getConditions(id),
-      fhirService.getObservations(id),
-      fhirService.getQuestionnaireResponses(id)
+      fhirService.getObservations(id)
     ])
-    patient.value = p
+    patient.value = overview?.patient ?? null
+    hasHealthProfile.value = overview?.hasHealthProfile ?? false
+    healthProfile.value = overview?.healthProfile ?? null
+    questionnaireRecords.value = overview?.questionnaireResponses ?? []
     conditions.value = cs
     observations.value = obs
-    questionnaires.value = qrs
   } finally {
     loading.value = false
   }
@@ -373,7 +441,7 @@ onMounted(async () => {
 }
 
 .back-link:hover {
-  color: #005eb8;
+  color: #0891b2;
 }
 
 .back-link .material-symbols-outlined {
@@ -459,6 +527,46 @@ onMounted(async () => {
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* Hero 状态徽标与最近记录 */
+.hero-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.hero-status {
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hero-status-active {
+  background: #cffafe;
+  border: 1px solid #22d3ee;
+  color: #155e75;
+}
+
+.hero-status-follow {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+}
+
+.hero-status-new {
+  background: #eceef0;
+  border: 1px solid #c2c6d4;
+  color: #4a5f83;
+}
+
+.hero-recent {
+  font-size: 0.75rem;
+  color: #727783;
+}
+
 .quick-actions {
   display: flex;
   gap: 0.5rem;
@@ -487,25 +595,35 @@ onMounted(async () => {
 }
 
 .tab-btn:hover {
-  color: #005eb8;
+  color: #0891b2;
 }
 
 .tab-btn.active {
-  color: #005eb8;
-  border-bottom-color: #005eb8;
+  color: #0891b2;
+  border-bottom-color: #0891b2;
 }
 
-/* ===== 基本信息 Tab ===== */
-.basic-grid {
+/* ===== 主体布局：Tab 区 + AI 摘要侧栏 ===== */
+.detail-body {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
+  align-items: start;
 }
 
 @media (min-width: 1024px) {
-  .basic-grid {
-    grid-template-columns: 2fr 1fr;
+  .detail-body {
+    grid-template-columns: 1fr 20rem;
   }
+}
+
+.detail-main {
+  min-width: 0;
+}
+
+.detail-aside {
+  position: sticky;
+  top: 1.5rem;
 }
 
 .info-card {
@@ -555,12 +673,56 @@ onMounted(async () => {
   color: #191c1d;
 }
 
+/* ===== 健康档案 ===== */
+.hp-section {
+  padding: 0.875rem 0 0.25rem;
+  border-top: 1px dashed #e2e8f0;
+  margin-top: 0.875rem;
+}
+
+.hp-section:first-of-type {
+  border-top: none;
+  padding-top: 0.5rem;
+  margin-top: 0;
+}
+
+.hp-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4a5f83;
+  margin-bottom: 0.5rem;
+}
+
+.hp-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hp-item {
+  padding: 0.25rem 0.75rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  color: #191c1d;
+}
+
+.hp-empty {
+  font-size: 0.8125rem;
+  color: #727783;
+}
+
 .ai-card {
-  background: #f2f4f6;
-  border-color: rgba(0, 94, 184, 0.2);
+  background: linear-gradient(180deg, #f0f9fb 0%, #ffffff 100%);
+  border-color: rgba(8, 145, 178, 0.25);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  box-shadow: 0 4px 16px rgba(8, 145, 178, 0.08);
 }
 
 .ai-title {
@@ -569,7 +731,7 @@ onMounted(async () => {
   gap: 0.25rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #005eb8;
+  color: #0891b2;
 }
 
 .ai-title .material-symbols-outlined {
@@ -674,7 +836,7 @@ onMounted(async () => {
 
 .qr-icon {
   font-size: 1.125rem;
-  color: #005eb8;
+  color: #0891b2;
 }
 
 .qr-meta {
@@ -686,43 +848,34 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 
-.expand-icon {
-  font-size: 1.25rem;
-  transition: transform 150ms;
+/* 问卷评分徽标（按严重程度着色） */
+.score-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #eceef0;
+  border: 1px solid #c2c6d4;
+  color: #4a5f83;
 }
 
-.expand-icon.expanded {
-  transform: rotate(180deg);
+.score-badge.severity-high {
+  background: #fee2e2;
+  border-color: #f87171;
+  color: #991b1b;
 }
 
-.qr-detail {
-  margin-top: 0.75rem;
-  border-top: 1px dashed #c2c6d4;
-  padding-top: 0.75rem;
+.score-badge.severity-mid {
+  background: #ffedd5;
+  border-color: #fb923c;
+  color: #9a3412;
 }
 
-.qr-row {
-  display: flex;
-  gap: 1rem;
-  padding: 0.375rem 0;
-  font-size: 0.8125rem;
-}
-
-.qr-question {
-  flex: 1;
-  color: #3e484d;
-}
-
-.qr-answer {
-  flex: 1;
-  color: #191c1d;
-  font-weight: 500;
-}
-
-.qr-empty {
-  font-size: 0.8125rem;
-  color: #727783;
-  font-style: italic;
+.score-badge.severity-low {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
 }
 
 /* ===== 空态（整页 / 内联） ===== */
@@ -748,7 +901,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #005eb8;
+  color: #0891b2;
   margin-bottom: 0.5rem;
 }
 
@@ -781,6 +934,27 @@ onMounted(async () => {
   background: #ffffff;
   color: #727783;
   font-size: 0.875rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #0891b2;
+  border: 1px solid #0891b2;
+  color: #ffffff;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+}
+
+.btn-primary:hover {
+  background: #0e7490;
+  border-color: #0e7490;
 }
 
 .btn-outline {

@@ -2,26 +2,29 @@ package com.imkqas.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
 
 /**
  * 健康档案请求
+ *
+ * 人口学字段（姓名/年龄/性别）为可选：由个人中心（users.identity）统一维护，
+ * 健康档案页仅编辑病史。请求缺省人口学字段时，后端以 identity 兜底填充
+ * （详见 UserController.updateHealthProfile）。
  */
 @Data
 @Schema(description = "健康档案请求")
 public class HealthProfileRequest {
 
-    @Schema(description = "年龄", minimum = "0", maximum = "150")
+    @Schema(description = "姓名（可选，缺省时以个人中心身份信息兜底）")
+    private String name;
+
+    @Schema(description = "年龄（可选，缺省时以个人中心出生日期计算兜底）")
     @Min(0)
-    @NotNull
     private Integer age;
 
-    @Schema(description = "性别", allowableValues = {"MALE", "FEMALE", "OTHER"})
-    @NotBlank
+    @Schema(description = "性别（可选，缺省时以个人中心身份信息兜底）", allowableValues = {"MALE", "FEMALE", "OTHER"})
     private String gender;
 
     @Schema(description = "过敏史")

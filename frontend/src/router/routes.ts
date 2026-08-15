@@ -45,6 +45,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: '我的健康档案', requiresAuth: true, roles: ALL_ROLES }
   },
   {
+    path: '/user',
+    name: 'user-center',
+    component: () => import('@/views/patient/UserCenterView.vue'),
+    meta: { title: '个人中心', requiresAuth: true, roles: PATIENT_ROLES }
+  },
+  {
     path: '/records',
     name: 'records',
     component: () => import('@/views/patient/RecordsView.vue'),

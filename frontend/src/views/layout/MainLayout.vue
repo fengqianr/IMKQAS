@@ -60,7 +60,7 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile">
+                <el-dropdown-item v-if="isPatientSide" command="profile">
                   <span class="material-symbols-outlined mr-2">person</span>
                   个人中心
                 </el-dropdown-item>
@@ -97,7 +97,7 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.store'
-import { ROLE_LABELS, isActive, type MenuItem } from '@/config/menus'
+import { ROLE_LABELS, ROLE_TO_LAYOUT, isActive, type MenuItem } from '@/config/menus'
 
 /**
  * 布局 props：菜单列表由各端薄壳布局注入（patient/doctor/admin），
@@ -120,6 +120,8 @@ const sidebarOpen = ref(false)
 const menuItems = computed(() => props.menus)
 const roleLabel = computed(() => ROLE_LABELS[authStore.userRole] || '访客')
 const userName = computed(() => authStore.user?.username || '用户')
+// 个人中心是患者侧功能：仅患者侧角色（PATIENT/STUDENT/NURSE/HEALTH_MANAGER）显示入口，医生/管理员不显示
+const isPatientSide = computed(() => ROLE_TO_LAYOUT[authStore.userRole] === 'patient')
 
 // 顶栏操作
 const showNotice = () => ElMessage.info('暂无新通知')
@@ -127,7 +129,7 @@ const showNotice = () => ElMessage.info('暂无新通知')
 const handleUserCommand = async (command: string) => {
   if (command === 'profile') {
     sidebarOpen.value = false
-    router.push('/profile')
+    router.push('/user')
   } else if (command === 'logout') {
     await handleLogout()
   }

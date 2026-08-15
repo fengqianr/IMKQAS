@@ -85,7 +85,8 @@ class RagControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.documentId").value(1L));
+                // Long 字段全局序列化为字符串（避免雪花 ID 精度丢失），断言用字符串比较
+                .andExpect(jsonPath("$.documentId").value("1"));
 
         // 验证异步处理被调用
         verify(documentProcessorService, timeout(1000)).processDocument(1L);

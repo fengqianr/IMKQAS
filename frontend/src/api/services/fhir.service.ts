@@ -5,6 +5,28 @@ import type {
   FhirPatient,
   FhirQuestionnaireResponse
 } from '../types/fhir'
+import type { HealthProfile } from './user.service'
+
+/** 医生端概览结构化问卷记录（来自 /his/fhir/Patient/{fhirId}/overview） */
+export interface PatientOverviewRecord {
+  fhirId?: string
+  sessionId?: string
+  questionnaireId?: string
+  questionnaireTitle?: string
+  score?: number | null
+  severity?: string | null
+  authoredDate?: string
+  status?: string
+}
+
+/** 患者档案概览：FHIR Patient + 健康档案 + 问卷记录（聚合接口返回） */
+export interface PatientOverview {
+  patient: FhirPatient | null
+  localUserId: number | null
+  hasHealthProfile: boolean
+  healthProfile: HealthProfile | null
+  questionnaireResponses: PatientOverviewRecord[]
+}
 
 /**
  * 证件号检索使用的 identifier.system 约定值（身份证体系）。
@@ -67,6 +89,19 @@ class FhirService {
       return (response.data.data as FhirPatient) || null
     } catch (error: any) {
       console.error('患者详情获取失败:', error)
+      return null
+    }
+  }
+
+  // 患者档案概览（FHIR Patient + 健康档案 + 问卷记录，聚合一次返回）
+  async getPatientOverview(fhirId: string): Promise<PatientOverview | null> {
+    try {
+      const response = await request.get(
+        `/his/fhir/Patient/${fhirId}/overview`
+      )
+      return (response.data.data as PatientOverview) || null
+    } catch (error: any) {
+      console.error('患者档案概览获取失败:', error)
       return null
     }
   }

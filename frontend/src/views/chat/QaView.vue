@@ -20,7 +20,33 @@
       <div class="custom-flex custom-items-center custom-gap-4">
         <button class="qa-icon-btn material-symbols-outlined">notifications</button>
         <button class="qa-icon-btn material-symbols-outlined">settings</button>
-        <img alt="User Profile" class="qa-header-avatar" data-alt="close-up professional portrait of a medical doctor in a white coat with a clean clinical background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMKPVJL-B3aLQu4CtZ_KOGUSY3VDwcOYDbQaQbUQspANy_0Ie-w9P92EaTPnn6QSN0VqL5W2tyPmdWOra_LQYUSq7f3u8wKEjXbhb_oQmjYT9M-oJkgZJsjFsMfLtW2n5pRZV_wRSgR27cQLetYJP--OkjG_2v03qr2MRNl_66Ba7Aluj_lMEe5wlSKT2HJ-ATtZhSYgWpw4qILX2CIEX0Um5CbiBlIhnGqbbZoILW5Gl4rGmzfhFQrAERT2VMBn7-EYLXnzDmLBg">
+        <!-- 用户头像下拉：游客仅「登录」，已登录「个人中心」「退出登录」 -->
+        <el-dropdown trigger="click" @command="handleUserCommand">
+          <div v-if="isGuest" class="qa-header-avatar qa-header-avatar-guest">
+            <span class="material-symbols-outlined qa-avatar-icon">person</span>
+          </div>
+          <div v-else class="qa-header-avatar-initial">
+            {{ (authStore.user?.username || '用户').charAt(0) }}
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item v-if="isGuest" command="login">
+                <span class="material-symbols-outlined qa-dropdown-icon">login</span>
+                登录
+              </el-dropdown-item>
+              <template v-else>
+                <el-dropdown-item v-if="isPatientSide" command="profile">
+                  <span class="material-symbols-outlined qa-dropdown-icon">person</span>
+                  个人中心
+                </el-dropdown-item>
+                <el-dropdown-item divided command="logout">
+                  <span class="material-symbols-outlined qa-dropdown-icon">logout</span>
+                  退出登录
+                </el-dropdown-item>
+              </template>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </header>
 
@@ -437,8 +463,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { ROLE_MENU_MAP, isActive, type MenuItem } from '@/config/menus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { ROLE_MENU_MAP, ROLE_TO_LAYOUT, isActive, type MenuItem } from '@/config/menus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
@@ -597,6 +623,35 @@ const navItems = computed<MenuItem[]>(() => ROLE_MENU_MAP[authStore.userRole] ||
 
 // 游客模式判断：未登录时问答会话保存在 localStorage，不落后端公共池
 const isGuest = computed(() => !authStore.isAuthenticated)
+// 个人中心是患者侧功能：仅患者侧角色（PATIENT/STUDENT/NURSE/HEALTH_MANAGER）显示入口，医生/管理员不显示
+const isPatientSide = computed(() => ROLE_TO_LAYOUT[authStore.userRole] === 'patient')
+
+// 头像下拉命令：游客跳登录，已登录跳个人中心/退出登录
+const handleUserCommand = async (command: string) => {
+  if (command === 'login') {
+    router.push({ path: '/login', query: { redirect: '/qa' } })
+  } else if (command === 'profile') {
+    router.push('/user')
+  } else if (command === 'logout') {
+    await handleLogout()
+  }
+}
+
+// 退出登录：二次确认后清空本地令牌并回登录页（与 MainLayout 逐字复用）
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm('确定要退出登录吗？', '退出确认', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await authStore.logout()
+    ElMessage.success('已退出登录')
+    router.push('/login')
+  } catch (error) {
+    // 用户取消退出
+  }
+}
 
 // IME 组合输入状态（防止中文输入法 Enter 确认时重复触发 sendMessage）
 const isComposing = ref(false)
@@ -798,10 +853,11 @@ const loadMessages = async (sessionId: string) => {
         }
       }
       // 按ID排序（兼容带前缀的访谈消息ID，如 um-xxx / im-xxx）
+      // 消息 ID 为雪花长整型，超出 JS Number 安全整数范围，需用 BigInt 精确比较避免排序错乱
       historyMessages.sort((a, b) => {
-        const aNum = Number(String(a.id).replace(/^[^0-9]+/, ''))
-        const bNum = Number(String(b.id).replace(/^[^0-9]+/, ''))
-        return aNum - bNum
+        const aNum = BigInt(String(a.id).replace(/^[^0-9]+/, '') || '0')
+        const bNum = BigInt(String(b.id).replace(/^[^0-9]+/, '') || '0')
+        return aNum < bNum ? -1 : aNum > bNum ? 1 : 0
       })
 
       // 检测可恢复的访谈：只恢复 PAUSED 状态（用户关闭页面），忽略 ABANDONED/EXPIRED

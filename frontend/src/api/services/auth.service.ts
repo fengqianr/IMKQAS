@@ -139,17 +139,23 @@ class AuthService {
     }
   }
 
-  // 用户注册
-  async register(request: RegisterRequest): Promise<boolean> {
+  // 用户注册（失败抛业务错误，便于前端精准提示）
+  async register(request: RegisterRequest): Promise<void> {
     try {
       const response = await axios.post<ApiResponse>(
         `${this.baseURL}/auth/register`,
         request
       )
-      return response.data.success
-    } catch (error) {
+      if (response.data.success) {
+        return
+      }
+      // 业务失败（如用户名已存在）抛具体原因
+      throw new Error(response.data.message || '注册失败')
+    } catch (error: any) {
       console.error('注册失败:', error)
-      return false
+      // axios 错误时优先取响应体中的业务提示（如 400 用户名重复）
+      const message = error?.response?.data?.message || error.message || '注册失败'
+      throw new Error(message)
     }
   }
 

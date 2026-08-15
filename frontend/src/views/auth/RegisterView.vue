@@ -57,7 +57,7 @@
         <el-form-item prop="realName">
           <el-input
             v-model="registerForm.realName"
-            placeholder="真实姓名（选填）"
+            placeholder="真实姓名（必填）"
             size="large"
             :prefix-icon="UserFilled"
           />
@@ -101,6 +101,7 @@ import { useRouter } from 'vue-router'
 import { User, Iphone, Lock, UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
+import { authService } from '@/api/services/auth.service'
 
 const router = useRouter()
 const registerFormRef = ref<FormInstance>()
@@ -182,6 +183,9 @@ const registerRules: FormRules = {
   confirmPassword: [
     { validator: validateConfirmPassword, trigger: 'blur' }
   ],
+  realName: [
+    { required: true, message: '请输入真实姓名', trigger: 'blur' }
+  ],
   agree: [
     { validator: validateAgree, trigger: 'change' }
   ]
@@ -191,19 +195,23 @@ const registerRules: FormRules = {
 const registerLoading = ref(false)
 
 
-// 处理注册
+// 处理注册：真实调用后端注册接口（真实姓名随注册同步建立医生端患者档案）
 const handleRegister = async () => {
   if (!registerFormRef.value) return
 
-  const isValid = await registerFormRef.value.validate()
+  const isValid = await registerFormRef.value.validate().catch(() => false)
   if (!isValid) return
 
   registerLoading.value = true
 
   try {
-    // TODO: 调用注册API
-    // 模拟注册成功
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await authService.register({
+      username: registerForm.username,
+      name: registerForm.realName,
+      phone: registerForm.phone,
+      password: registerForm.password,
+      confirmPassword: registerForm.confirmPassword
+    })
 
     ElMessage.success('注册成功，请登录')
     router.push('/login')

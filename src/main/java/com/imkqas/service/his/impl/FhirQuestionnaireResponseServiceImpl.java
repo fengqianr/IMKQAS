@@ -41,6 +41,14 @@ public class FhirQuestionnaireResponseServiceImpl
     }
 
     @Override
+    public List<FhirQuestionnaireResponseCache> findByLocalUserId(Long localUserId) {
+        return mapper.selectList(
+                new LambdaQueryWrapper<FhirQuestionnaireResponseCache>()
+                        .eq(FhirQuestionnaireResponseCache::getLocalUserId, localUserId)
+                        .orderByDesc(FhirQuestionnaireResponseCache::getAuthoredDate));
+    }
+
+    @Override
     public List<QuestionnaireResponse> findByPatient(String patientFhirId,
                                                       int page, int size) {
         Page<FhirQuestionnaireResponseCache> pageResult = mapper.selectPage(
