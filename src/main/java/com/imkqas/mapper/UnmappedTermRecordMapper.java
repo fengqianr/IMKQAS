@@ -18,28 +18,28 @@ import java.util.Map;
 @Mapper
 public interface UnmappedTermRecordMapper extends BaseMapper<UnmappedTermRecord> {
 
-    @Select("SELECT * FROM unmapped_term_queue WHERE term = #{term} AND status = 'PENDING' AND deleted = 0 LIMIT 1")
+    @Select("SELECT * FROM unmapped_term_queue WHERE term = #{term} AND status = 'PENDING' LIMIT 1")
     UnmappedTermRecord findPendingByTerm(@Param("term") String term);
 
-    @Select("SELECT * FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC LIMIT #{limit}")
+    @Select("SELECT * FROM unmapped_term_queue WHERE status = 'PENDING' ORDER BY occurrence_count DESC, last_seen_at DESC LIMIT #{limit}")
     List<UnmappedTermRecord> findPendingTerms(@Param("limit") int limit);
 
-    @Select("SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0")
+    @Select("SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'PENDING'")
     long countPending();
 
     @Update("UPDATE unmapped_term_queue SET occurrence_count = occurrence_count + 1, last_seen_at = NOW() WHERE id = #{id}")
     int incrementOccurrence(@Param("id") Long id);
 
-    @Select("SELECT * FROM unmapped_term_queue WHERE status = #{status} AND deleted = 0 ORDER BY occurrence_count DESC, last_seen_at DESC")
+    @Select("SELECT * FROM unmapped_term_queue WHERE status = #{status} ORDER BY occurrence_count DESC, last_seen_at DESC")
     List<UnmappedTermRecord> selectPageByStatus(@Param("status") String status);
 
     @Update("UPDATE unmapped_term_queue SET status = #{status}, reviewer = #{reviewer}, review_note = #{reviewNote}, updated_at = NOW() WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") String status,
                      @Param("reviewer") String reviewer, @Param("reviewNote") String reviewNote);
 
-    @Select("SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE() AND deleted = 0")
+    @Select("SELECT COUNT(*) FROM unmapped_term_queue WHERE status = 'APPROVED' AND DATE(updated_at) = CURDATE()")
     long countApprovedToday();
 
-    @Select("SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' AND deleted = 0 ORDER BY occurrence_count DESC LIMIT #{limit}")
+    @Select("SELECT term, occurrence_count FROM unmapped_term_queue WHERE status = 'PENDING' ORDER BY occurrence_count DESC LIMIT #{limit}")
     List<Map<String, Object>> findTopUnmappedTerms(@Param("limit") int limit);
 }

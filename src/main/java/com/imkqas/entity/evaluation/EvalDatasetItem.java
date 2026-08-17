@@ -85,10 +85,6 @@ public class EvalDatasetItem {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    @TableField("deleted")
-    private Integer deleted;
-
     /** 难度常量 */
     public static final String DIFFICULTY_SIMPLE = "simple";
     public static final String DIFFICULTY_MEDIUM = "medium";

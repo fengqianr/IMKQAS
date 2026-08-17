@@ -25,4 +25,11 @@ public interface ConversationService extends IService<Conversation> {
      * @return 是否恢复成功
      */
     boolean restoreConversation(Long id);
+
+    /**
+     * 彻底删除对话（物理删除，绕过软删除）
+     * @param id 对话ID
+     * @return 是否删除成功
+     */
+    boolean deletePermanently(Long id);
 }

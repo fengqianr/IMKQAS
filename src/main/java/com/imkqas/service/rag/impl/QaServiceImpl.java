@@ -226,8 +226,12 @@ public class QaServiceImpl implements QaService {
                                 1, 1, Map.of("LLM置信度", String.format("%.2f", llmConfidence)));
 
                         List<String> sources = context.stream().limit(3).collect(Collectors.toList());
-                        semanticCacheService.put(normalizedQuery, sortedFragmentIds, answer, sources, llmConfidence);
-                        log.debug("语义缓存写入完成: query={}", truncate(query, 50));
+                        if (isRejectionAnswer(answer)) {
+                            log.debug("跳过缓存写入（知识不足/拒答话术）: query={}", truncate(query, 50));
+                        } else {
+                            semanticCacheService.put(normalizedQuery, sortedFragmentIds, answer, sources, llmConfidence);
+                            log.debug("语义缓存写入完成: query={}", truncate(query, 50));
+                        }
                     } finally {
                         ((SemanticCacheServiceImpl) semanticCacheService)
                                 .releaseRebuildLock(normalizedQuery, sortedFragmentIds);
@@ -768,6 +772,23 @@ public class QaServiceImpl implements QaService {
         }
 
         return Math.max(0.0, Math.min(1.0, confidence));
+    }
+
+    /**
+     * 判断回答是否为"知识不足/建议就医"类拒答话术
+     * 此类回答不具复用价值，不应写入语义缓存
+     *
+     * @param answer LLM 生成的回答
+     * @return true 表示拒答话术，应跳过缓存
+     */
+    private boolean isRejectionAnswer(String answer) {
+        if (answer == null || answer.trim().isEmpty()) {
+            return true;
+        }
+        return answer.contains("知识不足") || answer.contains("建议咨询医生")
+                || answer.contains("建议就医") || answer.contains("无法回答")
+                || answer.contains("不知道") || answer.contains("没有相关信息")
+                || answer.contains("无法提供");
     }
 
     /**

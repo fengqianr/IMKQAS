@@ -53,9 +53,6 @@ public class DrugPopulationContraindication {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    private Integer deleted;
-
     /** 禁忌类型枚举 */
     public enum ContraType {
         ABSOLUTE("绝对禁用"),

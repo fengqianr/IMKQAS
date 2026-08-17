@@ -66,7 +66,4 @@ public class FhirRiskAssessmentCache {
 
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
-
-    @TableLogic
-    private Integer deleted;
 }

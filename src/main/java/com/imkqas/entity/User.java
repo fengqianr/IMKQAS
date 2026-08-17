@@ -52,9 +52,6 @@ public class User implements UserDetails {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    private Integer deleted = 0;
-
 
     /**
      * 用户角色枚举
@@ -112,8 +109,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // 账户是否启用（未删除）
-        return this.deleted == 0;
+        // 账户存在即启用（物理删除后无需判断）
+        return true;
     }
 
     /**

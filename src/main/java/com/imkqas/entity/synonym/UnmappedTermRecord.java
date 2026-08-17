@@ -67,8 +67,4 @@ public class UnmappedTermRecord {
 
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
-
-    @TableLogic
-    @TableField("deleted")
-    private Integer deleted;
 }

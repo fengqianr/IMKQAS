@@ -61,9 +61,6 @@ public class DrugAlias {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    private Integer deleted;
-
     /**
      * 获取别名类型描述
      * @return 别名类型描述

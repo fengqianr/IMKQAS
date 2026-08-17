@@ -18,15 +18,15 @@ import java.util.List;
 public interface DrugPopulationContraindicationMapper extends BaseMapper<DrugPopulationContraindication> {
 
     /** 查询所有激活的禁忌规则 */
-    @Select("SELECT * FROM drug_population_contraindication WHERE deleted = 0 AND is_active = 1")
+    @Select("SELECT * FROM drug_population_contraindication WHERE is_active = 1")
     List<DrugPopulationContraindication> selectActive();
 
     /** 根据药物名查询禁忌规则（用于别名扩展后的精确匹配） */
-    @Select("SELECT * FROM drug_population_contraindication WHERE drug_name = #{drugName} AND deleted = 0 AND is_active = 1")
+    @Select("SELECT * FROM drug_population_contraindication WHERE drug_name = #{drugName} AND is_active = 1")
     List<DrugPopulationContraindication> selectByDrug(@Param("drugName") String drugName);
 
     /** 根据药物名和人群精确查询 */
-    @Select("SELECT * FROM drug_population_contraindication WHERE drug_name = #{drugName} AND population_name = #{populationName} AND deleted = 0 AND is_active = 1")
+    @Select("SELECT * FROM drug_population_contraindication WHERE drug_name = #{drugName} AND population_name = #{populationName} AND is_active = 1")
     DrugPopulationContraindication selectByDrugAndPopulation(
             @Param("drugName") String drugName,
             @Param("populationName") String populationName);

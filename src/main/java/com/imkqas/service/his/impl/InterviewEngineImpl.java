@@ -279,6 +279,19 @@ public class InterviewEngineImpl implements InterviewEngine {
         // 持久化用户消息（异步）
         persistUserMessage(session, template, userInput);
 
+        // 数字编号预校验：用户输入纯数字但超出选项范围时，直接重问并引导，避免交给LLM误判
+        String trimmedInput = userInput != null ? userInput.trim() : "";
+        if (trimmedInput.matches("\\d+")) {
+            QuestionnaireTemplate.QuestionItem currentItem =
+                    template.getItems().get(session.getCurrentQuestionIndex());
+            int num = Integer.parseInt(trimmedInput);
+            if (num < 1 || num > currentItem.getOptions().size()) {
+                log.warn("无效选项编号: sessionId={}, input={}, optionCount={}",
+                        sessionId, num, currentItem.getOptions().size());
+                return handleInvalidNumberInput(session, template, currentItem);
+            }
+        }
+
         log.info("LLM轮次处理: sessionId={}, progress={}/{}, degradationLevel={}, status={}→ANSWER_RECEIVED, userInput={}",
                 sessionId, session.getCurrentQuestionIndex() + 1, session.getTotalQuestions(),
                 session.getDegradationLevel(), currentStatus,
@@ -504,6 +517,44 @@ public class InterviewEngineImpl implements InterviewEngine {
                         .clarifyingText(clarifyText)
                         .options(currentItem.getOptions())
                         .build());
+    }
+
+    /**
+     * 处理用户输入了无效选项编号：追问计数+1，超限强制manual_form，否则重问并列出可选编号
+     */
+    private CollectionToolOutputs.AgentResult handleInvalidNumberInput(
+            InterviewSession session, QuestionnaireTemplate template,
+            QuestionnaireTemplate.QuestionItem currentItem) {
+        session.setClarificationCount(session.getClarificationCount() + 1);
+        if (session.getClarificationCount() >= 3) {
+            log.warn("追问次数超限({})，强制manual_form: sessionId={}",
+                    session.getClarificationCount(), session.getSessionId());
+            session.setDegradationLevel("manual_form");
+            CollectionToolOutputs.AgentResult formResult = buildManualFormPrompt(session, template);
+            persistAgentResultMessage(session, formResult);
+            saveSession(session);
+            return formResult;
+        }
+        session.setStatus("CLARIFYING");
+
+        StringBuilder hint = new StringBuilder("您输入的选项编号不在可选范围内，请从以下选项中选择一个：\n");
+        for (int i = 0; i < currentItem.getOptions().size(); i++) {
+            var opt = currentItem.getOptions().get(i);
+            hint.append(String.format("  %d. %s", i + 1, opt.getDisplay()));
+            if (i < currentItem.getOptions().size() - 1) {
+                hint.append("\n");
+            }
+        }
+
+        CollectionToolOutputs.AgentResult result = CollectionToolOutputs.AgentResult.clarify(
+                CollectionToolOutputs.ClarifyOutput.builder()
+                        .linkId(currentItem.getLinkId())
+                        .clarifyingText(hint.toString())
+                        .options(currentItem.getOptions())
+                        .build());
+        persistAgentResultMessage(session, result);
+        saveSession(session);
+        return result;
     }
 
     /**

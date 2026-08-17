@@ -370,6 +370,7 @@ public class SynonymExpansionServiceImpl implements SynonymExpansionService {
                 请严格按照以下JSON格式回复（不要包含其他内容）：
                 {"standard_term": "标准术语", "confidence": 0.XX, "concept_type": "DRUG/DISEASE/SYMPTOM/..."}
 
+                注意：standard_term 必须是中文标准术语，只能返回中文，不要返回英文。
                 如果无法确定标准术语，回复：{"standard_term": null, "confidence": 0}
                 """, contextQuery, term);
     }
@@ -388,6 +389,12 @@ public class SynonymExpansionServiceImpl implements SynonymExpansionService {
 
             String standardTerm = extractJsonValue(json, "standard_term");
             if (standardTerm == null || "null".equals(standardTerm)) return null;
+
+            // standardTerm 只能是中文，LLM 返回英文则不采纳，保持原始词语
+            if (!containsChinese(standardTerm)) {
+                log.debug("LLM返回的标准术语非中文，不采纳: term={}, standard_term={}", term, standardTerm);
+                return null;
+            }
 
             double confidence = 0.5;
             String confStr = extractJsonValue(json, "confidence");
@@ -461,6 +468,7 @@ public class SynonymExpansionServiceImpl implements SynonymExpansionService {
         sb.append("]}\n\n");
         sb.append("如果某个词无法确定标准术语，将其standard_term设为null，confidence设为0。");
         sb.append("必须为列表中的每个词都返回一个结果，不要遗漏。");
+        sb.append("注意：standard_term 必须是中文标准术语，只能返回中文，不要返回英文。");
         return sb.toString();
     }
 
@@ -501,6 +509,12 @@ public class SynonymExpansionServiceImpl implements SynonymExpansionService {
                 String standardTerm = extractJsonValue(objJson, "standard_term");
                 if (standardTerm == null || "null".equals(standardTerm)) continue;
 
+                // standardTerm 只能是中文，LLM 返回英文则不采纳，保持原始词语
+                if (!containsChinese(standardTerm)) {
+                    log.debug("LLM返回的标准术语非中文，不采纳: term={}, standard_term={}", term, standardTerm);
+                    continue;
+                }
+
                 double confidence = 0.5;
                 String confStr = extractJsonValue(objJson, "confidence");
                 if (confStr != null) {
@@ -523,6 +537,23 @@ public class SynonymExpansionServiceImpl implements SynonymExpansionService {
             log.debug("解析批量LLM推断响应失败: {}", e.getMessage());
             return Collections.emptyMap();
         }
+    }
+
+    /**
+     * 判断标准术语是否包含中文字符。
+     * LLM 返回的 standard_term 必须是中文；纯英文/纯数字等非中文结果视为无效，不采纳。
+     */
+    private boolean containsChinese(String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c >= 0x4e00 && c <= 0x9fa5) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String extractJsonArray(String json, String key) {

@@ -86,9 +86,6 @@ public class Drug {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    private Integer deleted;
-
     /**
      * 判断是否有相互作用信息
      * @return 是否有相互作用信息

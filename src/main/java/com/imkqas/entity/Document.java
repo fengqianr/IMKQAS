@@ -50,10 +50,6 @@ public class Document {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    private Integer deleted = 0;
-
-
     /**
      * 文档处理状态枚举
      */

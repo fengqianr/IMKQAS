@@ -2,9 +2,12 @@ package com.imkqas.service.common.impl;
 
 import com.imkqas.entity.Conversation;
 import com.imkqas.mapper.ConversationMapper;
+import com.imkqas.mapper.MessageMapper;
 import com.imkqas.service.common.ConversationService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 对话会话服务实现类
@@ -14,7 +17,10 @@ import org.springframework.stereotype.Service;
  * @version 1.0
  */
 @Service
+@RequiredArgsConstructor
 public class ConversationServiceImpl extends ServiceImpl<ConversationMapper, Conversation> implements ConversationService {
+
+    private final MessageMapper messageMapper;
 
     @Override
     public java.util.List<Conversation> listDeleted(Long userId) {
@@ -31,9 +37,15 @@ public class ConversationServiceImpl extends ServiceImpl<ConversationMapper, Con
 
     @Override
     public boolean restoreConversation(Long id) {
-        Conversation conversation = new Conversation();
-        conversation.setId(id);
-        conversation.setDeleted(0);
-        return baseMapper.updateById(conversation) > 0;
+        return baseMapper.restoreById(id) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean deletePermanently(Long id) {
+        // 物理删除该对话下的所有消息，避免孤儿数据
+        messageMapper.physicalDeleteByConversationId(id);
+        // 物理删除对话本身（绕过 @TableLogic 软删除）
+        return baseMapper.physicalDeleteById(id) > 0;
     }
 }

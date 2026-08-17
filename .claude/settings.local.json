@@ -117,7 +117,9 @@
       "Bash(PYTHONIOENCODING=utf-8 python3 -c \"from confidence_tuning import config; print\\(config.BASE_URL\\)\")",
       "Bash(cd /d \"D:\\\\Java\\\\代码\\\\IMKQAS\\\\frontend\")",
       "mcp__playwright__browser_click",
-      "mcp__filesystem__write_file"
+      "mcp__filesystem__write_file",
+      "Bash(mvn -q compile)",
+      "Bash(javap -verbose -classpath ~/.m2/repository/io/milvus/milvus-sdk-java/2.3.6/milvus-sdk-java-2.3.6.jar 'io.milvus.param.Constant')"
     ]
   }
 }
