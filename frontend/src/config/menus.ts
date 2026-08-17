@@ -13,13 +13,14 @@ export const MENUS: Record<string, MenuItem[]> = {
   patient: [
     { path: '/qa', title: '智能问答', icon: 'forum' },
     { path: '/profile', title: '我的健康档案', icon: 'person' },
-    { path: '/records', title: '问卷记录', icon: 'list_alt' }
+    { path: '/records', title: '问卷记录', icon: 'list_alt' },
+    { path: '/user', title: '个人中心', icon: 'account_circle' }
   ],
   doctor: [
     { path: '/qa', title: '智能问答', icon: 'forum' },
     { path: '/patients', title: '患者检索', icon: 'stethoscope' },
     { path: '/drugs', title: '药物查询', icon: 'medication' },
-    { path: '/triage', title: '批量导诊', icon: 'triage' },
+    { path: '/triage', title: '批量导诊', icon: 'Filter' },
     { path: '/contraindication-rules', title: '禁忌规则', icon: 'rule' }
   ],
   admin: [

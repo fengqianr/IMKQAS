@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :data-theme="themeKey">
     <template v-if="layoutComponent">
       <component :is="layoutComponent"><RouterView /></component>
     </template>
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
+import { computed, watch, type Component } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROLE_TO_LAYOUT } from '@/config/menus'
@@ -41,6 +41,23 @@ const layoutComponent = computed(() => {
   const key = ROLE_TO_LAYOUT[authStore.userRole] || 'patient'
   return LAYOUT_MAP[key] || PatientLayout
 })
+
+/**
+ * 主题切换：按角色映射到三套色板（doctor→深藏青 / patient→灰绿 / admin→现有蓝）。
+ * 访客（未登录）落到 admin 默认蓝，保证 /qa 游客视觉与现状一致。
+ * theme-colors.css 用 :root[data-theme] 定义变量，故同步写到 <html>；
+ * 这样 Element Plus 弹窗（teleport 到 body）也能继承主题变量换肤。
+ */
+const themeKey = computed(() => {
+  const layout = ROLE_TO_LAYOUT[authStore.userRole]
+  if (layout === 'doctor') return 'clinical'
+  if (layout === 'patient') return 'portal'
+  return 'admin'
+})
+
+watch(themeKey, (val) => {
+  document.documentElement.setAttribute('data-theme', val)
+}, { immediate: true })
 </script>
 
 <style scoped>

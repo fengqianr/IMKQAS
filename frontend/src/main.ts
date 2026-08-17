@@ -9,6 +9,7 @@ import './assets/styles/design-system.css'
 import './assets/styles/brand-colors.css'
 import './assets/styles/element-plus-overrides.css'
 import './assets/styles/tailwind.css'
+import './assets/styles/theme-colors.css'
 
 const app = createApp(App)
 const pinia = createPinia()
