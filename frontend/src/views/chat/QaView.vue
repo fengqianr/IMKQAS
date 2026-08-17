@@ -18,6 +18,7 @@
         </nav>
       </div>
       <div class="custom-flex custom-items-center custom-gap-4">
+        <!-- 会话管理统一在左侧栏，顶栏仅保留通知/设置/用户菜单 -->
         <button class="qa-icon-btn material-symbols-outlined">notifications</button>
         <button class="qa-icon-btn material-symbols-outlined">settings</button>
         <!-- 用户头像下拉：游客仅「登录」，已登录「个人中心」「退出登录」 -->
@@ -52,8 +53,8 @@
 
     <!-- 主内容区域（侧边栏 + 聊天区域 + 检索面板） -->
     <div class="qa-main-content">
-      <!-- 侧边栏 -->
-      <aside class="qa-sidebar">
+      <!-- 侧边栏（四端统一会话栏，仅配色随主题变化；医生端保留 Active Sessions 样式） -->
+      <aside :class="['qa-sidebar', isDoctorSide ? 'qa-sidebar-active-sessions' : '']">
         <div class="custom-p-6 custom-pt-4">
           <div class="qa-sidebar-header">
             <div class="qa-sidebar-icon">
@@ -77,7 +78,11 @@
             @click="switchSession(session.id)"
           >
             <span class="material-symbols-outlined text-lg">{{ session.icon }}</span>
-            <span class="qa-session-title">{{ session.title }}</span>
+            <div class="qa-session-body">
+              <span class="qa-session-title">{{ session.title }}</span>
+              <span class="qa-session-date">{{ formatSessionDate(session.conversation?.updatedAt) }}</span>
+            </div>
+            <span class="qa-session-count">{{ session.conversation?.messageCount ?? 0 }}</span>
           </div>
         </nav>
 
@@ -97,8 +102,13 @@
         </div>
       </aside>
 
-      <!-- 聊天界面 -->
+      <!-- 聊天界面（浮动卡片：圆角悬浮于背景之上） -->
       <section class="qa-chat-section">
+        <!-- 浮动卡片顶部：当前会话标题条 -->
+        <div class="qa-chat-header">
+          <h2 class="qa-chat-header-title">{{ activeSessionTitle }}</h2>
+          <p class="qa-chat-header-subtitle">AI 助手已就绪，输入问题开始咨询</p>
+        </div>
         <!-- 聊天滑动区域 -->
         <div class="qa-chat-scroll qa-no-scrollbar qa-scroll-smooth">
           <!-- 医疗安全提示 -->
@@ -309,6 +319,16 @@
         </div>
         <!-- 输入区域 -->
         <div class="qa-input-area">
+          <!-- 快捷引导提问（按角色分组） -->
+          <div class="qa-quick-prompts">
+            <button
+              v-for="prompt in quickPrompts" :key="prompt"
+              class="qa-quick-chip"
+              @click="useQuickPrompt(prompt)"
+            >
+              {{ prompt }}
+            </button>
+          </div>
           <div class="qa-input-wrapper">
             <textarea
               v-model="inputText" class="qa-input-field"
@@ -330,8 +350,8 @@
         </div>
       </section>
 
-      <!-- 检索路径面板（右侧） -->
-      <aside class="qa-panel">
+      <!-- 检索路径面板（右侧，仅管理员显示；医生/患者/游客统一两栏布局） -->
+      <aside v-if="isAdminSide" class="qa-panel">
         <div class="qa-panel-section">
           <h3 class="qa-panel-title">
             <span class="qa-panel-title-icon material-symbols-outlined">schema</span>
@@ -625,6 +645,40 @@ const navItems = computed<MenuItem[]>(() => ROLE_MENU_MAP[authStore.userRole] ||
 const isGuest = computed(() => !authStore.isAuthenticated)
 // 个人中心是患者侧功能：仅患者侧角色（PATIENT/STUDENT/NURSE/HEALTH_MANAGER）显示入口，医生/管理员不显示
 const isPatientSide = computed(() => ROLE_TO_LAYOUT[authStore.userRole] === 'patient')
+// 医生侧：左侧会话栏保留 Active Sessions 增强样式（四端统一会话栏布局）
+const isDoctorSide = computed(() => ROLE_TO_LAYOUT[authStore.userRole] === 'doctor')
+// 管理端：问答页保留右侧「知识检索路径」面板（医生/患者/游客统一两栏布局）
+const isAdminSide = computed(() => ROLE_TO_LAYOUT[authStore.userRole] === 'admin')
+
+// 浮动卡片顶部标题：取当前活跃会话标题，无会话时显示「新会话」
+const activeSessionTitle = computed(() => {
+  const s = sessions.value.find(item => item.id === activeSessionId.value)
+  return s?.title || '新会话'
+})
+
+// 快捷引导提问：按角色分组，点击即填入输入框并发送
+const quickPrompts = computed<string[]>(() => {
+  if (isGuest.value) return ['这个系统能做什么', '如何开始一次咨询', '如何注册登录账号']
+  const layout = ROLE_TO_LAYOUT[authStore.userRole]
+  if (layout === 'doctor') return ['评估患者当前风险等级', '近期用药需要调整吗', '如何解读这条检查结果']
+  if (layout === 'patient') return ['我的健康档案包含什么', '如何完成健康问卷', '评估报告在哪里查看']
+  return ['知识库有多少篇文档', '词条审核流程是什么', '查看系统使用统计']
+})
+
+// 点击快捷提问：复用输入框发送流程（无活跃会话时自动创建首个会话）
+const useQuickPrompt = (prompt: string) => {
+  inputText.value = prompt
+  sendMessage()
+}
+
+/** 会话/评估时间格式化（MM-DD HH:mm，缺省返回空串） */
+const formatSessionDate = (dateStr?: string): string => {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 
 // 头像下拉命令：游客跳登录，已登录跳个人中心/退出登录
 const handleUserCommand = async (command: string) => {
@@ -1031,7 +1085,13 @@ const sendMessage = async () => {
   lastSendTime = now
 
   const content = inputText.value.trim()
-  if (!content || !activeSessionId.value) return
+  if (!content) return
+
+  // 首次会话：无活跃会话时输入问题即自动创建（游客本地创建；登录模式创建后端会话）
+  if (!activeSessionId.value) {
+    await createNewSession()
+    if (!activeSessionId.value) return
+  }
 
   inputText.value = ''
 
@@ -1737,7 +1797,7 @@ onUnmounted(() => {
 
 .qa-thinking-text {
   font-size: 14px;
-  color: #727783;
+  color: var(--theme-outline);
 }
 
 .qa-thinking-dots {
@@ -1747,7 +1807,7 @@ onUnmounted(() => {
 .qa-thinking-dot {
   font-size: 18px;
   font-weight: 700;
-  color: #00478d;
+  color: var(--theme-primary);
   animation: qa-dot-bounce 1.4s infinite both;
 }
 
@@ -1792,8 +1852,8 @@ onUnmounted(() => {
 
 /* ===== 建议卡片 ===== */
 .qa-suggestion-card {
-  background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
-  border-color: #c4d7f2;
+  background: linear-gradient(135deg, var(--theme-primary-soft) 0%, var(--theme-surface-container-lowest) 100%);
+  border-color: var(--theme-primary-fixed);
 }
 
 .qa-suggestion-header {
@@ -1804,26 +1864,26 @@ onUnmounted(() => {
 
 .qa-suggestion-icon {
   font-size: 28px;
-  color: #00478d;
+  color: var(--theme-primary);
   margin-top: 2px;
 }
 
 .qa-suggestion-title {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--theme-on-surface);
   margin-bottom: 4px;
 }
 
 .qa-suggestion-subtitle {
   font-size: 13px;
-  color: #00478d;
+  color: var(--theme-primary);
   font-weight: 500;
 }
 
 .qa-suggestion-confidence {
   font-size: 11px;
-  color: #727783;
+  color: var(--theme-outline);
   margin-top: 2px;
 }
 
@@ -1847,12 +1907,12 @@ onUnmounted(() => {
 }
 
 .qa-suggestion-btn-primary {
-  background: #00478d;
-  color: #fff;
+  background: var(--theme-primary);
+  color: var(--theme-on-primary);
 }
 
 .qa-suggestion-btn-primary:hover:not(:disabled) {
-  background: #003a70;
+  background: var(--theme-primary-strong);
 }
 
 .qa-suggestion-btn-primary:disabled {
@@ -1861,25 +1921,25 @@ onUnmounted(() => {
 }
 
 .qa-suggestion-btn-secondary {
-  background: #fff;
-  color: #727783;
-  border: 1px solid #dadce0;
+  background: var(--theme-surface-container-lowest);
+  color: var(--theme-outline);
+  border: 1px solid var(--theme-outline-variant);
 }
 
 .qa-suggestion-btn-secondary:hover {
-  background: #f1f3f4;
+  background: var(--theme-surface-container-low);
 }
 
 /* ===== 问题卡片 ===== */
 .qa-question-card {
-  background: #fff;
-  border-color: #e0e0e0;
+  background: var(--theme-surface-container-lowest);
+  border-color: var(--theme-outline-variant);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .qa-question-progress-bar {
   height: 4px;
-  background: #e8eaed;
+  background: var(--theme-surface-container);
   border-radius: 2px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -1887,21 +1947,21 @@ onUnmounted(() => {
 
 .qa-question-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00478d, #1976d2);
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
   border-radius: 2px;
   transition: width 0.4s ease;
 }
 
 .qa-question-progress-text {
   font-size: 11px;
-  color: #727783;
+  color: var(--theme-outline);
   margin-bottom: 12px;
 }
 
 .qa-question-text {
   font-size: 15px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: var(--theme-on-surface);
   line-height: 1.5;
   margin-bottom: 10px;
 }
@@ -1911,17 +1971,17 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #727783;
+  color: var(--theme-outline);
   margin-bottom: 14px;
   padding: 6px 10px;
-  background: #f0f4ff;
+  background: var(--theme-primary-soft);
   border-radius: 6px;
-  border-left: 3px solid #00478d;
+  border-left: 3px solid var(--theme-primary);
 }
 
 .qa-hint-icon {
   font-size: 14px;
-  color: #00478d;
+  color: var(--theme-primary);
   font-variation-settings: 'FILL' 0;
 }
 
@@ -1937,8 +1997,8 @@ onUnmounted(() => {
   gap: 10px;
   width: 100%;
   padding: 10px 14px;
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
+  background: var(--theme-surface-container-low);
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -1946,8 +2006,8 @@ onUnmounted(() => {
 }
 
 .qa-option-btn:hover:not(:disabled) {
-  background: #e8f0fe;
-  border-color: #00478d;
+  background: var(--theme-primary-soft);
+  border-color: var(--theme-primary);
 }
 
 .qa-option-btn:disabled {
@@ -1961,8 +2021,8 @@ onUnmounted(() => {
   justify-content: center;
   width: 28px;
   height: 28px;
-  background: #00478d;
-  color: #fff;
+  background: var(--theme-primary);
+  color: var(--theme-on-primary);
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
@@ -1971,13 +2031,13 @@ onUnmounted(() => {
 
 .qa-option-display {
   font-size: 13px;
-  color: #333;
+  color: var(--theme-on-surface-variant);
 }
 
 /* ===== 完成卡片 ===== */
 .qa-completion-card {
-  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-  border-color: #a5d6a7;
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.08) 0%, rgba(46, 125, 50, 0.04) 100%);
+  border-color: rgba(46, 125, 50, 0.35);
 }
 
 .qa-completion-header {
@@ -1989,7 +2049,7 @@ onUnmounted(() => {
 
 .qa-completion-icon {
   font-size: 24px;
-  color: #2e7d32;
+  color: var(--theme-success);
 }
 
 .qa-completion-title {
@@ -2007,7 +2067,7 @@ onUnmounted(() => {
 
 .qa-completion-score-label {
   font-size: 13px;
-  color: #555;
+  color: var(--theme-on-surface-variant);
 }
 
 .qa-severity-badge {
@@ -2019,41 +2079,41 @@ onUnmounted(() => {
 }
 
 .qa-severity-none {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.12);
+  color: var(--theme-success);
 }
 
 .qa-severity-mild {
-  background: #fff3e0;
-  color: #e65100;
+  background: rgba(237, 108, 2, 0.12);
+  color: #92400e;
 }
 
 .qa-severity-moderate {
-  background: #fff8e1;
-  color: #f57f17;
+  background: rgba(234, 179, 8, 0.14);
+  color: #a16207;
 }
 
 .qa-severity-severe {
-  background: #fbe9e7;
-  color: #bf360c;
+  background: rgba(186, 26, 26, 0.10);
+  color: var(--theme-error);
 }
 
 .qa-severity-critical {
-  background: #ffebee;
+  background: rgba(186, 26, 26, 0.14);
   color: #b71c1c;
-  border: 1px solid #ef5350;
+  border: 1px solid rgba(183, 28, 28, 0.35);
 }
 
 .qa-completion-score-num {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--theme-on-surface-variant);
   margin-bottom: 8px;
 }
 
 .qa-completion-interpretation {
   font-size: 13px;
-  color: #555;
+  color: var(--theme-on-surface-variant);
   line-height: 1.6;
   margin-bottom: 8px;
   padding: 10px;
@@ -2064,15 +2124,15 @@ onUnmounted(() => {
 .qa-analysis-summary {
   margin-bottom: 8px;
   padding: 12px;
-  background: rgba(0, 71, 141, 0.04);
-  border-left: 3px solid #00478d;
+  background: var(--theme-primary-soft);
+  border-left: 3px solid var(--theme-primary);
   border-radius: 0 8px 8px 0;
 }
 
 .qa-analysis-summary-title {
   font-size: 12px;
   font-weight: 600;
-  color: #00478d;
+  color: var(--theme-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
@@ -2080,13 +2140,13 @@ onUnmounted(() => {
 
 .qa-analysis-summary-content {
   font-size: 13px;
-  color: #444;
+  color: var(--theme-on-surface-variant);
   line-height: 1.7;
 }
 
 .qa-completion-message {
   font-size: 12px;
-  color: #727783;
+  color: var(--theme-outline);
   font-style: italic;
 }
 
@@ -2105,25 +2165,25 @@ onUnmounted(() => {
 
 .qa-safety-alert-icon {
   font-size: 24px;
-  color: #d32f2f;
+  color: var(--theme-error);
 }
 
 .qa-safety-alert-title {
   font-size: 15px;
   font-weight: 600;
-  color: #c62828;
+  color: var(--theme-on-error-container);
 }
 
 .qa-safety-alert-reason {
   font-size: 14px;
   font-weight: 500;
-  color: #b71c1c;
+  color: var(--theme-on-error-container);
   margin-bottom: 6px;
 }
 
 .qa-safety-alert-message {
   font-size: 13px;
-  color: #555;
+  color: var(--theme-on-surface-variant);
   line-height: 1.5;
 }
 
@@ -2134,8 +2194,8 @@ onUnmounted(() => {
   gap: 6px;
   margin-top: 10px;
   padding: 8px 16px;
-  background: #00478d;
-  color: #fff;
+  background: var(--theme-primary);
+  color: var(--theme-on-primary);
   border: none;
   border-radius: 8px;
   font-size: 13px;
@@ -2145,7 +2205,7 @@ onUnmounted(() => {
 }
 
 .qa-report-btn:hover {
-  background: #003666;
+  background: var(--theme-primary-strong);
 }
 
 /* ===== 报告弹窗 ===== */
@@ -2164,7 +2224,7 @@ onUnmounted(() => {
   width: 90%;
   max-width: 680px;
   max-height: 85vh;
-  background: #fff;
+  background: var(--theme-surface-container-lowest);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   display: flex;
@@ -2177,14 +2237,14 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--theme-outline-variant);
   flex-shrink: 0;
 }
 
 .qa-report-dialog-title {
   font-size: 18px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--theme-on-surface);
   margin: 0;
 }
 
@@ -2195,21 +2255,21 @@ onUnmounted(() => {
   width: 36px;
   height: 36px;
   border: none;
-  background: #f5f5f5;
+  background: var(--theme-surface-container-low);
   border-radius: 50%;
   cursor: pointer;
-  color: #666;
+  color: var(--theme-on-surface-variant);
   transition: background 0.2s;
 }
 
 .qa-report-dialog-close:hover {
-  background: #e0e0e0;
+  background: var(--theme-surface-container);
 }
 
 .qa-report-loading {
   padding: 40px;
   text-align: center;
-  color: #727783;
+  color: var(--theme-outline);
 }
 
 .qa-report-content {
@@ -2225,15 +2285,15 @@ onUnmounted(() => {
 .qa-report-section-title {
   font-size: 14px;
   font-weight: 600;
-  color: #00478d;
+  color: var(--theme-primary);
   margin: 0 0 8px 0;
   padding-bottom: 6px;
-  border-bottom: 1px solid #e8f0fe;
+  border-bottom: 1px solid var(--theme-primary-soft);
 }
 
 .qa-report-text {
   font-size: 13px;
-  color: #444;
+  color: var(--theme-on-surface-variant);
   line-height: 1.6;
   margin: 0 0 6px 0;
 }
@@ -2247,8 +2307,8 @@ onUnmounted(() => {
 .qa-report-urgent {
   display: inline-block;
   padding: 4px 10px;
-  background: #ffebee;
-  color: #c62828;
+  background: rgba(186, 26, 26, 0.12);
+  color: var(--theme-on-error-container);
   font-size: 12px;
   font-weight: 600;
   border-radius: 4px;
@@ -2259,17 +2319,17 @@ onUnmounted(() => {
   margin: 6px 0;
   padding-left: 18px;
   font-size: 13px;
-  color: #555;
+  color: var(--theme-on-surface-variant);
   line-height: 1.6;
 }
 
 .qa-report-conclusion {
   font-size: 13px;
-  color: #333;
+  color: var(--theme-on-surface-variant);
   font-weight: 500;
   margin-top: 8px;
   padding: 10px;
-  background: #f8f9fa;
+  background: var(--theme-surface-container-low);
   border-radius: 6px;
   line-height: 1.6;
 }
@@ -2281,7 +2341,7 @@ onUnmounted(() => {
 .qa-report-rec-label {
   font-size: 12px;
   font-weight: 600;
-  color: #727783;
+  color: var(--theme-outline);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 6px 0;
@@ -2289,7 +2349,7 @@ onUnmounted(() => {
 
 .qa-report-rec-item {
   padding: 8px 12px;
-  background: #f8f9fa;
+  background: var(--theme-surface-container-low);
   border-radius: 8px;
   margin-bottom: 6px;
   font-size: 13px;
@@ -2297,22 +2357,22 @@ onUnmounted(() => {
 }
 
 .qa-report-rec-item strong {
-  color: #1a1a1a;
+  color: var(--theme-on-surface);
   display: block;
   margin-bottom: 2px;
 }
 
 .qa-report-rec-item p {
   margin: 0;
-  color: #555;
+  color: var(--theme-on-surface-variant);
 }
 
 .qa-report-rec-resource {
   display: inline-block;
   margin-top: 4px;
   padding: 2px 8px;
-  background: #e8f0fe;
-  color: #00478d;
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
   font-size: 11px;
   border-radius: 4px;
 }
@@ -2331,7 +2391,7 @@ onUnmounted(() => {
 
 /* ===== 纯表单卡片 ===== */
 .qa-manual-form-card {
-  background: #fff;
+  background: var(--theme-surface-container-lowest);
   border-color: #e8a838;
   box-shadow: 0 1px 6px rgba(232, 168, 56, 0.15);
 }
@@ -2358,16 +2418,16 @@ onUnmounted(() => {
 .qa-manual-form-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--theme-on-surface);
   margin-bottom: 12px;
 }
 
 .qa-manual-form-item {
   margin-bottom: 16px;
   padding: 12px 14px;
-  background: #fafafa;
+  background: var(--theme-surface-container-low);
   border-radius: 10px;
-  border: 1px solid #e8eaed;
+  border: 1px solid var(--theme-outline-variant);
 }
 
 .qa-manual-form-item:last-of-type {
@@ -2377,13 +2437,13 @@ onUnmounted(() => {
 .qa-manual-form-question-text {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--theme-on-surface-variant);
   line-height: 1.6;
   margin-bottom: 10px;
 }
 
 .qa-manual-form-item-index {
-  color: #00478d;
+  color: var(--theme-primary);
   font-weight: 600;
   margin-right: 4px;
 }
@@ -2394,12 +2454,12 @@ onUnmounted(() => {
   gap: 12px;
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px solid #e8eaed;
+  border-top: 1px solid var(--theme-outline-variant);
 }
 
 .qa-manual-form-hint {
   font-size: 12px;
-  color: #727783;
+  color: var(--theme-outline);
   font-style: italic;
 }
 
@@ -2410,14 +2470,48 @@ onUnmounted(() => {
 }
 
 .qa-option-btn-selected {
-  background: #e8f0fe !important;
-  border-color: #00478d !important;
-  box-shadow: 0 0 0 1px #00478d;
+  background: var(--theme-primary-soft) !important;
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 1px var(--theme-primary);
 }
 
 .qa-option-check {
   font-size: 16px;
-  color: #00478d;
+  color: var(--theme-primary);
   margin-left: auto;
 }
+
+/* ===== 医生端 Active Sessions 面板（左侧会话增强卡） ===== */
+.qa-sidebar-active-sessions {
+  border-right: 1px solid var(--theme-outline-variant);
+}
+
+.qa-session-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.qa-session-date {
+  font-size: 10px;
+  color: var(--theme-outline);
+}
+
+.qa-session-count {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--theme-surface-container);
+  color: var(--theme-on-surface-variant);
+}
+
+.qa-session-active .qa-session-count {
+  background: var(--theme-primary-fixed);
+  color: var(--theme-primary);
+}
+
 </style>
