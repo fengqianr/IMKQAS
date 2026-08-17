@@ -5,8 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "sh -c 'vue-tsc --noEmit && vite build'",
-    "test-script": "sh -c 'echo \"Hello from npm\"'",
+    "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.ts,.tsx --ignore-path .gitignore",
     "type-check": "vue-tsc --noEmit"
