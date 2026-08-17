@@ -1,115 +1,139 @@
 <template>
   <div class="patient-search-page">
-    <!-- 页头 -->
-    <div class="page-header">
-      <div class="header-left">
-        <h1 class="page-title">患者检索</h1>
-        <p class="page-subtitle">通过姓名、手机号或证件号查找患者档案</p>
-      </div>
-      <div class="stat-box">
-        <span class="material-symbols-outlined stat-icon">group</span>
-        <span class="stat-text">
-          系统患者总数: <b class="stat-num">{{ totalCount.toLocaleString() }}</b> 位
-        </span>
-      </div>
-    </div>
-
-    <!-- 搜索卡片 -->
-    <div class="search-card">
-      <div class="search-row">
-        <div class="search-mode">
-          <label class="field-label">检索方式</label>
-          <el-select v-model="searchMode" class="mode-select">
-            <el-option label="姓名" value="name" />
-            <el-option label="手机号" value="phone" />
-            <el-option label="证件号" value="id" />
-          </el-select>
+    <!-- ===== Bento 风格统计卡（3 格）===== -->
+    <section class="stats-grid">
+      <!-- 卡 1：在册患者（真实数据）-->
+      <div class="stat-card stat-card-primary">
+        <div class="stat-head">
+          <h3 class="stat-label">在册患者</h3>
+          <span class="material-symbols-outlined stat-icon">supervised_user_circle</span>
         </div>
-        <div class="search-keyword">
-          <label class="field-label">搜索关键字</label>
-          <div class="input-group">
-            <el-input
-              v-model="keyword"
-              :placeholder="placeholderText"
-              clearable
-              class="keyword-input"
-              @keyup.enter="handleSearch(true)"
+        <div class="stat-value">{{ totalCount.toLocaleString() }}</div>
+        <div class="stat-foot">系统患者总数</div>
+      </div>
+      <!-- 卡 2：需关注（后端无接口 → 占位）-->
+      <div class="stat-card stat-card-error">
+        <div class="stat-head">
+          <h3 class="stat-label">需关注</h3>
+          <span class="material-symbols-outlined stat-icon">warning</span>
+        </div>
+        <div class="stat-value">—</div>
+        <div class="stat-foot">数据接入中</div>
+      </div>
+      <!-- 卡 3：24 小时新增（后端无接口 → 占位）-->
+      <div class="stat-card stat-card-plain">
+        <div class="stat-head">
+          <h3 class="stat-label">24 小时新增</h3>
+          <span class="material-symbols-outlined stat-icon">person_add</span>
+        </div>
+        <div class="stat-value">—</div>
+        <div class="stat-foot">数据接入中</div>
+      </div>
+    </section>
+
+    <!-- ===== 组合搜索条 ===== -->
+    <section class="search-bar">
+      <div class="search-group">
+        <el-select v-model="searchMode" class="mode-select" aria-label="检索方式">
+          <el-option label="姓名" value="name" />
+          <el-option label="手机号" value="phone" />
+          <el-option label="证件号" value="id" />
+        </el-select>
+        <div class="search-input-wrap">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <el-input
+            v-model="keyword"
+            :placeholder="placeholderText"
+            clearable
+            class="keyword-input"
+            @keyup.enter="handleSearch(true)"
+          />
+        </div>
+      </div>
+      <div class="search-actions">
+        <button type="button" class="btn-filter" title="高级筛选即将上线">
+          <span class="material-symbols-outlined">filter_list</span>
+          更多筛选
+        </button>
+        <el-button type="primary" class="search-btn" :loading="loading" @click="handleSearch(true)">
+          搜索
+        </el-button>
+      </div>
+    </section>
+
+    <!-- ===== 患者名册表格 ===== -->
+    <section class="table-card">
+      <!-- 表头区 -->
+      <div class="table-card-head">
+        <h3 class="roster-title">
+          患者名册
+          <span class="count-badge">{{ patients.length }}</span>
+        </h3>
+      </div>
+
+      <div class="table-scroll" v-if="patients.length">
+        <table class="result-table">
+          <thead>
+            <tr class="table-head-row">
+              <th>姓名</th>
+              <th>性别/年龄</th>
+              <th>联系方式</th>
+              <th>证件号</th>
+              <th>状态</th>
+              <th class="text-right">操作</th>
+            </tr>
+          </thead>
+          <tbody class="table-body">
+            <tr
+              v-for="p in patients"
+              :key="p.id"
+              class="result-row"
+              @click="goDetail(p.id)"
             >
-              <template #prefix>
-                <span class="material-symbols-outlined input-prefix-icon">search</span>
-              </template>
-            </el-input>
-            <el-button type="primary" class="search-btn" :loading="loading" @click="handleSearch(true)">
-              搜索
-            </el-button>
-          </div>
-        </div>
+              <td>
+                <div class="name-cell">
+                  <span class="avatar">{{ patientInitial(p) }}</span>
+                  <span class="name-text">{{ patientName(p) }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="gender-cell">
+                  <span class="gender-badge">{{ genderText(p.gender) }}</span>
+                  <span class="age-text">{{ ageOf(p) }} 岁</span>
+                </div>
+              </td>
+              <td class="code-text">{{ maskPhone(phoneOf(p)) }}</td>
+              <td class="code-text">{{ maskIdNumber(identifierOf(p)?.value) }}</td>
+              <td>
+                <span class="status-pill">
+                  <span class="status-dot"></span>
+                  已建档
+                </span>
+              </td>
+              <td class="text-right">
+                <span class="detail-link">查看档案</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
 
-    <!-- 检索结果 -->
-    <div class="results-section">
-      <h3 class="results-heading">检索结果 ({{ patients.length }})</h3>
-
-      <!-- 结果表格 -->
-      <div v-if="patients.length" class="table-card">
-        <div class="overflow-x-auto">
-          <table class="result-table">
-            <thead>
-              <tr class="table-head-row">
-                <th>姓名</th>
-                <th>性别/年龄</th>
-                <th>手机号</th>
-                <th>证件号</th>
-                <th class="text-right">操作</th>
-              </tr>
-            </thead>
-            <tbody class="table-body">
-              <tr
-                v-for="p in patients"
-                :key="p.id"
-                class="result-row"
-                @click="goDetail(p.id)"
-              >
-                <td>
-                  <div class="name-cell">
-                    <span class="avatar">{{ patientInitial(p) }}</span>
-                    <span class="name-text">{{ patientName(p) }}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="gender-cell">
-                    <span class="gender-badge">{{ genderText(p.gender) }}</span>
-                    <span class="age-text">{{ ageOf(p) }} 岁</span>
-                  </div>
-                </td>
-                <td class="code-text">{{ maskPhone(phoneOf(p)) }}</td>
-                <td class="code-text">{{ maskIdNumber(identifierOf(p)?.value) }}</td>
-                <td class="text-right">
-                  <span class="detail-link">查看档案</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 分页（姓名检索才有翻页；手机号/证件号为单条结果） -->
-        <div v-if="searchMode === 'name'" class="pagination-bar">
-          <span class="page-info">第 {{ page }} 页 · 本页 {{ patients.length }} 条结果</span>
-          <div class="page-actions">
-            <el-button class="page-btn" :disabled="page <= 1" @click="goPrev">
-              <span class="material-symbols-outlined">chevron_left</span>
-            </el-button>
-            <span class="page-num">{{ page }}</span>
-            <el-button class="page-btn" :disabled="!hasNext" @click="goNext">
-              <span class="material-symbols-outlined">chevron_right</span>
-            </el-button>
-          </div>
+      <!-- 分页（姓名检索才有翻页；手机号/证件号为单条结果） -->
+      <div v-if="patients.length && searchMode === 'name'" class="pagination-bar">
+        <span class="page-info">第 {{ page }} 页 · 本页 {{ patients.length }} 条结果</span>
+        <div class="page-actions">
+          <el-button class="page-btn" :disabled="page <= 1" @click="goPrev">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </el-button>
+          <span class="page-num">{{ page }}</span>
+          <el-button class="page-btn" :disabled="!hasNext" @click="goNext">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </el-button>
         </div>
       </div>
 
       <!-- 空态 -->
-      <div v-else-if="!loading" class="empty-box">
+      <div v-if="!patients.length && !loading" class="empty-box">
         <div class="empty-icon">
           <span class="material-symbols-outlined">search_off</span>
         </div>
@@ -119,7 +143,7 @@
           清除搜索条件
         </button>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -233,153 +257,286 @@ onMounted(async () => {
   max-width: 80rem;
   margin: 0 auto;
   padding-bottom: 3rem;
-}
-
-/* ===== 页头 ===== */
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 0 1.5rem;
-  border-bottom: 1px solid #c2c6d4;
-  margin-bottom: 1.5rem;
-}
-
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #191c1d;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.01em;
-}
-
-.page-subtitle {
-  font-size: 0.875rem;
-  color: #4a5f83;
-}
-
-.stat-box {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #f2f4f6;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  border: 1px solid #c2c6d4;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  white-space: nowrap;
-}
-
-.stat-icon {
-  color: #005eb8;
-  font-size: 1.125rem;
-}
-
-.stat-text {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #191c1d;
-}
-
-.stat-num {
-  color: #005eb8;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* ===== 搜索卡片 ===== */
-.search-card {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
-}
-
-.search-row {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-@media (min-width: 768px) {
-  .search-row {
-    flex-direction: row;
-    align-items: flex-end;
-  }
-}
-
-.search-mode {
-  width: 100%;
+/* ===== Bento 统计卡 ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
   flex-shrink: 0;
 }
 
 @media (min-width: 768px) {
-  .search-mode {
-    width: 12rem;
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-.search-keyword {
-  flex: 1;
+.stat-card {
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  min-height: 8rem;
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 200ms;
 }
 
-.field-label {
-  font-size: 0.8125rem;
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card-primary {
+  background: var(--theme-primary);
+  color: var(--theme-on-primary);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 右上角柔光装饰（对齐设计稿） */
+.stat-card-primary::after {
+  content: '';
+  position: absolute;
+  right: -1rem;
+  top: -1rem;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  filter: blur(20px);
+}
+
+.stat-card-error {
+  background: var(--theme-error-container);
+  color: var(--theme-on-error-container);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+}
+
+.stat-card-plain {
+  background: var(--theme-surface-container-lowest);
+  color: var(--theme-on-surface);
+  border: 1px solid var(--theme-outline-variant);
+}
+
+.stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #4a5f83;
-  margin-bottom: 0.375rem;
-  display: block;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.stat-icon {
+  font-size: 1.25rem;
+  opacity: 0.85;
+}
+
+.stat-card-error .stat-icon {
+  color: var(--theme-error);
+}
+
+.stat-card-plain .stat-icon {
+  color: var(--theme-secondary);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  position: relative;
+  z-index: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-foot {
+  font-size: 0.8125rem;
+  opacity: 0.8;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== 组合搜索条 ===== */
+.search-bar {
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .search-bar {
+    flex-direction: row;
+  }
+}
+
+.search-group {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.375rem;
+  overflow: hidden;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+
+.search-group:focus-within {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 1px var(--theme-primary);
 }
 
 .mode-select {
-  width: 100%;
+  width: 8.5rem;
+  flex-shrink: 0;
+  border-right: 1px solid var(--theme-outline-variant);
+  background: var(--theme-surface-container-lowest);
 }
 
-.input-group {
+.mode-select :deep(.el-select__wrapper) {
+  box-shadow: none !important;
+  background: transparent;
+  border-radius: 0;
+}
+
+.search-input-wrap {
+  flex: 1;
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  position: relative;
+  background: var(--theme-surface-container-lowest);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 1.25rem;
+  color: var(--theme-on-surface-variant);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .keyword-input {
   flex: 1;
 }
 
+.keyword-input :deep(.el-input__wrapper) {
+  box-shadow: none !important;
+  background: transparent;
+  border-radius: 0;
+  padding-left: 2.5rem;
+}
+
+.search-actions {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .search-actions {
+    width: auto;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+}
+
+.btn-filter {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.375rem;
+  background: var(--theme-surface-container-lowest);
+  color: var(--theme-on-surface);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .btn-filter {
+    flex: none;
+  }
+}
+
+.btn-filter:hover {
+  background: var(--theme-surface-container);
+}
+
+.btn-filter .material-symbols-outlined {
+  font-size: 1.125rem;
+}
+
 .search-btn {
   flex-shrink: 0;
 }
 
-.input-prefix-icon {
-  font-size: 1.125rem;
-  color: #6e797e;
-}
-
-/* ===== 结果区 ===== */
-.results-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.results-heading {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #4a5f83;
-}
-
+/* ===== 表格卡片 ===== */
 .table-card {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.table-card-head {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--theme-outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.roster-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--theme-on-surface);
+  letter-spacing: -0.01em;
+}
+
+.count-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
+}
+
+.table-scroll {
+  flex: 1;
+  overflow: auto;
 }
 
 .result-table {
@@ -388,31 +545,45 @@ onMounted(async () => {
   text-align: left;
 }
 
+/* 粘性表头 */
 .table-head-row th {
-  background: #f2f4f6;
-  border-bottom: 1px solid #c2c6d4;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.8125rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--theme-surface-container-low);
+  border-bottom: 1px solid var(--theme-outline-variant);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #4a5f83;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--theme-on-surface-variant);
+  white-space: nowrap;
 }
 
 .table-body {
-  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.875rem;
 }
 
 .result-row {
   cursor: pointer;
-  transition: background 150ms;
-  border-bottom: 1px solid #e2e8f0;
+  transition: background 150ms, border-color 150ms;
+  border-bottom: 1px solid rgba(195, 198, 208, 0.5);
+  border-left: 2px solid transparent;
+}
+
+.result-row:last-child {
+  border-bottom: none;
 }
 
 .result-row:hover {
-  background: #f2f4f6;
+  background: var(--theme-primary-soft);
+  border-left-color: var(--theme-primary);
 }
 
 .result-row td {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.25rem;
+  vertical-align: middle;
 }
 
 .name-cell {
@@ -422,15 +593,15 @@ onMounted(async () => {
 }
 
 .avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  background: rgba(0, 94, 184, 0.1);
-  color: #005eb8;
-  display: flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  background: var(--theme-primary-container);
+  color: var(--theme-on-primary-container);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8125rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -438,12 +609,12 @@ onMounted(async () => {
 .name-text {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   transition: color 150ms;
 }
 
 .result-row:hover .name-text {
-  color: #005eb8;
+  color: var(--theme-primary);
 }
 
 .gender-cell {
@@ -454,36 +625,60 @@ onMounted(async () => {
 
 .gender-badge {
   padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
-  background: #eceef0;
-  border: 1px solid #c2c6d4;
-  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  background: var(--theme-surface-container);
+  border: 1px solid var(--theme-outline-variant);
+  font-size: 0.6875rem;
   font-family: 'JetBrains Mono', monospace;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   white-space: nowrap;
 }
 
 .age-text {
   font-size: 0.875rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .code-text {
   font-size: 0.75rem;
   font-family: 'JetBrains Mono', monospace;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
+  white-space: nowrap;
+}
+
+/* 状态 pill：无真实状态字段 → 中性「已建档」 */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border: 1px solid var(--theme-outline-variant);
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: var(--theme-secondary);
 }
 
 .detail-link {
-  color: #005eb8;
+  color: var(--theme-primary);
   font-size: 0.8125rem;
   font-weight: 600;
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
+  white-space: nowrap;
 }
 
 .result-row:hover .detail-link {
-  background: rgba(0, 94, 184, 0.1);
+  background: var(--theme-primary-soft);
 }
 
 .text-right {
@@ -495,12 +690,13 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--theme-outline-variant);
 }
 
 .page-info {
   font-size: 0.75rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .page-actions {
@@ -513,9 +709,9 @@ onMounted(async () => {
   padding: 0;
   width: 2rem;
   height: 2rem;
-  border: 1px solid #c2c6d4;
-  background: #ffffff;
-  color: #4a5f83;
+  border: 1px solid var(--theme-outline-variant);
+  background: var(--theme-surface-container-lowest);
+  color: var(--theme-on-surface-variant);
   border-radius: 0.375rem;
   display: flex;
   align-items: center;
@@ -527,15 +723,15 @@ onMounted(async () => {
 }
 
 .page-btn:hover:not(:disabled) {
-  background: #f2f4f6;
+  background: var(--theme-surface-container);
 }
 
 .page-num {
   min-width: 1.75rem;
   height: 1.75rem;
   border-radius: 0.375rem;
-  background: #005eb8;
-  color: #ffffff;
+  background: var(--theme-primary);
+  color: var(--theme-on-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -545,16 +741,14 @@ onMounted(async () => {
 
 /* ===== 空态 ===== */
 .empty-box {
-  min-height: 20rem;
+  flex: 1;
+  min-height: 16rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
   text-align: center;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: 0.75rem;
   padding: 2rem;
 }
 
@@ -562,11 +756,11 @@ onMounted(async () => {
   width: 4rem;
   height: 4rem;
   border-radius: 9999px;
-  background: #f1f5f9;
+  background: var(--theme-surface-container-low);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #005eb8;
+  color: var(--theme-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -577,12 +771,12 @@ onMounted(async () => {
 .empty-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .empty-desc {
   font-size: 0.875rem;
-  color: #727783;
+  color: var(--theme-outline);
   max-width: 28rem;
   line-height: 1.6;
   margin-bottom: 1rem;
@@ -590,25 +784,18 @@ onMounted(async () => {
 
 .btn-outline {
   padding: 0.5rem 1rem;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #4a5f83;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  color: var(--theme-on-surface-variant);
   border-radius: 0.375rem;
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 150ms;
+  transition: background 150ms;
 }
 
 .btn-outline:hover {
-  background: #f2f4f6;
-}
-
-@media (max-width: 640px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  background: var(--theme-surface-container);
 }
 
 /* Material Symbols 字体设置 */

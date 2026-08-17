@@ -17,201 +17,189 @@
     </div>
 
     <template v-else>
-      <!-- 患者快速信息 Hero -->
+      <!-- 患者 Hero 卡 -->
       <div class="quick-header">
-        <div class="quick-left">
-          <div class="quick-avatar">{{ patientInitial(patient) }}</div>
-          <div>
-            <h1 class="quick-name">{{ patientName(patient) }}</h1>
-            <div class="quick-meta">
-              <span class="meta-item">
-                <span class="material-symbols-outlined meta-icon">{{ genderIcon }}</span>
-                {{ genderText(patient?.gender) }}
-              </span>
-              <span class="meta-dot" />
-              <span>{{ ageText }} 岁</span>
-              <span class="meta-dot" />
-              <span class="patient-id">患者编号: {{ patient?.id }}</span>
-            </div>
-            <div class="hero-tags">
-              <span class="hero-status" :class="'hero-status-' + statusMeta.tone">{{ statusMeta.text }}</span>
-              <span class="hero-recent">{{ recentVisitText }}</span>
+        <div class="quick-top">
+          <div class="quick-left">
+            <div class="quick-avatar">{{ patientInitial(patient) }}</div>
+            <div>
+              <div class="quick-name-row">
+                <h1 class="quick-name">{{ patientName(patient) }}</h1>
+                <span class="quick-badge">{{ genderText(patient?.gender) }} · {{ ageText }} 岁</span>
+                <span class="hero-status" :class="'hero-status-' + statusMeta.tone">{{ statusMeta.text }}</span>
+              </div>
+              <p class="patient-id">患者编号: {{ patient?.id }}</p>
+              <div class="hero-recent">
+                <span class="material-symbols-outlined hero-recent-icon">schedule</span>
+                {{ recentVisitText }}
+              </div>
             </div>
           </div>
+          <div class="quick-actions">
+            <button class="btn-primary" @click="handleNewConsult">
+              <span class="material-symbols-outlined">add</span>
+              新建问诊
+            </button>
+            <button class="btn-outline" @click="handlePrint">
+              <span class="material-symbols-outlined">print</span>
+              打印报告
+            </button>
+          </div>
         </div>
-        <div class="quick-actions">
-          <button class="btn-primary" @click="handleNewConsult">
-            <span class="material-symbols-outlined">add</span>
-            新建问诊
-          </button>
-          <button class="btn-outline" @click="handlePrint">
-            <span class="material-symbols-outlined">print</span>
-            打印报告
-          </button>
+        <!-- 核心信息条（原「基本信息」Tab 并入 Hero） -->
+        <div class="hero-basic">
+          <div class="basic-item">
+            <span class="basic-label">出生日期</span>
+            <span class="basic-value">{{ formatDate(patient?.birthDate) }}</span>
+          </div>
+          <div class="basic-item">
+            <span class="basic-label">联系电话</span>
+            <span class="basic-value">{{ maskPhone(phoneOf) }}</span>
+          </div>
+          <div class="basic-item">
+            <span class="basic-label">证件号码</span>
+            <span class="basic-value">{{ maskIdNumber(identifierOf?.value) }}</span>
+          </div>
+          <div class="basic-item">
+            <span class="basic-label">家庭住址</span>
+            <span class="basic-value">{{ addressOf }}</span>
+          </div>
         </div>
       </div>
 
       <!-- 主体：Tab 区 + AI 摘要侧栏 -->
       <div class="detail-body">
         <div class="detail-main">
-      <!-- Tab 导航 -->
-      <div class="tab-nav">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          class="tab-btn"
-          :class="{ active: activeTab === tab.key }"
-          @click="activeTab = tab.key"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <!-- Tab 内容：基本信息 -->
-      <div v-if="activeTab === 'basic'" class="tab-content">
-        <!-- 核心信息 -->
-        <div class="info-card core-card">
-          <h2 class="card-title">
-            <span class="material-symbols-outlined">id_card</span>
-            核心信息
-          </h2>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">出生日期</span>
-              <span class="info-value">{{ formatDate(patient?.birthDate) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">联系电话</span>
-              <span class="info-value">{{ maskPhone(phoneOf) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">证件号码</span>
-              <span class="info-value">{{ maskIdNumber(identifierOf?.value) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">家庭住址</span>
-              <span class="info-value">{{ addressOf }}</span>
-            </div>
+          <!-- Tab 导航 -->
+          <div class="tab-nav">
+            <button
+              v-for="tab in tabs"
+              :key="tab.key"
+              class="tab-btn"
+              :class="{ active: activeTab === tab.key }"
+              @click="activeTab = tab.key"
+            >
+              {{ tab.label }}
+            </button>
           </div>
-        </div>
-      </div>
 
-      <!-- Tab 内容：健康档案 -->
-      <div v-else-if="activeTab === 'health'" class="tab-content">
-        <div v-if="hasHealthProfile && healthProfile" class="info-card core-card">
-          <h2 class="card-title">
-            <span class="material-symbols-outlined">health_and_safety</span>
-            健康档案
-          </h2>
-          <div class="hp-section">
-            <h3 class="hp-label">基本资料</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">姓名</span>
-                <span class="info-value">{{ healthProfile.name || '—' }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">性别</span>
-                <span class="info-value">{{ healthGenderText(healthProfile.gender) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">年龄</span>
-                <span class="info-value">{{ healthProfile.age != null ? healthProfile.age + ' 岁' : '—' }}</span>
+          <!-- Tab 内容：病情记录 -->
+          <div v-if="activeTab === 'condition'" class="tab-content">
+            <div v-if="conditions.length" class="list-card">
+              <div v-for="c in conditions" :key="c.id" class="list-item">
+                <div class="list-item-head">
+                  <span class="item-title">{{ conditionName(c) }}</span>
+                  <span class="status-badge" :class="statusColorOf(c)">
+                    {{ statusTextOf(c) }}
+                  </span>
+                </div>
+                <div class="item-sub">
+                  <span v-if="c.onsetDateTime">发病 {{ formatDate(c.onsetDateTime) }}</span>
+                  <span v-if="c.recordedDate">记录 {{ formatDate(c.recordedDate) }}</span>
+                </div>
+                <p v-if="conditionNote(c)" class="item-note">{{ conditionNote(c) }}</p>
               </div>
             </div>
+            <div v-else class="empty-inline">
+              <span class="material-symbols-outlined">folder_open</span>
+              暂无病情记录
+            </div>
           </div>
-          <div v-for="group in healthGroups" :key="group.label" class="hp-section">
-            <h3 class="hp-label">{{ group.label }}</h3>
-            <ul v-if="group.items.length" class="hp-list">
-              <li v-for="(item, i) in group.items" :key="i" class="hp-item">{{ item }}</li>
-            </ul>
-            <p v-else class="hp-empty">暂无{{ group.label }}</p>
-          </div>
-        </div>
-        <div v-else class="empty-inline">
-          <span class="material-symbols-outlined">health_and_safety</span>
-          患者未填写健康档案
-        </div>
-      </div>
 
-      <!-- Tab 内容：病情记录 -->
-      <div v-else-if="activeTab === 'condition'" class="tab-content">
-        <div v-if="conditions.length" class="list-card">
-          <div v-for="c in conditions" :key="c.id" class="list-item">
-            <div class="list-item-head">
-              <span class="item-title">{{ conditionName(c) }}</span>
-              <span class="status-badge" :class="statusColorOf(c)">
-                {{ statusTextOf(c) }}
-              </span>
-            </div>
-            <div class="item-sub">
-              <span v-if="c.onsetDateTime">发病 {{ formatDate(c.onsetDateTime) }}</span>
-              <span v-if="c.recordedDate">记录 {{ formatDate(c.recordedDate) }}</span>
-            </div>
-            <p v-if="conditionNote(c)" class="item-note">{{ conditionNote(c) }}</p>
-          </div>
-        </div>
-        <div v-else class="empty-inline">
-          <span class="material-symbols-outlined">folder_open</span>
-          暂无病情记录
-        </div>
-      </div>
-
-      <!-- Tab 内容：检验与观察 -->
-      <div v-else-if="activeTab === 'observation'" class="tab-content">
-        <div v-if="observations.length" class="list-card">
-          <div v-for="o in observations" :key="o.id" class="list-item">
-            <div class="list-item-head">
-              <span class="item-title">{{ observationName(o) }}</span>
-              <span class="item-result" :class="{ abnormal: hasAbnormal(o) }">
-                {{ observationValue(o) }}
-              </span>
-            </div>
-            <div class="item-sub">
-              <span class="status-badge neutral">{{ observationStatusText(o.status) }}</span>
-              <span v-if="o.effectiveDateTime">{{ formatDate(o.effectiveDateTime) }}</span>
-              <span v-if="hasAbnormal(o)" class="abnormal-hint">异常</span>
-            </div>
-          </div>
-        </div>
-        <div v-else class="empty-inline">
-          <span class="material-symbols-outlined">biotech</span>
-          暂无检验与观察记录
-        </div>
-      </div>
-
-      <!-- Tab 内容：问卷记录 -->
-      <div v-else-if="activeTab === 'questionnaire'" class="tab-content">
-        <div v-if="questionnaireRecords.length" class="list-card">
-          <div v-for="qr in questionnaireRecords" :key="qr.fhirId || qr.sessionId" class="list-item">
-            <div class="list-item-head">
-              <div class="qr-title-wrap">
-                <span class="material-symbols-outlined qr-icon">assignment</span>
-                <span class="item-title">{{ qr.questionnaireTitle || '问卷记录' }}</span>
+          <!-- Tab 内容：健康档案 -->
+          <div v-else-if="activeTab === 'health'" class="tab-content">
+            <div v-if="hasHealthProfile && healthProfile" class="info-card core-card">
+              <h2 class="card-title">
+                <span class="material-symbols-outlined">health_and_safety</span>
+                健康档案
+              </h2>
+              <div class="hp-section">
+                <h3 class="hp-label">基本资料</h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">姓名</span>
+                    <span class="info-value">{{ healthProfile.name || '—' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">性别</span>
+                    <span class="info-value">{{ healthGenderText(healthProfile.gender) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">年龄</span>
+                    <span class="info-value">{{ healthProfile.age != null ? healthProfile.age + ' 岁' : '—' }}</span>
+                  </div>
+                </div>
               </div>
-              <div class="qr-meta">
-                <span class="score-badge" :class="severityTone(qr.severity)">
-                  {{ qr.score != null ? qr.score + ' 分' : '—' }} · {{ qr.severity || '未知' }}
-                </span>
-                <span v-if="qr.authoredDate">{{ formatDate(qr.authoredDate) }}</span>
+              <div v-for="group in healthGroups" :key="group.label" class="hp-section">
+                <h3 class="hp-label">{{ group.label }}</h3>
+                <ul v-if="group.items.length" class="hp-list">
+                  <li v-for="(item, i) in group.items" :key="i" class="hp-item">{{ item }}</li>
+                </ul>
+                <p v-else class="hp-empty">暂无{{ group.label }}</p>
               </div>
             </div>
+            <div v-else class="empty-inline">
+              <span class="material-symbols-outlined">health_and_safety</span>
+              患者未填写健康档案
+            </div>
           </div>
-        </div>
-        <div v-else class="empty-inline">
-          <span class="material-symbols-outlined">fact_check</span>
-          暂无问卷记录
-        </div>
-      </div>
+
+          <!-- Tab 内容：问卷记录 -->
+          <div v-else-if="activeTab === 'questionnaire'" class="tab-content">
+            <div v-if="questionnaireRecords.length" class="list-card">
+              <div v-for="qr in questionnaireRecords" :key="qr.fhirId || qr.sessionId" class="list-item">
+                <div class="list-item-head">
+                  <div class="qr-title-wrap">
+                    <span class="material-symbols-outlined qr-icon">assignment</span>
+                    <span class="item-title">{{ qr.questionnaireTitle || '问卷记录' }}</span>
+                  </div>
+                  <div class="qr-meta">
+                    <span class="score-badge" :class="severityTone(qr.severity)">
+                      {{ qr.score != null ? qr.score + ' 分' : '—' }} · {{ qr.severity || '未知' }}
+                    </span>
+                    <span v-if="qr.authoredDate">{{ formatDate(qr.authoredDate) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-inline">
+              <span class="material-symbols-outlined">fact_check</span>
+              暂无问卷记录
+            </div>
+          </div>
+
+          <!-- Tab 内容：检验与观察 -->
+          <div v-else-if="activeTab === 'observation'" class="tab-content">
+            <div v-if="observations.length" class="list-card">
+              <div v-for="o in observations" :key="o.id" class="list-item">
+                <div class="list-item-head">
+                  <span class="item-title">{{ observationName(o) }}</span>
+                  <span class="item-result" :class="{ abnormal: hasAbnormal(o) }">
+                    {{ observationValue(o) }}
+                  </span>
+                </div>
+                <div class="item-sub">
+                  <span class="status-badge neutral">{{ observationStatusText(o.status) }}</span>
+                  <span v-if="o.effectiveDateTime">{{ formatDate(o.effectiveDateTime) }}</span>
+                  <span v-if="hasAbnormal(o)" class="abnormal-hint">异常</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-inline">
+              <span class="material-symbols-outlined">biotech</span>
+              暂无检验与观察记录
+            </div>
+          </div>
         </div>
 
         <!-- AI 智能摘要侧栏（常驻，由病情/检验/问卷数据自动拼装） -->
         <aside class="detail-aside">
           <div class="ai-card">
-            <h2 class="ai-title">
-              <span class="material-symbols-outlined">auto_awesome</span>
-              AI 智能摘要
-            </h2>
+            <div class="ai-glow" />
+            <div class="ai-head">
+              <span class="material-symbols-outlined ai-head-icon">psychology_alt</span>
+              <h2 class="ai-title">AI 智能摘要</h2>
+            </div>
             <p class="ai-text">{{ aiSummary }}</p>
           </div>
         </aside>
@@ -263,26 +251,18 @@ const observations = ref<FhirObservation[]>([])
 const hasHealthProfile = ref(false)
 const healthProfile = ref<HealthProfile | null>(null)
 const questionnaireRecords = ref<PatientOverviewRecord[]>([])
-const activeTab = ref('basic')
+// 默认进入「病情记录」Tab（对齐设计稿第一页；原「基本信息」并入 Hero 卡）
+const activeTab = ref('condition')
 
-/** Tab 配置 */
+/** Tab 配置（基本信息已并入 Hero） */
 const tabs = [
-  { key: 'basic', label: '基本信息' },
-  { key: 'health', label: '健康档案' },
   { key: 'condition', label: '病情记录' },
-  { key: 'observation', label: '检验与观察' },
-  { key: 'questionnaire', label: '问卷记录' }
+  { key: 'health', label: '健康档案' },
+  { key: 'questionnaire', label: '问卷记录' },
+  { key: 'observation', label: '检验与观察' }
 ]
 
 // ==================== 展示辅助 ====================
-
-/** 性别图标（material symbols） */
-const genderIcon = computed(() => {
-  const g = patient.value?.gender
-  if (g === 'male') return 'male'
-  if (g === 'female') return 'female'
-  return 'transgender'
-})
 
 /** 年龄显示 */
 const ageText = computed(() => {
@@ -432,7 +412,7 @@ onMounted(async () => {
   gap: 0.25rem;
   background: none;
   border: none;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   font-size: 0.8125rem;
   cursor: pointer;
   padding: 0.25rem 0;
@@ -441,18 +421,18 @@ onMounted(async () => {
 }
 
 .back-link:hover {
-  color: #0891b2;
+  color: var(--theme-primary);
 }
 
 .back-link .material-symbols-outlined {
   font-size: 1rem;
 }
 
-/* ===== 快速信息头 ===== */
+/* ===== 患者 Hero 卡 ===== */
 .quick-header {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: 0.5rem;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -461,8 +441,14 @@ onMounted(async () => {
   gap: 1.25rem;
 }
 
+.quick-top {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 @media (min-width: 640px) {
-  .quick-header {
+  .quick-top {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -473,69 +459,70 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 1.25rem;
+  min-width: 0;
 }
 
 .quick-avatar {
-  width: 4rem;
-  height: 4rem;
+  width: 5rem;
+  height: 5rem;
   border-radius: 9999px;
-  background: #d0e1fb;
-  color: #54647a;
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   flex-shrink: 0;
+  border: 1px solid var(--theme-outline-variant);
+}
+
+.quick-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.375rem;
 }
 
 .quick-name {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   letter-spacing: -0.02em;
-  margin-bottom: 0.25rem;
+  margin: 0;
 }
 
-.quick-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  color: #4a5f83;
-  flex-wrap: wrap;
-}
-
-.meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.meta-icon {
-  font-size: 1rem;
-}
-
-.meta-dot {
-  width: 0.25rem;
-  height: 0.25rem;
-  border-radius: 9999px;
-  background: #c2c6d4;
+.quick-badge {
+  padding: 0.125rem 0.625rem;
+  border-radius: 0.25rem;
+  background: var(--theme-surface-container);
+  color: var(--theme-on-surface-variant);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .patient-id {
+  font-size: 0.8125rem;
+  color: var(--theme-on-surface-variant);
   font-family: 'JetBrains Mono', monospace;
+  margin: 0 0 0.25rem;
 }
 
-/* Hero 状态徽标与最近记录 */
-.hero-tags {
+.hero-recent {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--theme-outline);
 }
 
+.hero-recent-icon {
+  font-size: 0.875rem;
+}
+
+/* Hero 状态徽标 */
 .hero-status {
   padding: 0.125rem 0.625rem;
   border-radius: 9999px;
@@ -545,38 +532,76 @@ onMounted(async () => {
 }
 
 .hero-status-active {
-  background: #cffafe;
-  border: 1px solid #22d3ee;
-  color: #155e75;
+  background: var(--theme-primary-soft);
+  border: 1px solid var(--theme-outline-variant);
+  color: var(--theme-primary);
 }
 
 .hero-status-follow {
-  background: #dbeafe;
-  border: 1px solid #93c5fd;
-  color: #1e40af;
+  background: rgba(237, 108, 2, 0.1);
+  border: 1px solid rgba(237, 108, 2, 0.3);
+  color: #9a3412;
 }
 
 .hero-status-new {
-  background: #eceef0;
-  border: 1px solid #c2c6d4;
-  color: #4a5f83;
-}
-
-.hero-recent {
-  font-size: 0.75rem;
-  color: #727783;
+  background: var(--theme-surface-container);
+  border: 1px solid var(--theme-outline-variant);
+  color: var(--theme-on-surface-variant);
 }
 
 .quick-actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* 核心信息条 */
+.hero-basic {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.875rem 1.25rem;
+  border-top: 1px solid var(--theme-outline-variant);
+  padding-top: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .hero-basic {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-basic {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.basic-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.basic-label {
+  font-size: 0.75rem;
+  color: var(--theme-on-surface-variant);
+}
+
+.basic-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ===== Tab 导航 ===== */
 .tab-nav {
   display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid #c2c6d4;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--theme-outline-variant);
   margin-bottom: 1.5rem;
   overflow-x: auto;
 }
@@ -588,22 +613,22 @@ onMounted(async () => {
   border-bottom: 2px solid transparent;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #3e484d;
+  color: var(--theme-on-surface-variant);
   cursor: pointer;
   white-space: nowrap;
   transition: color 150ms;
 }
 
 .tab-btn:hover {
-  color: #0891b2;
+  color: var(--theme-primary);
 }
 
 .tab-btn.active {
-  color: #0891b2;
-  border-bottom-color: #0891b2;
+  color: var(--theme-primary);
+  border-bottom-color: var(--theme-primary);
 }
 
-/* ===== 主体布局：Tab 区 + AI 摘要侧栏 ===== */
+/* ===== 主体布局：Tab 区（8/12）+ AI 摘要侧栏（4/12） ===== */
 .detail-body {
   display: grid;
   grid-template-columns: 1fr;
@@ -613,7 +638,7 @@ onMounted(async () => {
 
 @media (min-width: 1024px) {
   .detail-body {
-    grid-template-columns: 1fr 20rem;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 }
 
@@ -621,15 +646,27 @@ onMounted(async () => {
   min-width: 0;
 }
 
+@media (min-width: 1024px) {
+  .detail-main {
+    grid-column: span 8;
+  }
+}
+
 .detail-aside {
   position: sticky;
   top: 1.5rem;
 }
 
+@media (min-width: 1024px) {
+  .detail-aside {
+    grid-column: span 4;
+  }
+}
+
 .info-card {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: 0.5rem;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -640,14 +677,14 @@ onMounted(async () => {
   gap: 0.5rem;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #191c1d;
-  border-bottom: 1px solid #c2c6d4;
+  color: var(--theme-on-surface);
+  border-bottom: 1px solid var(--theme-outline-variant);
   padding-bottom: 0.75rem;
   margin-bottom: 1rem;
 }
 
 .card-title .material-symbols-outlined {
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .info-grid {
@@ -664,19 +701,19 @@ onMounted(async () => {
 
 .info-label {
   font-size: 0.75rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .info-value {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 /* ===== 健康档案 ===== */
 .hp-section {
   padding: 0.875rem 0 0.25rem;
-  border-top: 1px dashed #e2e8f0;
+  border-top: 1px dashed var(--theme-outline-variant);
   margin-top: 0.875rem;
 }
 
@@ -689,7 +726,7 @@ onMounted(async () => {
 .hp-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   margin-bottom: 0.5rem;
 }
 
@@ -704,58 +741,83 @@ onMounted(async () => {
 
 .hp-item {
   padding: 0.25rem 0.75rem;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--theme-surface-container-low);
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 9999px;
   font-size: 0.8125rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .hp-empty {
   font-size: 0.8125rem;
-  color: #727783;
+  color: var(--theme-outline);
 }
 
+/* ===== AI 摘要侧栏 ===== */
 .ai-card {
-  background: linear-gradient(180deg, #f0f9fb 0%, #ffffff 100%);
-  border-color: rgba(8, 145, 178, 0.25);
+  position: relative;
+  background: var(--theme-surface-container-low);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  box-shadow: 0 4px 16px rgba(8, 145, 178, 0.08);
+  gap: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 22, 48, 0.06);
+}
+
+.ai-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5rem;
+  background: linear-gradient(to bottom, var(--theme-primary-soft), transparent);
+  pointer-events: none;
+}
+
+.ai-head {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  position: relative;
+}
+
+.ai-head-icon {
+  color: var(--theme-primary);
+  font-size: 1.25rem;
 }
 
 .ai-title {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #0891b2;
-}
-
-.ai-title .material-symbols-outlined {
-  font-size: 1.125rem;
+  color: var(--theme-on-surface);
+  margin: 0;
 }
 
 .ai-text {
+  position: relative;
   font-size: 0.875rem;
-  line-height: 1.6;
-  color: #3e484d;
+  line-height: 1.7;
+  color: var(--theme-on-surface-variant);
+  margin: 0;
 }
 
 /* ===== 列表 Tab 通用 ===== */
 .list-card {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: 0.5rem;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .list-item {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(195, 198, 208, 0.5);
 }
 
 .list-item:last-child {
@@ -776,7 +838,7 @@ onMounted(async () => {
 .item-title {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .item-sub {
@@ -785,7 +847,7 @@ onMounted(async () => {
   gap: 0.75rem;
   margin-top: 0.375rem;
   font-size: 0.75rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .status-badge {
@@ -797,16 +859,16 @@ onMounted(async () => {
 }
 
 .status-badge.neutral {
-  background: #eceef0;
-  border: 1px solid #c2c6d4;
-  color: #4a5f83;
+  background: var(--theme-surface-container);
+  border: 1px solid var(--theme-outline-variant);
+  color: var(--theme-on-surface-variant);
 }
 
 .item-note {
   margin-top: 0.5rem;
   font-size: 0.8125rem;
-  color: #3e484d;
-  background: #f2f4f6;
+  color: var(--theme-on-surface-variant);
+  background: var(--theme-surface-container-low);
   border-radius: 0.375rem;
   padding: 0.5rem 0.75rem;
 }
@@ -814,16 +876,16 @@ onMounted(async () => {
 .item-result {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   font-family: 'JetBrains Mono', monospace;
 }
 
 .item-result.abnormal {
-  color: #ba1a1a;
+  color: var(--theme-error);
 }
 
 .abnormal-hint {
-  color: #ba1a1a;
+  color: var(--theme-error);
   font-weight: 600;
 }
 
@@ -836,7 +898,7 @@ onMounted(async () => {
 
 .qr-icon {
   font-size: 1.125rem;
-  color: #0891b2;
+  color: var(--theme-primary);
 }
 
 .qr-meta {
@@ -844,7 +906,7 @@ onMounted(async () => {
   align-items: center;
   gap: 0.75rem;
   font-size: 0.75rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   flex-shrink: 0;
 }
 
@@ -855,27 +917,27 @@ onMounted(async () => {
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
-  background: #eceef0;
-  border: 1px solid #c2c6d4;
-  color: #4a5f83;
+  background: var(--theme-surface-container);
+  border: 1px solid var(--theme-outline-variant);
+  color: var(--theme-on-surface-variant);
 }
 
 .score-badge.severity-high {
-  background: #fee2e2;
-  border-color: #f87171;
-  color: #991b1b;
+  background: rgba(186, 26, 26, 0.1);
+  border-color: rgba(186, 26, 26, 0.3);
+  color: var(--theme-error);
 }
 
 .score-badge.severity-mid {
-  background: #ffedd5;
-  border-color: #fb923c;
+  background: rgba(237, 108, 2, 0.1);
+  border-color: rgba(237, 108, 2, 0.3);
   color: #9a3412;
 }
 
 .score-badge.severity-low {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #1e40af;
+  background: var(--theme-primary-soft);
+  border-color: var(--theme-outline-variant);
+  color: var(--theme-primary);
 }
 
 /* ===== 空态（整页 / 内联） ===== */
@@ -887,8 +949,8 @@ onMounted(async () => {
   justify-content: center;
   gap: 0.75rem;
   text-align: center;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
   padding: 2rem;
 }
@@ -897,11 +959,11 @@ onMounted(async () => {
   width: 4rem;
   height: 4rem;
   border-radius: 9999px;
-  background: #f1f5f9;
+  background: var(--theme-surface-container);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0891b2;
+  color: var(--theme-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -912,12 +974,12 @@ onMounted(async () => {
 .empty-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .empty-desc {
   font-size: 0.875rem;
-  color: #727783;
+  color: var(--theme-outline);
   max-width: 28rem;
   line-height: 1.6;
   margin-bottom: 1rem;
@@ -929,10 +991,10 @@ onMounted(async () => {
   justify-content: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  border: 1px dashed #c2c6d4;
-  border-radius: 0.5rem;
-  background: #ffffff;
-  color: #727783;
+  border: 1px dashed var(--theme-outline-variant);
+  border-radius: 0.75rem;
+  background: var(--theme-surface-container-lowest);
+  color: var(--theme-outline);
   font-size: 0.875rem;
 }
 
@@ -941,20 +1003,20 @@ onMounted(async () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #0891b2;
-  border: 1px solid #0891b2;
-  color: #ffffff;
+  background: var(--theme-primary);
+  border: 1px solid var(--theme-primary);
+  color: var(--theme-on-primary);
   border-radius: 0.375rem;
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 150ms;
-  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 22, 48, 0.2);
 }
 
 .btn-primary:hover {
-  background: #0e7490;
-  border-color: #0e7490;
+  background: var(--theme-primary-strong);
+  border-color: var(--theme-primary-strong);
 }
 
 .btn-outline {
@@ -962,9 +1024,9 @@ onMounted(async () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #4a5f83;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  color: var(--theme-on-surface-variant);
   border-radius: 0.375rem;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -973,7 +1035,7 @@ onMounted(async () => {
 }
 
 .btn-outline:hover {
-  background: #f2f4f6;
+  background: var(--theme-surface-container);
 }
 
 /* Material Symbols 字体设置 */

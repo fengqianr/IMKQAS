@@ -1,20 +1,13 @@
 <template>
   <div class="triage-page">
-    <!-- 页头 -->
-    <div class="page-header">
-      <div class="header-left">
-        <h1 class="page-title">批量导诊</h1>
-        <p class="page-subtitle">批量输入患者症状描述，自动推荐就诊科室并识别急诊风险</p>
-      </div>
-    </div>
-
     <div class="triage-main">
-      <!-- 左侧：症状清单输入卡片 -->
+      <!-- 左侧：症状清单输入面板 -->
       <aside class="input-card">
         <div class="input-card-head">
           <h2 class="input-card-title">症状清单</h2>
           <span class="symptom-count">{{ symptomCount }} / 20</span>
         </div>
+        <p class="input-card-sub">逐行输入患者症状描述，或复制批量病历后分行粘贴</p>
 
         <div class="symptom-list">
           <div v-for="(_, i) in symptoms" :key="i" class="symptom-row">
@@ -50,18 +43,18 @@
           :disabled="symptomCount === 0"
           @click="handleBatchTriage"
         >
-          <span class="material-symbols-outlined">triage</span>
+          <span class="material-symbols-outlined">model_training</span>
           批量导诊
         </el-button>
         <p v-if="symptomCount >= 20" class="input-hint">已达 20 条上限，请删除后继续添加</p>
       </aside>
 
-      <!-- 右侧：结果区 -->
+      <!-- 右侧：导诊结果区 -->
       <section class="result-area">
-        <!-- 急诊警示条（关键安全警报，danger 语义） -->
+        <!-- 急诊警示条（关键安全警报，error 语义） -->
         <div v-if="emergencyItems.length" class="emergency-banner">
           <div class="emergency-title-row">
-            <span class="material-symbols-outlined emergency-icon">emergency</span>
+            <span class="material-symbols-outlined emergency-icon">warning</span>
             <span class="emergency-title">检测到 {{ emergencyItems.length }} 条急诊风险</span>
             <span v-if="highestLevel" class="emergency-level-badge">{{ emergencyLevelText(highestLevel) }}</span>
           </div>
@@ -105,7 +98,7 @@
             :class="{ 'result-card-emergency': r.emergencyCheck?.emergency }"
           >
             <div class="result-head">
-              <span class="result-index">#{{ i + 1 }}</span>
+              <span class="result-index" :class="{ 'result-index-emergency': r.emergencyCheck?.emergency }">Case #{{ i + 1 }}</span>
               <p class="result-symptom">{{ r.symptoms }}</p>
               <span class="source-badge">{{ sourceText(r.source) }}</span>
             </div>
@@ -116,13 +109,24 @@
 
             <div class="recommendations">
               <div v-for="(rec, ri) in r.recommendations" :key="ri" class="rec-item">
-                <div class="rec-head">
-                  <span class="rec-name">{{ rec.departmentName }}</span>
-                  <span v-if="rec.emergency" class="rec-emergency-tag">急诊</span>
-                  <span class="rec-confidence">{{ confidenceText(rec.confidence) }}</span>
-                </div>
-                <div class="rec-bar">
-                  <div class="rec-bar-fill" :style="{ width: confidenceWidth(rec.confidence) }" />
+                <div class="rec-main">
+                  <div class="rec-dept">
+                    <div class="rec-dept-label">推荐科室</div>
+                    <div class="rec-name">
+                      <span class="material-symbols-outlined rec-dept-icon" :class="{ 'rec-dept-icon-emergency': rec.emergency }">file_copy</span>
+                      <span>{{ rec.departmentName }}</span>
+                      <span v-if="rec.emergency" class="rec-emergency-tag">急诊</span>
+                    </div>
+                  </div>
+                  <div class="rec-conf">
+                    <div class="rec-conf-head">
+                      <span>AI 置信度</span>
+                      <span class="rec-confidence">{{ confidenceText(rec.confidence) }}</span>
+                    </div>
+                    <div class="rec-bar">
+                      <div class="rec-bar-fill" :style="{ width: confidenceWidth(rec.confidence) }" />
+                    </div>
+                  </div>
                 </div>
                 <div v-if="rec.matchedSymptoms?.length" class="rec-chips">
                   <span v-for="m in rec.matchedSymptoms" :key="m" class="rec-chip">{{ m }}</span>
@@ -141,7 +145,7 @@
         <!-- 空态引导 -->
         <div v-else class="empty-box">
           <div class="empty-icon">
-            <span class="material-symbols-outlined">triage</span>
+            <span class="material-symbols-outlined">Filter</span>
           </div>
           <h3 class="empty-title">待进行批量导诊</h3>
           <p class="empty-desc">在左侧输入症状清单（最多 20 条），点击「批量导诊」获取科室推荐结果。</p>
@@ -244,50 +248,41 @@ async function handleBatchTriage() {
   padding-bottom: 3rem;
 }
 
-/* ===== 页头 ===== */
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 0 1.5rem;
-  border-bottom: 1px solid #c2c6d4;
-  margin-bottom: 1.5rem;
-}
-
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #191c1d;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.01em;
-}
-
-.page-subtitle {
-  font-size: 0.875rem;
-  color: #4a5f83;
-}
-
 /* ===== 主区：左输入 + 右结果 ===== */
 .triage-main {
   display: flex;
+  flex-direction: column;
   gap: 1.25rem;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
-/* ===== 左侧输入卡片 ===== */
+@media (min-width: 1024px) {
+  .triage-main {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* ===== 左侧输入面板（lg 下占 45%） ===== */
 .input-card {
-  width: 360px;
+  width: 100%;
   flex-shrink: 0;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  position: sticky;
-  top: 1.25rem;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 1024px) {
+  .input-card {
+    width: 45%;
+    position: sticky;
+    top: 1.25rem;
+  }
 }
 
 .input-card-head {
@@ -297,19 +292,27 @@ async function handleBatchTriage() {
 }
 
 .input-card-title {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.input-card-sub {
+  font-size: 0.8125rem;
+  color: var(--theme-on-surface-variant);
+  line-height: 1.5;
   margin: 0;
 }
 
 .symptom-count {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #4a5f83;
-  background: #f3f4f5;
+  color: var(--theme-on-surface-variant);
+  background: var(--theme-surface-container);
   padding: 0.25rem 0.625rem;
-  border-radius: var(--radius-full);
+  border-radius: 9999px;
 }
 
 .symptom-list {
@@ -330,9 +333,9 @@ async function handleBatchTriage() {
   flex-shrink: 0;
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: var(--radius-full);
-  background: #eef2f9;
-  color: #004a9e;
+  border-radius: 9999px;
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
   font-size: 0.75rem;
   font-weight: 700;
   display: flex;
@@ -354,8 +357,8 @@ async function handleBatchTriage() {
   border: none;
   background: none;
   cursor: pointer;
-  color: #727783;
-  border-radius: var(--radius-default);
+  color: var(--theme-outline);
+  border-radius: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,8 +366,8 @@ async function handleBatchTriage() {
 }
 
 .symptom-remove:hover {
-  background: #fef2f2;
-  color: #ba1a1a;
+  background: var(--theme-error-container);
+  color: var(--theme-error);
 }
 
 .symptom-remove .material-symbols-outlined {
@@ -376,20 +379,20 @@ async function handleBatchTriage() {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  border: 1px dashed #c2c6d4;
-  background: #f8f9fa;
-  color: #4a5f83;
+  border: 1px dashed var(--theme-outline-variant);
+  background: var(--theme-surface-container-low);
+  color: var(--theme-on-surface-variant);
   font-size: 0.8125rem;
   font-weight: 600;
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   padding: 0.5rem;
   cursor: pointer;
   transition: border-color 150ms, color 150ms;
 }
 
 .add-symptom-btn:hover:not(:disabled) {
-  border-color: #005eb8;
-  color: #005eb8;
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
 }
 
 .add-symptom-btn:disabled {
@@ -405,9 +408,14 @@ async function handleBatchTriage() {
   width: 100%;
 }
 
+.triage-submit-btn .material-symbols-outlined {
+  font-size: 1.125rem;
+  margin-right: 0.25rem;
+}
+
 .input-hint {
   font-size: 0.75rem;
-  color: #727783;
+  color: var(--theme-outline);
   text-align: center;
   margin: 0;
 }
@@ -419,17 +427,22 @@ async function handleBatchTriage() {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  background: var(--theme-surface-container-low);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
 }
 
-/* 急诊警示条：仅用于关键安全警报 */
+/* 急诊警示条：error-container 底，仅用于关键安全警报 */
 .emergency-banner {
-  background: #fde8e8;
-  border: 1px solid #f5b9b9;
-  border-radius: var(--radius-lg);
+  background: var(--theme-error-container);
+  border: 1px solid rgba(186, 26, 26, 0.25);
+  border-radius: 0.75rem;
   padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .emergency-title-row {
@@ -439,28 +452,31 @@ async function handleBatchTriage() {
 }
 
 .emergency-icon {
-  color: #d32f2f;
-  font-size: 1.5rem;
+  color: var(--theme-error);
+  font-size: 1.25rem;
+  font-variation-settings: 'FILL' 1;
 }
 
 .emergency-title {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: #b71c1c;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--theme-on-error-container);
 }
 
 .emergency-level-badge {
   margin-left: auto;
-  background: #d32f2f;
-  color: #ffffff;
+  background: var(--theme-error);
+  color: var(--theme-on-error);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.25rem 0.625rem;
-  border-radius: var(--radius-full);
+  border-radius: 9999px;
 }
 
 .emergency-item {
-  border-top: 1px solid #f5b9b9;
+  border-top: 1px solid rgba(186, 26, 26, 0.2);
   padding-top: 0.625rem;
   display: flex;
   flex-direction: column;
@@ -470,23 +486,24 @@ async function handleBatchTriage() {
 .emergency-symptom {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #b71c1c;
+  color: var(--theme-on-error-container);
   margin: 0;
 }
 
 .emergency-warning,
 .emergency-action {
   font-size: 0.8125rem;
-  color: #9a1616;
+  color: var(--theme-on-error-container);
   line-height: 1.6;
   margin: 0;
+  opacity: 0.9;
 }
 
 /* 错误态卡片 */
 .error-card {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: var(--radius-lg);
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
@@ -498,12 +515,12 @@ async function handleBatchTriage() {
 .error-icon-wrap {
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: var(--radius-full);
-  background: #fef2f2;
+  border-radius: 9999px;
+  background: var(--theme-error-container);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ba1a1a;
+  color: var(--theme-error);
 }
 
 .error-icon-wrap .material-symbols-outlined {
@@ -513,13 +530,13 @@ async function handleBatchTriage() {
 .error-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   margin: 0;
 }
 
 .error-desc {
   font-size: 0.875rem;
-  color: #727783;
+  color: var(--theme-outline);
   max-width: 28rem;
   line-height: 1.6;
   margin: 0;
@@ -531,25 +548,26 @@ async function handleBatchTriage() {
 
 /* 加载态 */
 .loading-box {
+  flex: 1;
   min-height: 20rem;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: var(--radius-lg);
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   font-size: 0.875rem;
 }
 
 .loading-dot {
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: var(--radius-full);
-  border: 2px solid #c0d5ff;
-  border-top-color: #005eb8;
+  border-radius: 9999px;
+  border: 2px solid var(--theme-primary-container);
+  border-top-color: var(--theme-primary);
   animation: spin 0.6s linear infinite;
 }
 
@@ -566,27 +584,46 @@ async function handleBatchTriage() {
   gap: 0.375rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .result-summary .material-symbols-outlined {
   font-size: 1.125rem;
-  color: #005eb8;
+  color: var(--theme-primary);
 }
 
-/* 结果卡片 */
+/* 结果卡片：左色条编码风险 */
 .result-card {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: var(--radius-lg);
+  position: relative;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* 左侧色条（默认中性） */
+.result-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0.375rem;
+  background: var(--theme-outline-variant);
+}
+
+/* 急诊结果：error 色条 */
 .result-card-emergency {
-  border-left: 3px solid #d32f2f;
+  border-color: rgba(186, 26, 26, 0.3);
+}
+
+.result-card-emergency::before {
+  background: var(--theme-error);
 }
 
 .result-head {
@@ -597,30 +634,49 @@ async function handleBatchTriage() {
 
 .result-index {
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  color: #004a9e;
-  background: #eef2f9;
-  border-radius: var(--radius-default);
+  color: var(--theme-primary);
+  background: var(--theme-primary-soft);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.25rem;
   padding: 0.25rem 0.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+
+.result-index-emergency {
+  color: var(--theme-error);
+  background: rgba(186, 26, 26, 0.1);
+  border-color: rgba(186, 26, 26, 0.2);
 }
 
 .result-symptom {
   flex: 1;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #191c1d;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-on-surface-variant);
   line-height: 1.5;
   margin: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(195, 198, 208, 0.3);
+}
+
+.result-symptom::before {
+  content: '“';
+}
+
+.result-symptom::after {
+  content: '”';
 }
 
 .source-badge {
   flex-shrink: 0;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #004a9e;
-  background: #d6e3ff;
-  border-radius: var(--radius-full);
+  color: var(--theme-primary);
+  background: var(--theme-primary-soft);
+  border-radius: 9999px;
   padding: 0.25rem 0.625rem;
 }
 
@@ -628,7 +684,8 @@ async function handleBatchTriage() {
   display: flex;
   gap: 1rem;
   font-size: 0.75rem;
-  color: #727783;
+  color: var(--theme-outline);
+  padding-left: 0.875rem;
 }
 
 /* 科室推荐 */
@@ -636,56 +693,117 @@ async function handleBatchTriage() {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  padding-left: 0.875rem;
 }
 
 .rec-item {
-  background: #f8f9fa;
-  border-radius: var(--radius-default);
-  padding: 0.75rem 1rem;
+  background: var(--theme-surface-container);
+  border-radius: 0.5rem;
+  padding: 0.875rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-}
-
-.rec-head {
-  display: flex;
-  align-items: center;
   gap: 0.5rem;
 }
 
-.rec-name {
-  font-size: 0.875rem;
+.rec-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .rec-main {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+.rec-dept {
+  min-width: 0;
+}
+
+.rec-dept-label {
+  font-size: 0.625rem;
   font-weight: 600;
-  color: #191c1d;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--theme-on-surface-variant);
+  margin-bottom: 0.25rem;
+}
+
+.rec-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--theme-on-surface);
+}
+
+.rec-dept-icon {
+  font-size: 1.125rem;
+  color: var(--theme-on-surface-variant);
+}
+
+.rec-dept-icon-emergency {
+  color: var(--theme-error);
 }
 
 .rec-emergency-tag {
   font-size: 0.625rem;
   font-weight: 700;
-  color: #ffffff;
-  background: #d32f2f;
-  border-radius: var(--radius-full);
+  color: var(--theme-on-error);
+  background: var(--theme-error);
+  border-radius: 9999px;
   padding: 0.125rem 0.5rem;
 }
 
+.rec-conf {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .rec-conf {
+    width: 14rem;
+  }
+}
+
+.rec-conf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--theme-on-surface-variant);
+}
+
 .rec-confidence {
-  margin-left: auto;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #004a9e;
+  color: var(--theme-primary);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .rec-bar {
-  height: 0.375rem;
-  background: #e7e8e9;
-  border-radius: var(--radius-full);
+  height: 0.5rem;
+  background: var(--theme-outline-variant);
+  border-radius: 9999px;
   overflow: hidden;
+  opacity: 0.5;
 }
 
 .rec-bar-fill {
   height: 100%;
-  background: #005eb8;
-  border-radius: var(--radius-full);
+  background: var(--theme-primary);
+  border-radius: 9999px;
   transition: width 300ms ease;
 }
 
@@ -698,15 +816,16 @@ async function handleBatchTriage() {
 .rec-chip {
   font-size: 0.6875rem;
   font-weight: 500;
-  color: #424752;
-  background: #e7e8e9;
-  border-radius: var(--radius-full);
+  color: var(--theme-on-surface-variant);
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 9999px;
   padding: 0.125rem 0.5rem;
 }
 
 .rec-reason {
   font-size: 0.8125rem;
-  color: #424752;
+  color: var(--theme-on-surface-variant);
   line-height: 1.6;
   margin: 0;
 }
@@ -717,27 +836,28 @@ async function handleBatchTriage() {
   gap: 0.375rem;
   align-items: flex-start;
   font-size: 0.8125rem;
-  color: #424752;
+  color: var(--theme-on-surface-variant);
   line-height: 1.6;
-  background: #f1f5f9;
-  border-radius: var(--radius-default);
+  background: var(--theme-primary-soft);
+  border-radius: 0.5rem;
   padding: 0.625rem 0.75rem;
-  margin: 0;
+  margin: 0 0 0 0.875rem;
 }
 
 .advice-icon {
   font-size: 1rem;
-  color: #005eb8;
+  color: var(--theme-primary);
   flex-shrink: 0;
   margin-top: 1px;
 }
 
 /* 空态 */
 .empty-box {
+  flex: 1;
   min-height: 20rem;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: var(--radius-lg);
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -750,12 +870,12 @@ async function handleBatchTriage() {
 .empty-icon {
   width: 4rem;
   height: 4rem;
-  border-radius: var(--radius-full);
-  background: #f1f5f9;
+  border-radius: 9999px;
+  background: var(--theme-surface-container);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #005eb8;
+  color: var(--theme-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -766,27 +886,16 @@ async function handleBatchTriage() {
 .empty-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   margin: 0;
 }
 
 .empty-desc {
   font-size: 0.875rem;
-  color: #727783;
+  color: var(--theme-outline);
   max-width: 28rem;
   line-height: 1.6;
   margin: 0;
-}
-
-/* ===== 响应式 ===== */
-@media (max-width: 1024px) {
-  .triage-main {
-    flex-direction: column;
-  }
-  .input-card {
-    width: 100%;
-    position: static;
-  }
 }
 
 .material-symbols-outlined {

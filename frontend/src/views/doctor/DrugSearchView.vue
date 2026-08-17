@@ -1,15 +1,7 @@
 <template>
   <div class="drug-search-page">
-    <!-- 页头 -->
-    <div class="page-header">
-      <div class="header-left">
-        <h1 class="page-title">药物查询</h1>
-        <p class="page-subtitle">检索药品信息，检查药物相互作用</p>
-      </div>
-    </div>
-
-    <!-- 搜索卡片 -->
-    <div class="search-card">
+    <!-- 搜索卡 -->
+    <section class="search-card">
       <div class="search-row">
         <div class="search-name">
           <label class="field-label">药品名称</label>
@@ -43,11 +35,32 @@
           </el-select>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- 主区：左侧药品网格 + 右侧相互作用面板 -->
     <div class="main-area">
       <div class="grid-wrap">
+        <!-- 当前用药方案（勾选集合实时渲染） -->
+        <section class="regimen-card">
+          <div class="regimen-head">
+            <h3 class="regimen-title">当前用药方案</h3>
+            <p class="regimen-sub">勾选药品以分析相互作用</p>
+          </div>
+          <div class="regimen-chips">
+            <div v-for="id in selected" :key="id" class="drug-chip">
+              <span class="material-symbols-outlined chip-icon">pill</span>
+              <span class="chip-name">{{ drugNameById(id) }}</span>
+              <button class="chip-remove" title="移出方案" @click="removeSelected(id)">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <button class="chip-add" title="在上方搜索并勾选药品加入方案">
+              <span class="material-symbols-outlined">add</span>
+              添加药品
+            </button>
+          </div>
+        </section>
+
         <!-- 药品卡片网格 -->
         <div v-if="drugs.length" class="drug-grid">
           <div
@@ -57,6 +70,8 @@
             :class="{ 'drug-card-selected': isSelected(d.id) }"
             @click="openDetail(d)"
           >
+            <!-- 左侧风险色条（按与已选药品相互作用严重度编码） -->
+            <div class="drug-accent" :class="drugRiskClass(d.id)" />
             <!-- 右上角勾选（参与相互作用检查），阻止冒泡避免触发详情 -->
             <div
               class="select-box"
@@ -70,7 +85,15 @@
               <p class="drug-subtitle">{{ drugSubtitle(d) }}</p>
               <div class="badge-row">
                 <span v-if="d.drugClass" class="badge badge-class">{{ d.drugClass }}</span>
-                <span v-if="d.hasInteractions === 1" class="badge badge-interactions">
+                <span v-if="drugRiskClass(d.id) === 'drug-risk-danger'" class="badge badge-risk badge-risk-danger">
+                  <span class="material-symbols-outlined badge-icon">warning</span>
+                  高风险
+                </span>
+                <span v-else-if="drugRiskClass(d.id) === 'drug-risk-warning'" class="badge badge-risk badge-risk-warning">
+                  <span class="material-symbols-outlined badge-icon">monitor</span>
+                  需监测
+                </span>
+                <span v-else-if="d.hasInteractions === 1" class="badge badge-interactions">
                   <span class="material-symbols-outlined badge-icon">warning</span>
                   有相互作用
                 </span>
@@ -99,7 +122,7 @@
       <aside v-if="selected.length >= 2" ref="panelRef" class="interaction-panel">
         <div class="panel-header">
           <h3 class="panel-title">
-            <span class="material-symbols-outlined panel-icon">science</span>
+            <span class="material-symbols-outlined panel-icon">healing</span>
             相互作用分析
           </h3>
           <button class="panel-close" @click="clearSelected">
@@ -107,6 +130,14 @@
           </button>
         </div>
         <div class="panel-body">
+          <!-- Major Risk banner：存在最高档风险时提示 -->
+          <div v-if="hasMajorRisk" class="risk-banner">
+            <span class="material-symbols-outlined risk-banner-icon">gpp_bad</span>
+            <div>
+              <h4 class="risk-banner-title">检测到高风险相互作用</h4>
+              <p class="risk-banner-desc">所选药品之间存在严重相互作用，请谨慎评估用药方案。</p>
+            </div>
+          </div>
           <div v-if="checking" class="panel-loading">
             <span class="loading-dot" />检查中…
           </div>
@@ -278,11 +309,29 @@ const panelRef = ref<HTMLElement | null>(null)
 /** 药品是否已勾选 */
 const isSelected = (id: number) => selected.value.includes(id)
 
+/** 由 ID 反查药品对象（chips 移除用） */
+const drugById = (id: number) => drugs.value.find((x) => x.id === id)
+
 /** 由 ID 反查药品名称（batch 接口不返回药品名，需从已加载列表反查） */
 const drugNameById = (id: number) => {
-  const d = drugs.value.find((x) => x.id === id)
+  const d = drugById(id)
   return d ? drugTitle(d) : `#${id}`
 }
+
+/** 药品卡风险色条类：按该药与已选药品的相互作用严重度编码 */
+const drugRiskClass = (id: number): string => {
+  const it = interactions.value.find((x) => x.drugAId === id || x.drugBId === id)
+  if (!it) return 'drug-risk-neutral'
+  const t = severityTone(it.severity)
+  if (t === 'danger') return 'drug-risk-danger'
+  if (t === 'warning') return 'drug-risk-warning'
+  return 'drug-risk-neutral'
+}
+
+/** 是否存在最高档（danger）风险 → 触发 Major Risk banner */
+const hasMajorRisk = computed(() =>
+  interactions.value.some((it) => severityTone(it.severity) === 'danger')
+)
 
 /** 详情弹窗标题 */
 const dialogTitle = computed(() => drugTitle(currentDrug.value))
@@ -340,6 +389,12 @@ const toggleSelect = (d: Drug) => {
   }
 }
 
+/** 从用药方案移除单个药品（chips 关闭按钮） */
+const removeSelected = (id: number) => {
+  selected.value = selected.value.filter((x) => x !== id)
+  interactions.value = []
+}
+
 /** 清空已选药品（关闭相互作用面板） */
 const clearSelected = () => {
   selected.value = []
@@ -388,40 +443,19 @@ onMounted(async () => {
   max-width: 80rem;
   margin: 0 auto;
   padding-bottom: 3rem;
-}
-
-/* ===== 页头 ===== */
-.page-header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 1rem;
-  padding: 0 0 1.5rem;
-  border-bottom: 1px solid #c2c6d4;
-  margin-bottom: 1.5rem;
 }
 
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #191c1d;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.01em;
-}
-
-.page-subtitle {
-  font-size: 0.875rem;
-  color: #4a5f83;
-}
-
-/* ===== 搜索卡片 ===== */
+/* ===== 搜索卡 ===== */
 .search-card {
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 .search-row {
@@ -461,7 +495,7 @@ onMounted(async () => {
 .field-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   margin-bottom: 0.375rem;
   display: block;
 }
@@ -486,7 +520,7 @@ onMounted(async () => {
 
 .input-prefix-icon {
   font-size: 1.125rem;
-  color: #6e797e;
+  color: var(--theme-on-surface-variant);
 }
 
 /* ===== 主区：左网格 + 右面板 ===== */
@@ -499,20 +533,128 @@ onMounted(async () => {
 .grid-wrap {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ===== 当前用药方案 ===== */
+.regimen-card {
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  flex-shrink: 0;
+}
+
+.regimen-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--theme-on-surface);
+  margin: 0 0 0.125rem;
+}
+
+.regimen-sub {
+  font-size: 0.75rem;
+  color: var(--theme-on-surface-variant);
+  margin: 0 0 0.75rem;
+}
+
+.regimen-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.drug-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.375rem 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--theme-primary-soft);
+  border: 1px solid rgba(0, 22, 48, 0.2);
+  color: var(--theme-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.chip-icon {
+  font-size: 1rem;
+}
+
+.chip-name {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-remove {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--theme-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  border-radius: 9999px;
+  transition: color 150ms, background 150ms;
+}
+
+.chip-remove:hover {
+  color: var(--theme-error);
+  background: var(--theme-error-container);
+}
+
+.chip-remove .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.chip-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--theme-surface-container-high);
+  border: 1px dashed var(--theme-outline);
+  color: var(--theme-on-surface-variant);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.chip-add:hover {
+  background: var(--theme-surface-container);
+  color: var(--theme-primary);
+}
+
+.chip-add .material-symbols-outlined {
+  font-size: 1rem;
 }
 
 /* ===== 药品卡片网格 ===== */
 .drug-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+@media (min-width: 1280px) {
+  .drug-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .drug-card {
   position: relative;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: 0.5rem;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   overflow: hidden;
   cursor: pointer;
   transition: box-shadow 0.15s, border-color 0.15s;
@@ -520,12 +662,34 @@ onMounted(async () => {
 
 .drug-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: #727783;
+  border-color: var(--theme-primary);
 }
 
 .drug-card-selected {
-  border: 2px solid #005eb8;
-  box-shadow: 0 4px 12px rgba(0, 94, 184, 0.12);
+  border: 2px solid var(--theme-primary);
+  box-shadow: 0 4px 12px rgba(0, 22, 48, 0.12);
+}
+
+/* 左侧风险色条（绝对定位） */
+.drug-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0.25rem;
+  background: var(--theme-outline-variant);
+}
+
+.drug-risk-danger {
+  background: var(--theme-error);
+}
+
+.drug-risk-warning {
+  background: var(--theme-tertiary-container);
+}
+
+.drug-risk-neutral {
+  background: var(--theme-outline-variant);
 }
 
 /* 右上角勾选框 */
@@ -536,23 +700,23 @@ onMounted(async () => {
   width: 1.25rem;
   height: 1.25rem;
   border-radius: 0.25rem;
-  border: 2px solid #c2c6d4;
-  background: #ffffff;
+  border: 2px solid var(--theme-outline-variant);
+  background: var(--theme-surface-container-lowest);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--theme-on-primary);
   z-index: 2;
   transition: all 0.15s;
 }
 
 .select-box:hover {
-  border-color: #005eb8;
+  border-color: var(--theme-primary);
 }
 
 .select-box-checked {
-  background: #005eb8;
-  border-color: #005eb8;
+  background: var(--theme-primary);
+  border-color: var(--theme-primary);
 }
 
 .select-box-checked .material-symbols-outlined {
@@ -561,24 +725,29 @@ onMounted(async () => {
 
 /* 卡片主体 */
 .card-body {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(195, 198, 208, 0.5);
 }
 
 .drug-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   margin: 0 0 0.125rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-right: 1.5rem;
+  transition: color 150ms;
+}
+
+.drug-card:hover .drug-name {
+  color: var(--theme-primary);
 }
 
 .drug-subtitle {
   font-size: 0.75rem;
-  color: #727783;
+  color: var(--theme-outline);
   margin: 0 0 0.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -596,20 +765,34 @@ onMounted(async () => {
   align-items: center;
   gap: 2px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1.3;
 }
 
 .badge-class {
-  background: #e7e8e9;
-  color: #424752;
+  background: var(--theme-surface-container);
+  color: var(--theme-on-surface-variant);
+}
+
+.badge-risk {
+  color: var(--theme-on-error);
+}
+
+.badge-risk-danger {
+  background: var(--theme-error);
+}
+
+.badge-risk-warning {
+  background: var(--theme-tertiary-container);
+  color: var(--theme-on-tertiary-container);
 }
 
 .badge-interactions {
-  background: #ba1a1a;
-  color: #ffffff;
+  background: rgba(186, 26, 26, 0.12);
+  color: var(--theme-error);
+  border: 1px solid rgba(186, 26, 26, 0.25);
 }
 
 .badge-icon {
@@ -621,18 +804,18 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 2px 8px;
-  padding: 0.5rem 0.75rem;
-  background: #f8f9fa;
+  padding: 0.5rem 0.75rem 0.5rem 1.25rem;
+  background: var(--theme-surface-container-low);
   font-size: 0.75rem;
 }
 
 .footer-label {
-  color: #424752;
+  color: var(--theme-on-surface-variant);
   font-weight: 600;
 }
 
 .footer-value {
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .truncate {
@@ -645,9 +828,9 @@ onMounted(async () => {
 .interaction-panel {
   width: 400px;
   flex-shrink: 0;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
-  border-radius: 0.5rem;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
+  border-radius: 0.75rem;
   overflow: hidden;
   position: sticky;
   top: 1.25rem;
@@ -662,8 +845,8 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: #edeeef;
-  border-bottom: 1px solid #c2c6d4;
+  background: var(--theme-surface-container);
+  border-bottom: 1px solid var(--theme-outline-variant);
 }
 
 .panel-title {
@@ -672,12 +855,12 @@ onMounted(async () => {
   gap: 0.375rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   margin: 0;
 }
 
 .panel-icon {
-  color: #ba1a1a;
+  color: var(--theme-error);
   font-size: 1.25rem;
 }
 
@@ -685,7 +868,7 @@ onMounted(async () => {
   border: none;
   background: none;
   cursor: pointer;
-  color: #424752;
+  color: var(--theme-on-surface-variant);
   padding: 0.25rem;
   display: flex;
   align-items: center;
@@ -693,14 +876,50 @@ onMounted(async () => {
 }
 
 .panel-close:hover {
-  color: #191c1d;
-  background: #e7e8e9;
+  color: var(--theme-on-surface);
+  background: var(--theme-surface-container-high);
 }
 
 .panel-body {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Major Risk banner */
+.risk-banner {
+  padding: 0.875rem 1rem;
+  background: rgba(186, 26, 26, 0.08);
+  border: 1px solid rgba(186, 26, 26, 0.3);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.risk-banner-icon {
+  color: var(--theme-error);
+  margin-top: 0.125rem;
+  font-size: 1.375rem;
+  font-variation-settings: 'FILL' 1;
+}
+
+.risk-banner-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--theme-error);
+  margin: 0 0 0.125rem;
+}
+
+.risk-banner-desc {
+  font-size: 0.8125rem;
+  color: var(--theme-on-surface-variant);
+  line-height: 1.5;
+  margin: 0;
 }
 
 .panel-list {
@@ -720,23 +939,23 @@ onMounted(async () => {
 }
 
 .card-tone-danger {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: rgba(186, 26, 26, 0.06);
+  border-color: rgba(186, 26, 26, 0.3);
 }
 
 .card-tone-warning {
-  background: #fff7ed;
-  border-color: #fcd9a8;
+  background: rgba(0, 48, 45, 0.05);
+  border-color: rgba(0, 48, 45, 0.25);
 }
 
 .card-tone-info {
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  background: rgba(0, 71, 141, 0.05);
+  border-color: rgba(0, 71, 141, 0.25);
 }
 
 .card-tone-muted {
-  background: #f8fafc;
-  border-color: #e2e8f0;
+  background: var(--theme-surface-container-low);
+  border-color: var(--theme-outline-variant);
 }
 
 .interaction-head {
@@ -753,7 +972,7 @@ onMounted(async () => {
   gap: 0.25rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .pair-name {
@@ -765,12 +984,12 @@ onMounted(async () => {
 
 .pair-icon {
   font-size: 1rem;
-  color: #727783;
+  color: var(--theme-outline);
 }
 
 .type-badge {
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -782,53 +1001,53 @@ onMounted(async () => {
 }
 
 .badge-tone-danger {
-  background: #ba1a1a;
-  color: #ffffff;
+  background: var(--theme-error);
+  color: var(--theme-on-error);
 }
 
 .badge-tone-warning {
-  background: #793100;
-  color: #ffffff;
+  background: var(--theme-tertiary-container);
+  color: var(--theme-on-tertiary-container);
 }
 
 .badge-tone-info {
-  background: #c0d5ff;
-  color: #004a9e;
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
 }
 
 .badge-tone-muted {
-  background: #e7e8e9;
-  color: #424752;
+  background: var(--theme-surface-container);
+  color: var(--theme-on-surface-variant);
 }
 
 .interaction-desc,
 .interaction-mech {
   font-size: 0.8125rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   line-height: 1.5;
   margin: 0;
 }
 
 .interaction-mech {
-  color: #424752;
+  color: var(--theme-on-surface-variant);
 }
 
 .interaction-rec {
   display: flex;
   gap: 0.375rem;
   align-items: flex-start;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(186, 26, 26, 0.2);
+  background: rgba(186, 26, 26, 0.06);
+  border: 1px solid rgba(186, 26, 26, 0.25);
   border-radius: 0.375rem;
   padding: 0.5rem 0.625rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   line-height: 1.5;
 }
 
 .rec-icon {
-  color: #ba1a1a;
+  color: var(--theme-error);
   font-size: 1.125rem;
   margin-top: 1px;
   flex-shrink: 0;
@@ -838,7 +1057,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   font-size: 0.8125rem;
   padding: 1rem 0;
 }
@@ -847,8 +1066,8 @@ onMounted(async () => {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
-  border: 2px solid #c0d5ff;
-  border-top-color: #005eb8;
+  border: 2px solid var(--theme-primary-container);
+  border-top-color: var(--theme-primary);
   animation: spin 0.6s linear infinite;
   flex-shrink: 0;
 }
@@ -864,14 +1083,14 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  color: #727783;
+  color: var(--theme-outline);
   padding: 2rem 0;
   font-size: 0.8125rem;
 }
 
 .panel-empty .material-symbols-outlined {
   font-size: 2rem;
-  color: #2e7d32;
+  color: var(--theme-success);
 }
 
 /* ===== 空态 ===== */
@@ -883,8 +1102,8 @@ onMounted(async () => {
   justify-content: center;
   gap: 0.75rem;
   text-align: center;
-  background: #ffffff;
-  border: 1px solid #c2c6d4;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
   padding: 2rem;
 }
@@ -893,11 +1112,11 @@ onMounted(async () => {
   width: 4rem;
   height: 4rem;
   border-radius: 9999px;
-  background: #f1f5f9;
+  background: var(--theme-surface-container);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #005eb8;
+  color: var(--theme-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -908,12 +1127,12 @@ onMounted(async () => {
 .empty-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .empty-desc {
   font-size: 0.875rem;
-  color: #727783;
+  color: var(--theme-outline);
   max-width: 28rem;
   line-height: 1.6;
   margin-bottom: 1rem;
@@ -928,8 +1147,8 @@ onMounted(async () => {
   display: none;
   align-items: center;
   gap: 0.375rem;
-  background: #005eb8;
-  color: #ffffff;
+  background: var(--theme-primary);
+  color: var(--theme-on-primary);
   padding: 0.625rem 1rem;
   border: none;
   border-radius: 9999px;
@@ -944,7 +1163,7 @@ onMounted(async () => {
 }
 
 .fab:hover {
-  background: #00478d;
+  background: var(--theme-primary-strong);
 }
 
 @media (max-width: 1024px) {
@@ -991,10 +1210,10 @@ onMounted(async () => {
 .drug-detail-dialog .section-title {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #424752;
+  color: var(--theme-on-surface-variant);
   letter-spacing: 0.02em;
   padding-bottom: 0.375rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(195, 198, 208, 0.5);
   margin: 0;
 }
 
@@ -1017,12 +1236,12 @@ onMounted(async () => {
 }
 
 .drug-detail-dialog .info-label {
-  color: #727783;
+  color: var(--theme-outline);
   flex-shrink: 0;
 }
 
 .drug-detail-dialog .info-value {
-  color: #191c1d;
+  color: var(--theme-on-surface);
   font-weight: 500;
 }
 
@@ -1040,24 +1259,24 @@ onMounted(async () => {
 }
 
 .drug-detail-dialog .tag-neutral {
-  background: #e7e8e9;
-  color: #424752;
+  background: var(--theme-surface-container);
+  color: var(--theme-on-surface-variant);
 }
 
 .drug-detail-dialog .tag-danger {
-  background: #fef2f2;
-  color: #ba1a1a;
-  border: 1px solid #fecaca;
+  background: rgba(186, 26, 26, 0.08);
+  color: var(--theme-error);
+  border: 1px solid rgba(186, 26, 26, 0.3);
 }
 
 .drug-detail-dialog .empty-text {
-  color: #727783;
+  color: var(--theme-outline);
   font-size: 0.8125rem;
   margin: 0;
 }
 
 .drug-detail-dialog .section-text {
-  color: #191c1d;
+  color: var(--theme-on-surface);
   font-size: 0.875rem;
   line-height: 1.7;
   margin: 0;
