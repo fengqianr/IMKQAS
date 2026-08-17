@@ -262,6 +262,23 @@ class ConversationService {
       throw new Error(error.response?.data?.message || error.message || '网络错误')
     }
   }
+
+  // 从回收站彻底删除对话（物理删除，同时级联删除其消息）
+  async deleteConversationPermanently(conversationId: string): Promise<boolean> {
+    try {
+      const response = await axios.delete<RestoreResponse>(
+        `${this.baseURL}/conversations/${conversationId}/permanent`,
+        {
+          headers: this.getAuthHeaders()
+        }
+      )
+
+      return response.data.success
+    } catch (error: any) {
+      console.error('彻底删除对话失败:', error)
+      throw new Error(error.response?.data?.message || error.message || '网络错误')
+    }
+  }
 }
 
 export const conversationService = new ConversationService()

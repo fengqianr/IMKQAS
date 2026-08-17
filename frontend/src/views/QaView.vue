@@ -48,14 +48,13 @@
                :class="['qa-session-item', session.id === activeSessionId ? 'qa-session-active' : 'qa-session-inactive']">
             <span class="material-symbols-outlined text-lg">{{ session.icon }}</span>
             <span class="qa-session-title">{{ session.title }}</span>
+            <button @click.stop="softDeleteSession(session.id)"
+                    class="qa-session-delete material-symbols-outlined"
+                    title="删除会话">delete</button>
           </div>
         </nav>
 
         <div class="qa-sidebar-footer">
-          <div @click="deleteActiveSession" class="qa-sidebar-footer-item qa-clickable">
-            <span class="material-symbols-outlined text-lg">delete</span>
-            回收站
-          </div>
           <div @click="showReviewPanel = true" v-if="authStore.userRole === 'ADMIN'" class="qa-sidebar-footer-item qa-clickable">
             <span class="material-symbols-outlined text-lg">rate_review</span>
             词条审核
@@ -401,6 +400,45 @@
         </div>
       </div>
     </div>
+
+    <!-- 回收站面板 -->
+    <div v-if="showTrashPanel" class="qa-report-overlay" @click.self="closeTrashPanel">
+      <div class="qa-report-dialog qa-trash-dialog">
+        <div class="qa-report-dialog-header">
+          <h3 class="qa-report-dialog-title">回收站</h3>
+          <button @click="closeTrashPanel" class="qa-report-dialog-close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="qa-trash-body">
+          <div v-if="loadingTrash" class="qa-report-loading">
+            <span class="qa-thinking-text">正在加载回收站...</span>
+          </div>
+          <div v-else-if="trashConversations.length === 0" class="qa-trash-empty">
+            <span class="material-symbols-outlined qa-trash-empty-icon">delete_sweep</span>
+            <p>回收站是空的</p>
+          </div>
+          <div v-else class="qa-trash-list">
+            <div v-for="conv in trashConversations" :key="conv.id" class="qa-trash-item">
+              <div class="qa-trash-item-info">
+                <div class="qa-trash-item-title">{{ conv.title }}</div>
+                <div class="qa-trash-item-time">{{ formatTrashTime(conv.updatedAt) }}</div>
+              </div>
+              <div class="qa-trash-item-actions">
+                <button @click="restoreTrashConversation(conv.id)" class="qa-trash-btn qa-trash-btn-restore">
+                  <span class="material-symbols-outlined">restore</span>
+                  恢复
+                </button>
+                <button @click="permanentDeleteTrashConversation(conv)" class="qa-trash-btn qa-trash-btn-delete">
+                  <span class="material-symbols-outlined">delete_forever</span>
+                  彻底删除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 词条审核面板（管理员可见） -->
@@ -409,7 +447,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
@@ -557,23 +595,104 @@ const isComposing = ref(false)
 // 防抖时间戳（防止同一毫秒内重复触发）
 let lastSendTime = 0
 
-// 删除当前活跃会话（移入回收站）
-const deleteActiveSession = async () => {
-  if (!activeSessionId.value) return
+// 删除指定会话（移入回收站）
+const softDeleteSession = async (sessionId: string) => {
   try {
-    await conversationService.deleteConversation(activeSessionId.value)
+    await conversationService.deleteConversation(sessionId)
     // 从侧边栏移除
-    sessions.value = sessions.value.filter(s => s.id !== activeSessionId.value)
-    // 切换到第一个剩余会话
-    if (sessions.value.length > 0) {
-      await switchSession(sessions.value[0].id)
-    } else {
-      activeSessionId.value = null
-      messages.value = []
+    sessions.value = sessions.value.filter(s => s.id !== sessionId)
+    // 若删除的是当前活跃会话，切换到剩余第一个会话
+    if (activeSessionId.value === sessionId) {
+      if (sessions.value.length > 0) {
+        await switchSession(sessions.value[0].id)
+      } else {
+        activeSessionId.value = null
+        messages.value = []
+      }
     }
+    ElMessage.success('对话已移入回收站')
   } catch (error) {
     console.error('删除对话失败:', error)
+    ElMessage.error('删除对话失败')
   }
+}
+
+// ==================== 回收站面板 ====================
+const showTrashPanel = ref(false)
+const trashConversations = ref<Conversation[]>([])
+const loadingTrash = ref(false)
+
+// 加载回收站列表
+const loadTrash = async () => {
+  loadingTrash.value = true
+  try {
+    trashConversations.value = await conversationService.getDeletedConversations()
+  } catch (error) {
+    console.error('加载回收站失败:', error)
+    ElMessage.error('加载回收站失败')
+  } finally {
+    loadingTrash.value = false
+  }
+}
+
+const openTrashPanel = () => {
+  showTrashPanel.value = true
+  loadTrash()
+}
+
+const closeTrashPanel = () => {
+  showTrashPanel.value = false
+}
+
+// 从回收站恢复对话
+const restoreTrashConversation = async (conversationId: string) => {
+  try {
+    const ok = await conversationService.restoreConversation(conversationId)
+    if (ok) {
+      ElMessage.success('对话已恢复')
+      await loadTrash()
+      await loadConversations()
+    } else {
+      ElMessage.error('恢复失败，对话不存在或已被永久删除')
+    }
+  } catch (error) {
+    console.error('恢复对话失败:', error)
+    ElMessage.error('恢复对话失败')
+  }
+}
+
+// 从回收站彻底删除对话
+const permanentDeleteTrashConversation = async (conv: Conversation) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要彻底删除「${conv.title}」吗？该操作不可恢复。`,
+      '彻底删除对话',
+      { confirmButtonText: '彻底删除', cancelButtonText: '取消', type: 'warning' }
+    )
+  } catch {
+    return // 用户取消
+  }
+  try {
+    const ok = await conversationService.deleteConversationPermanently(conv.id)
+    if (ok) {
+      ElMessage.success('对话已彻底删除')
+      await loadTrash()
+    } else {
+      ElMessage.error('彻底删除失败，对话不存在或已被永久删除')
+    }
+  } catch (error) {
+    console.error('彻底删除对话失败:', error)
+    ElMessage.error('彻底删除对话失败')
+  }
+}
+
+// 格式化回收站时间
+const formatTrashTime = (iso?: string): string => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 // 根据严重程度文本映射 CSS 等级
@@ -743,6 +862,15 @@ const loadMessages = async (sessionId: string) => {
   }
 }
 
+// 格式化问卷选项提示：列出可选编号，供用户输入
+const formatOptionsHint = (options?: AnswerOption[]): string => {
+  if (!options || options.length === 0) {
+    return '请用自然语言描述您的情况'
+  }
+  const list = options.map((o, i) => `${i + 1}. ${o.display}`).join('  ')
+  return `请用自然语言描述您的情况，或输入选项编号：${list}`
+}
+
 // 将 InterviewMessageItem 重建为问卷卡片 ChatMessage
 const buildQuestionnaireMessage = (im: InterviewMessageItem): ChatMessage | null => {
   const d = im.messageData
@@ -755,7 +883,7 @@ const buildQuestionnaireMessage = (im: InterviewMessageItem): ChatMessage | null
       return {
         id: 'im-' + im.id,
         role: 'assistant',
-        content: `**问题 ${qIdx}/${qTotal}**\n\n${d.text}\n\n*请用自然语言描述您的情况，或输入选项编号*`
+        content: `**问题 ${qIdx}/${qTotal}**\n\n${d.text}\n\n*${formatOptionsHint(d.options)}*`
       }
     }
     case 'clarify':
@@ -1063,7 +1191,7 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
-              content: `**问题 ${(event.currentIndex ?? 0) + 1}/${event.totalQuestions}**\n\n${event.text}\n\n*请用自然语言描述您的情况，或输入选项编号*`
+              content: `**问题 ${(event.currentIndex ?? 0) + 1}/${event.totalQuestions}**\n\n${event.text}\n\n*${formatOptionsHint(event.options)}*`
             })
             nextTick(() => scrollToBottom())
             break
@@ -1185,7 +1313,7 @@ const submitInterviewAnswer = async (selectedCode: string, displayText: string) 
             messages.value.push({
               id: Date.now().toString(),
               role: 'assistant',
-              content: `**问题 ${(event.currentIndex ?? 0) + 1}/${event.totalQuestions}**\n\n${event.text}\n\n*请用自然语言描述您的情况，或输入选项编号*`
+              content: `**问题 ${(event.currentIndex ?? 0) + 1}/${event.totalQuestions}**\n\n${event.text}\n\n*${formatOptionsHint(event.options)}*`
             })
             nextTick(() => scrollToBottom())
             break
@@ -2209,5 +2337,141 @@ onUnmounted(() => {
   font-size: 16px;
   color: #00478d;
   margin-left: auto;
+}
+
+/* ===== 会话项删除按钮 ===== */
+.qa-session-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.qa-session-delete {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  color: #94a3b8;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 150ms, color 150ms, background-color 150ms;
+  flex-shrink: 0;
+}
+
+.qa-session-item:hover .qa-session-delete {
+  opacity: 1;
+}
+
+.qa-session-delete:hover {
+  color: #dc2626;
+  background-color: #fee2e2;
+}
+
+/* ===== 回收站面板 ===== */
+.qa-trash-dialog {
+  max-width: 560px;
+}
+
+.qa-trash-body {
+  padding: 16px 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.qa-trash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 0;
+  color: #727783;
+  font-size: 14px;
+}
+
+.qa-trash-empty-icon {
+  font-size: 40px;
+  color: #c2c6d4;
+}
+
+.qa-trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qa-trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f8f9fa;
+  border: 1px solid #e8eaed;
+  border-radius: 10px;
+}
+
+.qa-trash-item-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.qa-trash-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qa-trash-item-time {
+  font-size: 11px;
+  color: #727783;
+  margin-top: 4px;
+}
+
+.qa-trash-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.qa-trash-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 150ms;
+}
+
+.qa-trash-btn-restore {
+  background: #fff;
+  color: #00478d;
+  border-color: #c4d7f2;
+}
+
+.qa-trash-btn-restore:hover {
+  background: #e8f0fe;
+}
+
+.qa-trash-btn-delete {
+  background: #fff;
+  color: #dc2626;
+  border-color: #f1c2c2;
+}
+
+.qa-trash-btn-delete:hover {
+  background: #fee2e2;
 }
 </style>
