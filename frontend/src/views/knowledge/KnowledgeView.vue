@@ -1,457 +1,308 @@
 <template>
   <div class="knowledge-page">
-    <!-- 主内容区域（导航由外部布局框架提供） -->
-    <div class="knowledge-content">
-      <!-- Dashboard Header -->
-      <header class="custom-mb-10">
-        <h1 class="text-3xl font-bold font-headline tracking-tight text-on-surface custom-mb-2">
-          知识库管理
-        </h1>
-      </header>
-
-      <!-- 文档管理标签页 -->
-      <div v-if="activeTab === 'documents'" class="custom-grid custom-grid-cols-12 custom-gap-6">
-        <!-- Left Column: Navigation & Upload -->
-        <div class="col-span-3 space-y-6">
-          <!-- Category Management - 侧边栏 -->
-          <section
-            class="bg-surface-container-lowest rounded-xl custom-p-6 shadow-ambient"
-          >
-            <div class="custom-flex custom-items-center custom-justify-between custom-mb-6">
-              <h3 class="font-headline font-bold text-on-surface">分类管理</h3>
-              <button
-                class="text-primary hover-bg-primary-fixed custom-p-1 rounded-md custom-transition-colors"
-              >
-                <span class="material-symbols-outlined text-xl">add_circle</span>
-              </button>
-            </div>
-            <nav class="space-y-1">
-              <button
-                v-for="(category, index) in categories"
-                :key="index"
-                :class="[
-                  'custom-w-full custom-flex custom-items-center custom-justify-between custom-px-4 custom-py-3 custom-transition-all group rounded-full',
-                  selectedCategory === category.name
-                    ? 'bg-primary-fixed text-on-primary-fixed'
-                    : 'text-on-surface-variant hover-bg-surface-container-low'
-                ]"
-                @click="selectCategory(category.name)"
-              >
-                <div class="custom-flex custom-items-center custom-gap-3">
-                  <span
-                    class="material-symbols-outlined text-xl"
-                    :class="selectedCategory === category.name ? 'text-on-primary-fixed' : 'text-on-surface-variant'"
-                  >
-                    {{ selectedCategory === category.name ? 'folder_open' : 'folder' }}
-                  </span>
-                  <span class="font-medium text-sm">{{ category.name }}</span>
-                </div>
-                <span
-                  :class="[
-                    'text-xs custom-px-2 custom-py-0.5 rounded-full',
-                    selectedCategory === category.name
-                      ? 'bg-primary-container text-on-primary-container'
-                      : 'text-on-surface-variant opacity-60'
-                  ]"
-                >
-                  {{ category.count }}
-                </span>
-              </button>
-            </nav>
-          </section>
-
-          <!-- Upload Area - 拖拽上传 -->
-          <section
-            class="bg-surface-container-lowest border-2 border-dashed border-outline-variant/30 rounded-xl custom-p-8 text-center group hover-border-primary/50 custom-transition-all cursor-pointer"
-            :class="{ 'border-primary/50': isDragging }"
-            @click="triggerFileUpload"
-            @dragover.prevent="onDragOver"
-            @dragleave.prevent="onDragLeave"
-            @drop.prevent="onDrop"
-          >
-            <div
-              class="bg-primary-fixed custom-w-16 custom-h-16 rounded-full custom-flex custom-items-center custom-justify-center custom-mx-auto custom-mb-4 group-hover-scale-110 custom-transition-transform"
-            >
-              <span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
-            </div>
-            <h4 class="font-headline font-bold text-on-surface custom-mb-2">上传医学文档</h4>
-            <p class="text-xs text-on-surface-variant custom-mb-6 leading-relaxed">
-              仅支持 PDF 格式<br />单个文件最大支持 50MB
-            </p>
-            <button
-              class="custom-w-full custom-py-3 custom-px-4 border border-outline-variant rounded-full text-sm font-semibold hover-bg-surface-container-low custom-transition-colors"
-              @click.stop="triggerFileUpload"
-            >
-              选择文件
-            </button>
-            <input
-              ref="fileInput"
-              type="file"
-              class="custom-hidden"
-              accept=".pdf"
-              multiple
-              @change="handleFileSelect"
-            />
-          </section>
+    <!-- 文档管理标签页（顶部：上传+分类 左右；底部：文档列表在上、内容区在下） -->
+    <div v-if="activeTab === 'documents'" class="kb-page">
+      <!-- 顶部行：上传区 + 知识库分类（左右布局） -->
+      <section class="kb-top-row">
+        <!-- 上传区 -->
+        <div
+          class="kb-upload"
+          :class="{ 'kb-upload-active': isDragging }"
+          @click="triggerFileUpload"
+          @dragover.prevent="onDragOver"
+          @dragleave.prevent="onDragLeave"
+          @drop.prevent="onDrop"
+        >
+          <span class="material-symbols-outlined kb-upload-icon">upload_file</span>
+          <div class="kb-upload-text">
+            <p class="kb-upload-title">拖拽 PDF 到此处</p>
+            <p class="kb-upload-hint">或点击选择文件（≤50MB）</p>
+          </div>
+          <input
+            ref="fileInput"
+            type="file"
+            class="custom-hidden"
+            accept=".pdf"
+            multiple
+            @change="handleFileSelect"
+          />
         </div>
 
-        <!-- Right Column: Document List & Detail View -->
-        <div class="col-span-9 space-y-8">
-          <!-- Document List Card - 主内容区 -->
-          <section
-            class="bg-surface-container-lowest rounded-xl shadow-ambient custom-overflow-hidden"
-          >
-            <div class="custom-p-6 custom-flex custom-items-center custom-justify-between">
-              <div class="custom-flex custom-items-center custom-gap-4">
-                <div class="custom-relative">
-                  <span
-                    class="custom-absolute custom-left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-xl"
-                  >search</span>
-                  <input
-                    v-model="searchQuery"
-                    class="custom-pl-10 custom-pr-4 custom-py-2.5 bg-surface-container-low border-none rounded-full text-sm custom-w-80 focus-ring-2 focus-ring-primary-20 custom-transition-all placeholder-on-surface-variant"
-                    placeholder="搜索文档标题或内容..."
-                    type="text"
-                  />
-                </div>
-                <button
-                  class="custom-flex custom-items-center custom-gap-2 custom-px-4 custom-py-2.5 text-sm font-medium text-on-surface-variant hover-bg-surface-container-low rounded-full custom-transition-all"
+        <!-- 分类（chips 横向排列） -->
+        <div class="kb-categories">
+          <h3 class="kb-section-title">知识库分类</h3>
+          <div class="kb-category-nav">
+            <!-- 全部文档 -->
+            <button
+              class="kb-category-item"
+              :class="{ 'kb-category-active': !selectedCategory }"
+              @click="selectCategory('')"
+            >
+              <span class="kb-cat-label">全部文档</span>
+              <span class="kb-cat-count">{{ rawDocuments.length }}</span>
+            </button>
+            <!-- 分类列表（由文档数据派生） -->
+            <button
+              v-for="cat in categories"
+              :key="cat.name"
+              class="kb-category-item"
+              :class="{ 'kb-category-active': selectedCategory === cat.name }"
+              @click="selectCategory(cat.name)"
+            >
+              <span class="kb-cat-label">{{ cat.name }}</span>
+              <span class="kb-cat-count">{{ cat.count }}</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 底部行：文档列表在上，内容区（预览+分块）在下，垂直堆叠 -->
+      <section class="kb-bottom-row">
+        <!-- 中栏：文档列表 -->
+        <div class="kb-middle">
+          <div class="kb-panel-header">
+            <div class="kb-header-left">
+              <button class="kb-icon-btn" title="返回列表" @click="backToList">
+                <span class="material-symbols-outlined">arrow_back</span>
+              </button>
+              <h2 class="kb-panel-title">文档列表</h2>
+            </div>
+            <div class="kb-header-right">
+              <div class="kb-search">
+                <span class="material-symbols-outlined kb-search-icon">search</span>
+                <input v-model="searchQuery" class="kb-search-input" placeholder="搜索文档..." type="text" />
+              </div>
+            </div>
+          </div>
+
+          <div class="kb-table-wrap">
+            <table class="kb-table">
+              <thead>
+                <tr>
+                  <th>文档名称</th>
+                  <th class="kb-th-category">分类</th>
+                  <th class="kb-th-status">状态</th>
+                  <th class="kb-th-action">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 加载状态 -->
+                <tr v-if="loading">
+                  <td colspan="4" class="kb-empty-cell">
+                    <div class="kb-empty">
+                      <span class="material-symbols-outlined kb-empty-icon">refresh</span>
+                      <p>加载文档列表中...</p>
+                    </div>
+                  </td>
+                </tr>
+                <!-- 空状态 -->
+                <tr v-else-if="filteredDocuments.length === 0">
+                  <td colspan="4" class="kb-empty-cell">
+                    <div class="kb-empty">
+                      <span class="material-symbols-outlined kb-empty-icon">description</span>
+                      <p>暂无匹配的文档</p>
+                      <p class="kb-empty-hint">试试清除搜索条件或更换分类</p>
+                    </div>
+                  </td>
+                </tr>
+                <!-- 文档列表 -->
+                <tr
+                  v-for="doc in filteredDocuments.slice(0, 10)"
+                  :key="doc.id"
+                  class="kb-row"
+                  :class="{ 'kb-row-selected': selectedDoc?.id === doc.id }"
+                  @click="selectDocument(doc)"
                 >
-                  <span class="material-symbols-outlined text-lg">filter_list</span>
-                  筛选器
+                  <td>
+                    <div class="kb-doc-name">
+                      <span class="material-symbols-outlined kb-doc-icon">picture_as_pdf</span>
+                      <div class="kb-doc-info">
+                        <span class="kb-doc-title">{{ doc.name }}</span>
+                        <span class="kb-doc-meta">{{ doc.size }} • {{ doc.uploadTime }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="kb-cat-pill">{{ doc.category }}</span>
+                  </td>
+                  <td>
+                    <span class="kb-status" :class="'kb-status-' + doc.status">
+                      <span class="kb-status-dot"></span>
+                      <template v-if="doc.status === 'completed'">已完成</template>
+                      <template v-else-if="doc.status === 'processing'">处理中 ({{ doc.progress }}%)</template>
+                      <template v-else>待处理</template>
+                    </span>
+                  </td>
+                  <td>
+                    <el-dropdown trigger="click" @command="(cmd: string) => handleDocAction(cmd, doc)">
+                      <button class="kb-more-btn" @click.stop>
+                        <span class="material-symbols-outlined">more_vert</span>
+                      </button>
+                      <template #dropdown>
+                        <el-dropdown-menu>
+                          <el-dropdown-item command="preview">
+                            <span class="material-symbols-outlined custom-mr-2">visibility</span>
+                            预览
+                          </el-dropdown-item>
+                          <el-dropdown-item command="delete">
+                            <span class="material-symbols-outlined custom-mr-2">delete</span>
+                            删除
+                          </el-dropdown-item>
+                          <el-dropdown-item command="reprocess">
+                            <span class="material-symbols-outlined custom-mr-2">refresh</span>
+                            重新处理
+                          </el-dropdown-item>
+                        </el-dropdown-menu>
+                      </template>
+                    </el-dropdown>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 右栏：预览 + 分块 -->
+        <aside class="kb-right-panel">
+          <!-- 预览头部 -->
+          <div class="kb-preview-header">
+            <div class="kb-preview-info">
+              <h3 class="kb-preview-title">{{ selectedDoc?.name || '请选择文档' }}</h3>
+              <p v-if="selectedDoc" class="kb-preview-meta">分块数: {{ displayChunks.length }}</p>
+            </div>
+            <div class="kb-preview-actions">
+              <button
+                class="kb-icon-btn kb-icon-btn-bordered"
+                title="下载"
+                :disabled="!selectedDoc"
+                @click="downloadDocument"
+              >
+                <span class="material-symbols-outlined">download</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 文档源视图 -->
+          <div class="kb-source">
+            <div class="kb-sub-header">
+              <span>文档源视图</span>
+              <div class="kb-sub-actions">
+                <button class="kb-mini-btn" title="缩小" @click="zoomOut">
+                  <span class="material-symbols-outlined">zoom_out</span>
+                </button>
+                <span class="kb-zoom-label">{{ zoomPercent }}%</span>
+                <button class="kb-mini-btn" title="放大" @click="zoomIn">
+                  <span class="material-symbols-outlined">zoom_in</span>
                 </button>
               </div>
-              <div class="custom-flex custom-items-center custom-gap-2 text-xs font-medium text-on-surface-variant">
-                显示 {{ filteredDocuments.length > 0 ? '1-' + Math.min(filteredDocuments.length, 10) : '0' }} / 共
-                {{ filteredDocuments.length }} 个文件
+            </div>
+            <div class="kb-source-body">
+              <!-- 加载状态 -->
+              <div v-if="selectedDoc && previewLoading" class="kb-source-state">
+                <span class="material-symbols-outlined kb-source-icon">refresh</span>
+                <p>加载文档预览中...</p>
+              </div>
+              <!-- 错误状态 -->
+              <div v-else-if="selectedDoc && previewError" class="kb-source-state">
+                <span class="material-symbols-outlined kb-source-icon">error_outline</span>
+                <p>预览加载失败</p>
+                <button class="kb-retry-btn" @click="fetchDocumentPreview(selectedDoc)">
+                  <span class="material-symbols-outlined kb-retry-icon">refresh</span>
+                  重试
+                </button>
+              </div>
+              <!-- PDF预览 -->
+              <div v-else-if="selectedDoc && selectedDoc.type === 'pdf' && previewBlobUrl" class="kb-source-frame">
+                <iframe ref="previewContainer" :src="previewBlobUrl" class="kb-iframe"></iframe>
+              </div>
+              <!-- 文本预览 -->
+              <div v-else-if="selectedDoc && previewText" class="kb-source-frame">
+                <pre class="kb-pre">{{ previewText }}</pre>
+              </div>
+              <!-- 未选择文档 -->
+              <div v-else class="kb-source-state">
+                <span class="material-symbols-outlined kb-source-icon">description</span>
+                <p>请选择一个文档进行预览</p>
+                <p class="kb-empty-hint">点击中栏文档列表中的文档</p>
               </div>
             </div>
+          </div>
 
-            <!-- 表格区域 - 无边框，通过背景变化区分 -->
-            <div class="custom-overflow-x-auto">
-              <table class="custom-w-full text-left">
-                <thead>
-                  <tr class="bg-surface-container-low/50 text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-                    <th class="custom-px-6 custom-py-4">文档名称</th>
-                    <th class="custom-px-6 custom-py-4">大小</th>
-                    <th class="custom-px-6 custom-py-4">分类</th>
-                    <th class="custom-px-6 custom-py-4">上传时间</th>
-                    <th class="custom-px-6 custom-py-4">处理状态</th>
-                    <th class="custom-px-6 custom-py-4">操作</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-outline-variant-10">
-                  <!-- 加载状态 -->
-                  <tr v-if="loading">
-                    <td colspan="6" class="custom-px-6 custom-py-12 text-center">
-                      <div class="custom-flex custom-flex-col custom-items-center custom-justify-center custom-gap-3">
-                        <span class="material-symbols-outlined text-3xl text-brand custom-animate-spin">refresh</span>
-                        <p class="font-body text-sm text-secondary">加载文档列表中...</p>
-                      </div>
-                    </td>
-                  </tr>
-                  <!-- 空状态 -->
-                  <tr v-else-if="filteredDocuments.length === 0">
-                    <td colspan="6" class="custom-px-6 custom-py-12 text-center">
-                      <div class="custom-flex custom-flex-col custom-items-center custom-justify-center custom-gap-3">
-                        <span class="material-symbols-outlined text-3xl text-secondary">description</span>
-                        <p class="font-body text-sm text-secondary">暂无文档数据</p>
-                      </div>
-                    </td>
-                  </tr>
-                  <!-- 文档列表 -->
-                  <tr
-                    v-for="doc in filteredDocuments.slice(0, 10)"
-                    :key="doc.id"
-                    class="hover-bg-surface custom-transition-colors group cursor-pointer"
-                    :class="{ 'bg-brand/20': selectedDoc?.id === doc.id }"
-                    @click="selectDocument(doc)"
-                  >
-                    <td class="custom-px-6 custom-py-5">
-                      <div class="custom-flex custom-items-center custom-gap-3">
-                        <div
-                          class="custom-w-8 custom-h-8 rounded custom-flex custom-items-center custom-justify-center"
-                          :class="doc.type === 'pdf' ? 'bg-red-50' : 'bg-blue-50'"
-                        >
-                          <span
-                            class="material-symbols-outlined text-lg"
-                            :class="doc.type === 'pdf' ? 'text-red-600' : 'text-blue-600'"
-                          >{{ doc.type === 'pdf' ? 'description' : 'article' }}</span>
-                        </div>
-                        <span class="text-sm font-semibold text-on-surface">{{ doc.name }}</span>
-                      </div>
-                    </td>
-                    <td class="custom-px-6 custom-py-4 text-sm text-on-surface-variant">{{ doc.size }}</td>
-                    <td class="custom-px-6 custom-py-4">
-                      <span class="text-xs bg-secondary-container text-on-secondary-container custom-px-2 custom-py-1 rounded">{{ doc.category }}</span>
-                    </td>
-                    <td class="custom-px-6 custom-py-4 text-sm text-on-surface-variant">{{ doc.uploadTime }}</td>
-                    <td class="custom-px-6 custom-py-4">
-                      <div
-                        v-if="doc.status === 'completed'"
-                        class="custom-flex custom-items-center custom-gap-2 text-xs font-medium text-success"
-                      >
-                        <span class="custom-w-1.5 custom-h-1.5 rounded-full bg-success"></span>
-                        已完成向量化
-                      </div>
-                      <div
-                        v-else-if="doc.status === 'processing'"
-                        class="custom-flex custom-items-center custom-gap-2 text-xs font-medium text-blue-600"
-                      >
-                        <span class="custom-w-1.5 custom-h-1.5 rounded-full bg-blue-600 custom-animate-pulse"></span>
-                        正在处理 ({{ doc.progress }}%)
-                      </div>
-                      <div
-                        v-else
-                        class="custom-flex custom-items-center custom-gap-2 text-xs font-medium text-on-surface-variant"
-                      >
-                        <span class="custom-w-1.5 custom-h-1.5 rounded-full bg-on-surface-variant"></span>
-                        待处理
-                      </div>
-                    </td>
-                    <td class="custom-px-6 custom-py-4">
-                      <el-dropdown trigger="click" @command="(cmd: string) => handleDocAction(cmd, doc)">
-                        <button class="text-outline hover-text-primary custom-transition-colors">
-                          <span class="material-symbols-outlined">more_vert</span>
-                        </button>
-                        <template #dropdown>
-                          <el-dropdown-menu>
-                            <el-dropdown-item command="preview">
-                              <span class="material-symbols-outlined custom-mr-2">visibility</span>
-                              预览
-                            </el-dropdown-item>
-                            <el-dropdown-item command="delete">
-                              <span class="material-symbols-outlined custom-mr-2">delete</span>
-                              删除
-                            </el-dropdown-item>
-                            <el-dropdown-item command="reprocess">
-                              <span class="material-symbols-outlined custom-mr-2">refresh</span>
-                              重新处理
-                            </el-dropdown-item>
-                          </el-dropdown-menu>
-                        </template>
-                      </el-dropdown>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          <!-- 向量分块浏览 -->
+          <div class="kb-chunks">
+            <div class="kb-sub-header">
+              <span>向量分块浏览 (Chunks)</span>
+              <span class="kb-chunks-total">Total: {{ displayChunks.length }}</span>
             </div>
-          </section>
-
-          <!-- Split View: Preview & Chunk Browsing -->
-          <section class="custom-grid custom-grid-cols-2 custom-gap-6 custom-h-580">
-            <!-- Document Preview - 毛玻璃效果 -->
-            <div
-              class="bg-surface rounded-xl custom-flex custom-flex-col custom-overflow-hidden shadow-ambient"
-              :class="{ 'backdrop-blur-xl bg-surface/80': selectedDoc }"
-            >
-              <div class="custom-p-5 custom-flex custom-items-center custom-justify-between bg-surface">
-                <h3 class="font-headline font-bold text-sm text-primary custom-flex custom-items-center custom-gap-2">
-                  <span class="material-symbols-outlined text-brand">description</span>
-                  文档预览
-                </h3>
-                <div class="custom-flex custom-items-center custom-gap-1">
-                  <button class="custom-p-2 hover-bg-subtle rounded-xl custom-transition-colors">
-                    <span class="material-symbols-outlined text-lg">zoom_in</span>
-                  </button>
-                  <button class="custom-p-2 hover-bg-subtle rounded-xl custom-transition-colors">
-                    <span class="material-symbols-outlined text-lg">zoom_out</span>
-                  </button>
-                  <button class="custom-p-2 hover-bg-subtle rounded-xl custom-transition-colors">
-                    <span class="material-symbols-outlined text-lg">fullscreen</span>
-                  </button>
-                </div>
+            <div class="kb-chunks-list">
+              <!-- 加载状态 -->
+              <div v-if="loadingChunks" class="kb-chunks-state">
+                <span class="material-symbols-outlined kb-source-icon">refresh</span>
+                <p>加载分块数据中...</p>
               </div>
-              <div class="custom-flex-1 bg-surface custom-p-6 custom-overflow-y-auto">
-                <!-- 文档预览内容区 -->
-                <!-- 加载状态 -->
-                <div
-                  v-if="selectedDoc && previewLoading"
-                  class="custom-flex custom-flex-col custom-items-center custom-justify-center custom-h-full"
-                >
-                  <span class="material-symbols-outlined text-3xl text-brand custom-animate-spin custom-mb-3">refresh</span>
-                  <p class="font-body text-sm text-secondary">加载文档预览中...</p>
-                </div>
-                <!-- 错误状态 -->
-                <div
-                  v-else-if="selectedDoc && previewError"
-                  class="custom-flex custom-flex-col custom-items-center custom-justify-center custom-h-full"
-                >
-                  <span class="material-symbols-outlined text-4xl text-red-400 custom-mb-3">error_outline</span>
-                  <p class="font-headline font-medium text-primary">预览加载失败</p>
-                  <p class="font-body text-xs custom-mt-2 text-secondary">该文档可能已被删除或格式不支持预览</p>
-                  <button
-                    class="custom-mt-4 custom-px-4 custom-py-2 text-xs font-body bg-brand text-white rounded-full hover-opacity-90 custom-transition-opacity"
-                    @click="fetchDocumentPreview(selectedDoc)"
-                  >
-                    <span class="material-symbols-outlined text-sm custom-mr-1">refresh</span>
-                    重试
-                  </button>
-                </div>
-                <!-- PDF预览 -->
-                <div
-                  v-else-if="selectedDoc && selectedDoc.type === 'pdf' && previewBlobUrl"
-                  class="custom-h-full custom-flex custom-flex-col"
-                >
-                  <h2 class="text-sm font-bold text-center border-b border-outline-variant/30 custom-pb-3 custom-mb-3 text-primary">
-                    {{ selectedDoc.name }}
-                  </h2>
-                  <iframe
-                    ref="previewContainer"
-                    :src="previewBlobUrl"
-                    class="custom-w-full custom-flex-1 rounded-lg border-0"
-                    style="min-height: 400px;"
-                  ></iframe>
-                </div>
-                <!-- 文本预览 -->
-                <div
-                  v-else-if="selectedDoc && previewText"
-                  class="custom-h-full custom-flex custom-flex-col"
-                >
-                  <h2 class="text-sm font-bold text-center border-b border-outline-variant/30 custom-pb-3 custom-mb-3 text-primary">
-                    {{ selectedDoc.name }}
-                  </h2>
-                  <pre
-                    class="custom-flex-1 custom-overflow-y-auto text-xs leading-relaxed text-on-surface-variant bg-surface-container-low rounded-lg custom-p-4 whitespace-pre-wrap break-words font-body"
-                    style="max-height: 480px;"
-                  >{{ previewText }}</pre>
-                </div>
-                <!-- 未选择文档 -->
-                <div v-else class="custom-flex custom-items-center custom-justify-center custom-h-full">
-                  <div class="text-center custom-p-10 bg-surface rounded-xl">
-                    <span class="material-symbols-outlined text-5xl custom-mb-4 text-secondary">description</span>
-                    <p class="font-headline font-medium text-primary">请选择一个文档进行预览</p>
-                    <p class="font-body text-xs custom-mt-2 text-secondary">点击左侧文档列表中的文档</p>
-                  </div>
-                </div>
+              <!-- 空状态 -->
+              <div v-else-if="displayChunks.length === 0" class="kb-chunks-state">
+                <span class="material-symbols-outlined kb-source-icon">hub</span>
+                <p v-if="selectedDoc">该文档尚未进行分块处理</p>
+                <p v-else>点击中栏文档列表中的文档查看分块</p>
+                <button v-if="selectedDoc" class="kb-retry-btn" @click="triggerReprocess">
+                  <span class="material-symbols-outlined kb-retry-icon">refresh</span>
+                  进行分块处理
+                </button>
               </div>
-            </div>
-
-            <!-- Chunk Browsing -->
-            <div
-              class="bg-surface rounded-xl custom-flex custom-flex-col custom-overflow-hidden shadow-ambient"
-            >
-              <div class="custom-p-5 custom-flex custom-items-center custom-justify-between bg-surface">
-                <h3 class="font-headline font-bold text-sm text-primary custom-flex custom-items-center custom-gap-2">
-                  <span class="material-symbols-outlined text-processing">hub</span>
-                  向量分块浏览 (Chunks)
-                </h3>
-                <span
-                  class="font-body text-xs font-medium text-secondary bg-subtle custom-px-3 custom-py-1.5 rounded-xl"
-                >共 {{ displayChunks.length }} 个分块</span>
-              </div>
-              <div class="custom-flex-1 custom-overflow-y-auto custom-p-4 space-y-3">
-                <!-- 加载状态 -->
-                <div v-if="loadingChunks" class="custom-flex custom-flex-col custom-items-center custom-justify-center custom-p-8">
-                  <span class="material-symbols-outlined text-2xl text-brand custom-animate-spin custom-mb-2">refresh</span>
-                  <p class="font-body text-sm text-secondary">加载分块数据中...</p>
-                </div>
-                <!-- 空状态 -->
-                <div v-else-if="displayChunks.length === 0" class="custom-flex custom-flex-col custom-items-center custom-justify-center custom-p-8">
-                  <span class="material-symbols-outlined text-3xl text-secondary custom-mb-2">hub</span>
-                  <p class="font-headline font-medium text-primary">暂无分块数据</p>
-                  <p class="font-body text-xs custom-mt-2 text-secondary custom-mb-4">
-                    <template v-if="selectedDoc">
-                      该文档尚未进行分块处理
-                    </template>
-                    <template v-else>
-                      点击左侧文档列表中的文档查看分块
-                    </template>
-                  </p>
-                  <button
-                    v-if="selectedDoc"
-                    class="custom-px-4 custom-py-2 font-body text-xs bg-gradient-to-r from-brand to-brand text-white hover-opacity-90 custom-transition-opacity rounded-full"
-                    @click="triggerReprocess"
-                  >
-                    <span class="material-symbols-outlined text-sm custom-mr-1">refresh</span>
-                    进行分块处理
-                  </button>
-                </div>
-                <!-- Active Chunk -->
-                <div
-                  v-else
-                  v-for="(chunk, index) in displayChunks"
-                  :key="chunk.id"
-                  :class="[
-                    'custom-p-4 space-y-3 custom-relative custom-overflow-hidden custom-transition-all custom-duration-200 cursor-pointer rounded-xl',
-                    selectedChunkIndex === index
-                      ? 'bg-surface border-2 border-brand'
-                      : 'bg-surface hover-bg-subtle'
-                  ]"
-                  @click="selectChunk(index)"
-                >
-                  <div class="custom-flex custom-items-center custom-justify-between">
-                    <span class="font-body text-10px font-bold tracking-widest uppercase text-secondary">
-                      ID: {{ chunk.id }}
-                    </span>
-                    <span class="font-body text-10px font-medium custom-px-2 custom-py-0.5 rounded-xl bg-subtle text-secondary">
-                      分块 #{{ chunk.chunkIndex + 1 }}
-                      <template v-if="chunk.similarity != null">
-                        · 相似度: {{ chunk.similarity.toFixed(3) }}
-                      </template>
-                    </span>
-                  </div>
-                  <p class="font-body text-sm leading-relaxed text-secondary">
-                    {{ chunk.content }}
-                  </p>
-                  <div v-if="selectedChunkIndex === index && chunk.tags && chunk.tags.length > 0" class="custom-flex custom-flex-wrap custom-gap-2 custom-pt-1">
-                    <span
-                      v-for="tag in chunk.tags"
-                      :key="tag"
-                      class="font-body text-10px bg-brand text-on-brand custom-px-2 custom-py-0.5 rounded-xl"
-                    >
-                      {{ tag }}
-                    </span>
-                  </div>
-                  <!-- 选中指示器 -->
-                  <div v-if="selectedChunkIndex === index" class="custom-absolute custom-right-3 custom-top-3">
-                    <span class="material-symbols-outlined text-brand text-sm">check_circle</span>
-                  </div>
-                </div>
-              </div>
-              <!-- Chunk 操作栏 -->
-              <div class="custom-p-4 bg-surface custom-flex custom-justify-between custom-items-center">
-                <span class="font-body text-xs text-secondary">
-                  <template v-if="displayChunks.length > 0 && selectedChunkIndex < displayChunks.length">
-                    当前选中: {{ displayChunks[selectedChunkIndex].id }}
-                    <template v-if="displayChunks[selectedChunkIndex].similarity != null">
-                      (相似度: {{ displayChunks[selectedChunkIndex].similarity!.toFixed(3) }})
-                    </template>
+              <!-- 分块卡片 -->
+              <div
+                v-else
+                v-for="(chunk, index) in displayChunks"
+                :key="chunk.id"
+                class="kb-chunk-card"
+                :class="{ 'kb-chunk-selected': selectedChunkIndex === index }"
+                @click="selectChunk(index)"
+              >
+                <div class="kb-chunk-head">
+                  <span class="kb-chunk-id">分块 #{{ chunk.chunkIndex + 1 }}</span>
+                  <template v-if="chunk.similarity != null">
+                    <span class="kb-chunk-sim">相似度: {{ chunk.similarity.toFixed(3) }}</span>
                   </template>
-                  <template v-else>
-                    当前选中: 无
-                  </template>
-                </span>
-                <div class="custom-flex custom-gap-2">
-                  <button
-                    class="custom-px-4 custom-py-2 font-body text-xs bg-gradient-to-r from-brand to-brand text-white hover-opacity-90 custom-transition-opacity rounded-full"
-                    @click="copyChunkContent"
-                    :disabled="displayChunks.length === 0 || selectedChunkIndex >= displayChunks.length"
-                  >
-                    <span class="material-symbols-outlined text-sm custom-mr-1">content_copy</span>
-                    复制
-                  </button>
-                  <button
-                    class="custom-px-4 custom-py-2 font-body text-xs bg-processing/10 text-processing hover-bg-processing/20 custom-transition-colors rounded-full"
-                    @click="semanticSearch"
-                    :disabled="displayChunks.length === 0 || selectedChunkIndex >= displayChunks.length"
-                  >
-                    <span class="material-symbols-outlined text-sm custom-mr-1">psychology</span>
-                    语义搜索
-                  </button>
+                </div>
+                <p class="kb-chunk-content">{{ chunk.content }}</p>
+                <div v-if="selectedChunkIndex === index && chunk.tags && chunk.tags.length > 0" class="kb-chunk-tags">
+                  <span v-for="tag in chunk.tags" :key="tag" class="kb-chunk-tag">{{ tag }}</span>
                 </div>
               </div>
             </div>
-          </section>
-        </div>
-      </div>
-
-      <!-- 禁忌规则标签页 -->
-      <ContraindicationRules v-if="activeTab === 'contraindications'" />
-
-      <!-- 词条审核标签页 -->
-      <TermReview v-if="activeTab === 'termReview'" />
+            <!-- 分块操作栏 -->
+            <div class="kb-chunks-footer">
+              <span class="kb-chunk-selected-info">
+                <template v-if="canOperateChunk">
+                  当前选中: {{ displayChunks[selectedChunkIndex].id }}
+                  <template v-if="displayChunks[selectedChunkIndex].similarity != null">
+                    (相似度: {{ displayChunks[selectedChunkIndex].similarity!.toFixed(3) }})
+                  </template>
+                </template>
+                <template v-else>当前选中: 无</template>
+              </span>
+              <div class="kb-footer-actions">
+                <button class="kb-action-btn kb-action-primary" :disabled="!canOperateChunk" @click="copyChunkContent">
+                  <span class="material-symbols-outlined">content_copy</span>
+                  复制
+                </button>
+                <button class="kb-action-btn kb-action-secondary" :disabled="!canOperateChunk" @click="semanticSearch">
+                  <span class="material-symbols-outlined">psychology</span>
+                  语义搜索
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
     </div>
+
+    <!-- 禁忌规则标签页 -->
+    <ContraindicationRules v-if="activeTab === 'contraindications'" />
+
+    <!-- 词条审核标签页 -->
+    <TermReview v-if="activeTab === 'termReview'" />
   </div>
 </template>
 
@@ -508,6 +359,9 @@ const loadingChunks = ref(false)
 const rawDocuments = ref<ApiDocument[]>([]) // 原始API文档数据
 const documentChunks = ref<UiChunk[]>([]) // 文档分块数据
 const displayChunks = ref<DisplayChunk[]>([]) // 用于显示的分块数据（转换后）
+
+// 预览缩放比例（视觉占位，缩放按钮暂不改变 iframe 内容）
+const zoomPercent = ref(100)
 
 // 预览相关状态
 const previewLoading = ref(false)      // 预览加载中
@@ -609,7 +463,7 @@ const extractTagsFromContent = (content: string): string[] => {
 const filteredDocuments = computed(() => {
   let result = documents.value
 
-  // 分类过滤
+  // 分类过滤（空值表示全部文档）
   if (selectedCategory.value) {
     const categoryName = selectedCategory.value.split(' ')[0]
     result = result.filter(
@@ -624,6 +478,11 @@ const filteredDocuments = computed(() => {
   }
 
   return result
+})
+
+// 分块操作可用性（有分块且选中项有效）
+const canOperateChunk = computed(() => {
+  return displayChunks.value.length > 0 && selectedChunkIndex.value < displayChunks.value.length
 })
 
 // 方法
@@ -642,6 +501,46 @@ const selectDocument = async (doc: UiDocument) => {
 
   // 获取预览内容
   await fetchDocumentPreview(doc)
+}
+
+// 返回列表：清空选中，预览区回到未选择状态
+const backToList = () => {
+  selectedDoc.value = null
+  selectedChunkIndex.value = 0
+  displayChunks.value = []
+  documentChunks.value = []
+  if (previewBlobUrl.value) {
+    URL.revokeObjectURL(previewBlobUrl.value)
+    previewBlobUrl.value = ''
+  }
+  previewText.value = ''
+  previewError.value = false
+}
+
+// 缩放（视觉占位）
+const zoomIn = () => {
+  zoomPercent.value = Math.min(200, zoomPercent.value + 10)
+}
+const zoomOut = () => {
+  zoomPercent.value = Math.max(50, zoomPercent.value - 10)
+}
+
+// 下载当前文档（复用预览 Blob 接口）
+const downloadDocument = async () => {
+  if (!selectedDoc.value) return
+  const doc = selectedDoc.value
+  const blob = await documentService.getPreviewBlob(doc.id)
+  if (!blob || blob.size === 0) {
+    ElMessage.error('预览文件不可用，无法下载')
+    return
+  }
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = doc.name
+  anchor.click()
+  URL.revokeObjectURL(url)
+  ElMessage.success('已开始下载')
 }
 
 // 获取文档分块数据
@@ -708,7 +607,7 @@ const fetchDocumentPreview = async (doc: UiDocument) => {
 
 // 复制分块内容
 const copyChunkContent = () => {
-  if (displayChunks.value.length === 0 || selectedChunkIndex.value >= displayChunks.value.length) {
+  if (!canOperateChunk.value) {
     return
   }
 
@@ -732,7 +631,7 @@ const copyChunkContent = () => {
 
 // 语义搜索
 const semanticSearch = () => {
-  if (displayChunks.value.length === 0 || selectedChunkIndex.value >= displayChunks.value.length) {
+  if (!canOperateChunk.value) {
     return
   }
 
@@ -961,11 +860,6 @@ const updateCategoriesFromDocuments = () => {
       { name: '影像诊断 (Imaging)', count: 0 }
     ]
   }
-
-  // 如果当前没有选中分类，选中第一个分类
-  if (!selectedCategory.value && categories.value.length > 0) {
-    selectedCategory.value = categories.value[0].name
-  }
 }
 
 // 组件挂载时获取数据
@@ -985,7 +879,806 @@ onUnmounted(() => {
 /* 导入 Google Fonts: Manrope 和 Inter（@import 必须在最前面） */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
-/* Material Symbols Outlined 字体设置 */
+/* ===== 页面整体（顶部 + 底部两行；内容自适应，不足一屏时占满，超出时由外层滚动） ===== */
+.kb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: max(calc(100vh - 11rem), 520px); /* 顶栏 4rem + 底部 3rem + 内容区上下内边距 4rem */
+}
+
+/* ===== 顶部行：上传 + 分类 ===== */
+.kb-top-row {
+  display: flex;
+  gap: 1.25rem;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+/* 上传区：横向虚线框 */
+.kb-upload {
+  flex: 0 0 300px;
+  height: 8.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: 2px dashed #c2c6d4;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kb-upload:hover,
+.kb-upload-active {
+  border-color: #00478d;
+  background: #e5eeff;
+}
+
+.kb-upload-icon {
+  font-size: 2.5rem;
+  color: #00478d;
+  flex-shrink: 0;
+}
+
+.kb-upload-text {
+  text-align: left;
+}
+
+.kb-upload-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0b1c30;
+  margin: 0;
+}
+
+.kb-upload-hint {
+  font-size: 0.8125rem;
+  color: #424752;
+  margin: 0.25rem 0 0;
+}
+
+/* 分类卡片 */
+.kb-categories {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid #c2c6d4;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.kb-section-title {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #4a5f83;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.kb-category-nav {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* 分类项（chip 样式） */
+.kb-category-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid #c2c6d4;
+  background: #f8f9fa;
+  font-size: 0.8125rem;
+  color: #0b1c30;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.kb-category-item:hover {
+  background: #f1f5f9;
+  border-color: #727783;
+}
+
+.kb-category-active {
+  background: rgba(0, 71, 141, 0.10);
+  border-color: #00478d;
+  color: #00478d;
+  font-weight: 600;
+}
+
+.kb-cat-count {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #e7e8e9;
+  color: #424752;
+}
+
+.kb-category-active .kb-cat-count {
+  background: rgba(0, 71, 141, 0.15);
+  color: #00478d;
+}
+
+/* ===== 底部行：文档列表 + 内容区（上下垂直堆叠，内容自然展开） ===== */
+.kb-bottom-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* 文档列表区：固定高度，表格内部滚动 */
+.kb-middle {
+  flex: none;
+  height: 18rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #c2c6d4;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.kb-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #c2c6d4;
+  flex-shrink: 0;
+}
+
+.kb-header-left,
+.kb-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kb-panel-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0b1c30;
+  margin: 0;
+}
+
+.kb-icon-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #424752;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kb-icon-btn:hover {
+  background: #e7e8e9;
+  color: #00478d;
+}
+
+.kb-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kb-icon-btn-bordered {
+  border: 1px solid #c2c6d4;
+}
+
+.kb-search {
+  position: relative;
+}
+
+.kb-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  color: #727783;
+  pointer-events: none;
+}
+
+.kb-search-input {
+  width: 16rem;
+  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #c2c6d4;
+  background: #f8f9fa;
+  font-size: 0.875rem;
+  color: #0b1c30;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.kb-search-input:focus {
+  border-color: #00478d;
+  box-shadow: 0 0 0 1px #00478d;
+}
+
+/* 表格 */
+.kb-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.kb-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.kb-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #424752;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #f3f4f5;
+  border-bottom: 1px solid #c2c6d4;
+}
+
+.kb-th-category,
+.kb-th-status {
+  width: 7rem;
+}
+
+.kb-th-action {
+  width: 4rem;
+}
+
+.kb-table td {
+  padding: 1rem 1.25rem;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.kb-row {
+  cursor: pointer;
+  border-left: 4px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.kb-row:hover {
+  background: #f1f5f9;
+}
+
+.kb-row-selected {
+  background: rgba(0, 71, 141, 0.06);
+  border-left-color: #00478d;
+}
+
+.kb-doc-name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.kb-doc-icon {
+  font-size: 1.375rem;
+  color: #ba1a1a;
+  flex-shrink: 0;
+}
+
+.kb-doc-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.kb-doc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0b1c30;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kb-doc-meta {
+  font-size: 0.75rem;
+  color: #424752;
+}
+
+.kb-cat-pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background: #e7e8e9;
+  color: #424752;
+}
+
+.kb-more-btn {
+  border: none;
+  background: transparent;
+  color: #424752;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
+}
+
+.kb-more-btn:hover {
+  color: #00478d;
+  background: #f1f5f9;
+}
+
+/* 状态徽标 */
+.kb-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.kb-status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+}
+
+.kb-status-completed {
+  background: rgba(46, 125, 50, 0.12);
+  color: #2e7d32;
+}
+
+.kb-status-completed .kb-status-dot {
+  background: #2e7d32;
+}
+
+.kb-status-processing {
+  background: rgba(237, 108, 2, 0.12);
+  color: #ed6c02;
+}
+
+.kb-status-processing .kb-status-dot {
+  background: #ed6c02;
+  animation: kb-pulse 1.5s ease-in-out infinite;
+}
+
+.kb-status-pending {
+  background: #e7e8e9;
+  color: #424752;
+}
+
+.kb-status-pending .kb-status-dot {
+  background: #727783;
+}
+
+@keyframes kb-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* 表格空态 */
+.kb-empty-cell {
+  padding: 3rem 1.25rem !important;
+}
+
+.kb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  text-align: center;
+  color: #424752;
+}
+
+.kb-empty-icon {
+  font-size: 2rem;
+  color: #727783;
+  margin-bottom: 0.25rem;
+}
+
+.kb-empty-hint {
+  font-size: 0.75rem;
+  color: #727783;
+  margin: 0;
+}
+
+/* ===== 内容区：预览 + 分块（随内容自然展开，完整可见） ===== */
+.kb-right-panel {
+  flex: none;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.kb-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid #c2c6d4;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.kb-preview-info {
+  min-width: 0;
+}
+
+.kb-preview-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0b1c30;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kb-preview-meta {
+  font-size: 0.75rem;
+  color: #424752;
+  margin: 0.25rem 0 0;
+}
+
+.kb-preview-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* 子面板（源视图 / 分块） */
+.kb-source,
+.kb-chunks {
+  background: #ffffff;
+  border: 1px solid #c2c6d4;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.kb-source {
+  height: 14rem;
+  flex-shrink: 0;
+}
+
+.kb-chunks {
+  flex: none;
+}
+
+.kb-sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #f3f4f5;
+  border-bottom: 1px solid #c2c6d4;
+  font-size: 0.8125rem;
+  color: #424752;
+  flex-shrink: 0;
+}
+
+.kb-sub-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.kb-mini-btn {
+  border: none;
+  background: transparent;
+  color: #424752;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.kb-mini-btn:hover {
+  color: #00478d;
+}
+
+.kb-mini-btn .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.kb-zoom-label {
+  font-size: 0.75rem;
+  color: #424752;
+}
+
+.kb-chunks-total {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid #c2c6d4;
+  border-radius: 0.25rem;
+  color: #424752;
+}
+
+/* 源视图内容 */
+.kb-source-body {
+  flex: 1;
+  padding: 0.75rem;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+
+.kb-source-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  text-align: center;
+  color: #424752;
+}
+
+.kb-source-icon {
+  font-size: 1.75rem;
+  color: #727783;
+  margin-bottom: 0.25rem;
+}
+
+.kb-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  border: none;
+  background: #00478d;
+  color: #ffffff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.kb-retry-btn:hover {
+  background: #00386f;
+}
+
+.kb-retry-icon {
+  font-size: 0.875rem;
+}
+
+.kb-source-frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.kb-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0.25rem;
+  background: #ffffff;
+}
+
+.kb-pre {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: #424752;
+  background: #f3f4f5;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: Inter, sans-serif;
+  margin: 0;
+}
+
+/* 分块列表 */
+.kb-chunks-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 26rem; /* 分块较多时列表内部滚动，避免把页面撑得过长 */
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.kb-chunks-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 1.5rem 0;
+  text-align: center;
+  color: #424752;
+}
+
+.kb-chunk-card {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #c2c6d4;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kb-chunk-card:hover {
+  background: #f1f5f9;
+}
+
+.kb-chunk-selected {
+  border-color: #00478d;
+  background: rgba(0, 71, 141, 0.06);
+}
+
+.kb-chunk-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.kb-chunk-id {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #00478d;
+  text-transform: uppercase;
+}
+
+.kb-chunk-sim {
+  font-size: 0.6875rem;
+  color: #424752;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  background: #e7e8e9;
+}
+
+.kb-chunk-content {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #424752;
+  margin: 0;
+}
+
+.kb-chunk-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.kb-chunk-tag {
+  font-size: 0.6875rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background: #d6e3ff;
+  color: #00478d;
+}
+
+/* 分块操作栏 */
+.kb-chunks-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-top: 1px solid #c2c6d4;
+  flex-shrink: 0;
+}
+
+.kb-chunk-selected-info {
+  font-size: 0.75rem;
+  color: #727783;
+}
+
+.kb-footer-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.kb-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kb-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.kb-action-btn .material-symbols-outlined {
+  font-size: 0.875rem;
+}
+
+.kb-action-primary {
+  border: none;
+  background: #00478d;
+  color: #ffffff;
+}
+
+.kb-action-primary:hover:not(:disabled) {
+  background: #00386f;
+}
+
+.kb-action-secondary {
+  border: none;
+  background: rgba(237, 108, 2, 0.12);
+  color: #ed6c02;
+}
+
+.kb-action-secondary:hover:not(:disabled) {
+  background: rgba(237, 108, 2, 0.20);
+}
+
+/* ===== 响应式：窄屏时顶部行（上传+分类）上下堆叠 ===== */
+@media (max-width: 1100px) {
+  .kb-top-row {
+    flex-direction: column;
+  }
+  .kb-upload {
+    flex: none;
+    height: 6.5rem;
+  }
+  .kb-middle {
+    height: 16rem;
+  }
+  .kb-chunks-list {
+    max-height: 20rem;
+  }
+}
+
+/* Material Symbols 字体设置 */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
