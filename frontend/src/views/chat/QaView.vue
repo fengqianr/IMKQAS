@@ -110,7 +110,7 @@
           <p class="qa-chat-header-subtitle">AI 助手已就绪，输入问题开始咨询</p>
         </div>
         <!-- 聊天滑动区域 -->
-        <div class="qa-chat-scroll qa-no-scrollbar qa-scroll-smooth">
+        <div class="qa-chat-scroll qa-no-scrollbar">
           <!-- 医疗安全提示 -->
           <div class="custom-mx-6 custom-mt-4">
             <div class="qa-safety-tip">
@@ -827,7 +827,8 @@ const loadConversations = async () => {
     sessions.value = []
   } finally {
     loadingSessions.value = false
-  }
+    nextTick(() => scrollToBottom())
+  } 
 }
 
 // 从 sourceReferences JSON 构建参考文献 HTML
@@ -934,6 +935,7 @@ const loadMessages = async (sessionId: string) => {
     messages.value = []
   } finally {
     loadingMessages.value = false
+    nextTick(() => scrollToBottom())
   }
 }
 
@@ -1126,6 +1128,8 @@ const sendMessage = async () => {
     content: ''
   }
   messages.value.push(aiMessage)
+  // 用户消息与AI占位已入列表：立即滚动到最新位置，让用户看到自己的问题与AI思考状态
+  nextTick(() => scrollToBottom())
   let streamingContent = ''
   let pendingSources: any[] = []
   let pendingSuggestion: any = null
@@ -1183,6 +1187,7 @@ const sendMessage = async () => {
           streamingContent += chunk.content
           const msg = messages.value.find(m => m.id === aiMsgId)
           if (msg) msg.content = streamingContent
+         
         } else if (chunk.type === 'sources' && chunk.sources) {
           pendingSources = chunk.sources
         } else if (chunk.type === 'retrievalPath' && chunk.retrievalPath) {
@@ -1697,10 +1702,10 @@ const initManualForm = async (sessionId: string, questionnaireId: string) => {
   }
 }
 
-// 滚动到底部
+// 滚动到底部（瞬时定位：CSS 的 scroll-behavior:smooth 会在流式高频滚动时不断打断动画导致停在半路，故这里显式 auto）
 const scrollToBottom = () => {
   const el = document.querySelector('.qa-chat-scroll')
-  if (el) el.scrollTop = el.scrollHeight
+  if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'auto' })
 }
 
 // 组件挂载时加载会话列表 + 注册断连通知
@@ -1733,10 +1738,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ===== 平滑滚动 ===== */
-.qa-scroll-smooth {
-  scroll-behavior: smooth;
-}
+
 
 /* ===== Material Symbols 图标 ===== */
 .material-symbols-outlined {
