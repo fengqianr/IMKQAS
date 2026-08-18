@@ -8,6 +8,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.ts,.tsx --ignore-path .gitignore",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
@@ -28,6 +30,7 @@
     "@vue/tsconfig": "^0.5.0",
     "autoprefixer": "^10.5.0",
     "eslint": "^8.56.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^9.0.0",
     "postcss": "^8.5.10",
     "prettier": "^3.0.0",
