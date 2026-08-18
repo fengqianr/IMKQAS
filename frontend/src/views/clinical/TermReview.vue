@@ -662,6 +662,10 @@ onUnmounted(() => {
 
 .term-table thead tr {
   border-bottom: 1px solid rgba(194, 198, 212, 0.1);
+  
+}
+.term-table tr{
+text-align:center
 }
 
 .term-table th {
@@ -742,7 +746,7 @@ onUnmounted(() => {
   display: block;
   font-size: 0.75rem;
   color: #424752;
-  max-width: 188px;
+  max-width: 10rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

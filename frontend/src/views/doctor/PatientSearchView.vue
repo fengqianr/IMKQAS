@@ -71,7 +71,7 @@
         </h3>
       </div>
 
-      <div class="table-scroll" v-if="patients.length">
+      <div v-if="patients.length" class="table-scroll">
         <table class="result-table">
           <thead>
             <tr class="table-head-row">
@@ -80,7 +80,7 @@
               <th>联系方式</th>
               <th>证件号</th>
               <th>状态</th>
-              <th class="text-right">操作</th>
+              <th>操作</th>
             </tr>
           </thead>
           <tbody class="table-body">
@@ -106,11 +106,11 @@
               <td class="code-text">{{ maskIdNumber(identifierOf(p)?.value) }}</td>
               <td>
                 <span class="status-pill">
-                  <span class="status-dot"></span>
+                  <span class="status-dot" />
                   已建档
                 </span>
               </td>
-              <td class="text-right">
+              <td>
                 <span class="detail-link">查看档案</span>
               </td>
             </tr>
@@ -542,7 +542,7 @@ onMounted(async () => {
 .result-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+  text-align: center;
 }
 
 /* 粘性表头 */
@@ -559,6 +559,7 @@ onMounted(async () => {
   text-transform: uppercase;
   color: var(--theme-on-surface-variant);
   white-space: nowrap;
+  
 }
 
 .table-body {
@@ -597,7 +598,7 @@ onMounted(async () => {
   height: 1.5rem;
   border-radius: 0.25rem;
   background: var(--theme-primary-container);
-  color: var(--theme-on-primary-container);
+  color: var(--theme-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;

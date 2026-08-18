@@ -100,6 +100,38 @@
             </div>
             <p v-else class="empty-inline-text">暂无过敏史</p>
           </section>
+
+          <section class="info-card">
+            <div class="card-head">
+              <h3 class="card-subtitle">
+                <span class="material-symbols-outlined">surgical</span>
+                手术史
+              </h3>
+            </div>
+            <ul v-if="form.surgicalHistory.length" class="item-list">
+              <li v-for="(d, i) in form.surgicalHistory" :key="i" class="item-row">
+                <span class="item-dot chronic" />
+                <span class="item-name">{{ d }}</span>
+              </li>
+            </ul>
+            <p v-else class="empty-inline-text">暂无手术史</p>
+          </section>
+
+          <section class="info-card">
+            <div class="card-head">
+              <h3 class="card-subtitle">
+                <span class="material-symbols-outlined">family_restroom</span>
+                家庭病史
+              </h3>
+            </div>
+            <ul v-if="form.familyHistory.length" class="item-list">
+              <li v-for="(d, i) in form.familyHistory" :key="i" class="item-row">
+                <span class="item-dot chronic" />
+                <span class="item-name">{{ d }}</span>
+              </li>
+            </ul>
+            <p v-else class="empty-inline-text">暂无家庭病史</p>
+          </section>
         </div>
 
         <!-- 健康提示 -->

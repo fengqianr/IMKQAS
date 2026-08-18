@@ -2,7 +2,6 @@
   <div class="contraindication-page">
     <!-- 主内容区域（导航由外部布局框架提供） -->
     <div class="contraindication-content">
-
       <!-- 统计概览 + 操作按钮 -->
       <section class="stats-row">
         <div class="stat-card">
@@ -49,7 +48,7 @@
             placeholder="输入通用名或商品名"
             type="text"
             @input="debouncedSearch"
-          />
+          >
         </div>
         <div class="filter-field filter-field-48">
           <label class="filter-label">适用人群</label>
@@ -196,8 +195,8 @@
     </div>
 
     <!-- 背景装饰 -->
-    <div class="bg-decor bg-decor-tr"></div>
-    <div class="bg-decor bg-decor-bl"></div>
+    <div class="bg-decor bg-decor-tr" />
+    <div class="bg-decor bg-decor-bl" />
 
     <!-- 新增/编辑对话框 -->
     <Teleport to="body">
@@ -207,15 +206,15 @@
           <div class="modal-body">
             <div class="form-group">
               <label class="form-label">药物名称 <span class="required">*</span></label>
-              <input v-model="form.drugName" class="form-input" placeholder="如：布洛芬" />
+              <input v-model="form.drugName" class="form-input" placeholder="如：布洛芬">
             </div>
             <div class="form-group">
               <label class="form-label">ATC编码</label>
-              <input v-model="form.atcCode" class="form-input" placeholder="如：M01AE01" />
+              <input v-model="form.atcCode" class="form-input" placeholder="如：M01AE01">
             </div>
             <div class="form-group">
               <label class="form-label">人群名称 <span class="required">*</span></label>
-              <input v-model="form.populationName" class="form-input" placeholder="如：孕妇" />
+              <input v-model="form.populationName" class="form-input" placeholder="如：孕妇">
             </div>
             <div class="form-group">
               <label class="form-label">禁忌类型 <span class="required">*</span></label>
@@ -240,11 +239,11 @@
             </div>
             <div class="form-group">
               <label class="form-label">风险描述</label>
-              <textarea v-model="form.description" class="form-textarea" rows="3" placeholder="规则描述..."></textarea>
+              <textarea v-model="form.description" class="form-textarea" rows="3" placeholder="规则描述..." />
             </div>
             <div class="form-group">
               <label class="form-label">来源</label>
-              <input v-model="form.source" class="form-input" placeholder="如：NMPA药品说明书 2023版" />
+              <input v-model="form.source" class="form-input" placeholder="如：NMPA药品说明书 2023版">
             </div>
           </div>
           <div class="modal-footer">
@@ -266,7 +265,7 @@
             class="form-textarea"
             rows="10"
             placeholder="布洛芬,M01AE01,孕妇,ABSOLUTE,GUIDELINE,孕妇禁用布洛芬&#10;四环素,J01AA07,儿童,ABSOLUTE,DRUG_LABEL,儿童禁用四环素类抗生素"
-          ></textarea>
+          />
           <div v-if="importResult" class="import-result" :class="importResult.skipped > 0 ? 'import-result-warn' : 'import-result-success'">
             <span class="material-symbols-outlined text-lg">{{ importResult.skipped > 0 ? 'warning' : 'check_circle' }}</span>
             导入完成：成功 <b>{{ importResult.success }}</b> 条，跳过 <b>{{ importResult.skipped }}</b> 条
@@ -278,8 +277,7 @@
         </div>
       </div>
     </Teleport>
-
-    </div><!-- /contraindication-content -->
+  </div><!-- /contraindication-content -->
 </template>
 
 <script setup lang="ts">
