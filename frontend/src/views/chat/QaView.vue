@@ -27,7 +27,7 @@
             <span class="material-symbols-outlined qa-avatar-icon">person</span>
           </div>
           <div v-else class="qa-header-avatar-initial">
-            {{ (authStore.user?.username || '用户').charAt(0) }}
+            {{ initialOf(authStore.user?.username, '用') }}
           </div>
           <template #dropdown>
             <el-dropdown-menu>
@@ -483,12 +483,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { ROLE_MENU_MAP, ROLE_TO_LAYOUT, isActive, type MenuItem } from '@/config/menus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
 import { interviewService } from '@/api/services/interview.service'
 import { useAuthStore } from '@/stores/auth.store'
+import { useAuthActions } from '@/composables/useAuthActions'
 import TermReviewPanel from '@/components/TermReviewPanel.vue'
 import {
   listGuestSessions,
@@ -500,6 +501,8 @@ import {
   GUEST_SESSION_LIMIT
 } from '@/utils/guest-session'
 import { syncGuestSessionsToAccount } from '@/utils/guest-sync'
+import { apiErrorMessage } from '@/utils/error'
+import { initialOf } from '@/utils/format'
 import type { Conversation, RetrievalStep } from '@/api/types/qa'
 import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview'
 
@@ -687,25 +690,12 @@ const handleUserCommand = async (command: string) => {
   } else if (command === 'profile') {
     router.push('/user')
   } else if (command === 'logout') {
-    await handleLogout()
+    await logoutWithConfirm()
   }
 }
 
-// 退出登录：二次确认后清空本地令牌并回登录页（与 MainLayout 逐字复用）
-const handleLogout = async () => {
-  try {
-    await ElMessageBox.confirm('确定要退出登录吗？', '退出确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    await authStore.logout()
-    ElMessage.success('已退出登录')
-    router.push('/login')
-  } catch (error) {
-    // 用户取消退出
-  }
-}
+// 退出登录：统一走 useAuthActions（确认 → logout → 提示 → 回登录页）
+const { logoutWithConfirm } = useAuthActions()
 
 // IME 组合输入状态（防止中文输入法 Enter 确认时重复触发 sendMessage）
 const isComposing = ref(false)
@@ -1214,7 +1204,7 @@ const sendMessage = async () => {
       (error) => {
         const msg = messages.value.find(m => m.id === aiMsgId)
         if (msg && !streamingContent) {
-          msg.content = `抱歉，处理您的请求时出现错误：${error.message}。请稍后重试。`
+          msg.content = `抱歉，处理您的请求时出现错误：${apiErrorMessage(error)}。请稍后重试。`
         }
       },
       // onComplete
@@ -1269,7 +1259,7 @@ const sendMessage = async () => {
     console.error('发送消息失败:', error)
     const msg = messages.value.find(m => m.id === aiMsgId)
     if (msg && !streamingContent) {
-      msg.content = `抱歉，处理您的请求时出现错误：${(error as Error).message}。请稍后重试。`
+      msg.content = `抱歉，处理您的请求时出现错误：${apiErrorMessage(error)}。请稍后重试。`
     }
   }
 }
@@ -1395,7 +1385,7 @@ const startInterviewFlow = async (questionnaireId: string, _questionnaireTitle: 
       // onError
       (error) => {
         console.error('[DATA_COLLECTION] 启动访谈失败(onError):', error.message, error)
-        ElMessage.error('启动问卷访谈失败：' + error.message)
+        ElMessage.error('启动问卷访谈失败：' + apiErrorMessage(error))
         setInterviewState({ loading: false, active: false })
         stopHeartbeat()
       },
@@ -1517,7 +1507,7 @@ const submitInterviewAnswer = async (selectedCode: string, displayText: string) 
       // onError
       (error) => {
         console.error('提交答案失败:', error)
-        ElMessage.error('提交答案失败：' + error.message)
+        ElMessage.error('提交答案失败：' + apiErrorMessage(error))
         setInterviewState({ loading: false })
       },
       // onComplete
@@ -1639,7 +1629,7 @@ const submitAllManualFormAnswers = async (message: ChatMessage) => {
     nextTick(() => scrollToBottom())
   } catch (error: any) {
     console.error('批量提交失败:', error)
-    ElMessage.error(error.message || '提交失败，请重试')
+    ElMessage.error(apiErrorMessage(error, '提交失败，请重试'))
   } finally {
     manualFormSubmitting.value = { ...manualFormSubmitting.value, [message.id]: false }
   }

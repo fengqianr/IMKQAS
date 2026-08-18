@@ -289,6 +289,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { userService, type HealthProfile, type IdentityInfo } from '@/api/services/user.service'
+import { apiErrorMessage } from '@/utils/error'
+import { genderText, calcAge } from '@/api/types/fhir'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -314,36 +316,6 @@ const form = reactive<HealthProfile>({
   surgicalHistory: [],
   familyHistory: []
 })
-
-/**
- * 由出生日期计算年龄
- * @param birthDate 出生日期 yyyy-MM-dd
- * @returns 年龄；无出生日期或解析失败返回 null
- */
-const calcAge = (birthDate?: string): number | null => {
-  if (!birthDate) return null
-  const birth = new Date(birthDate)
-  if (isNaN(birth.getTime())) return null
-  const today = new Date()
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--
-  }
-  return age
-}
-
-/**
- * 性别枚举转中文显示
- * @param gender MALE/FEMALE/OTHER
- * @returns 中文性别；未知返回空串
- */
-const genderText = (gender?: string): string => {
-  if (gender === 'MALE') return '男'
-  if (gender === 'FEMALE') return '女'
-  if (gender === 'OTHER') return '其他'
-  return ''
-}
 
 /**
  * 跳转个人中心完善身份信息
@@ -442,7 +414,7 @@ const loadProfile = async () => {
       hasProfile.value = false
     }
   } catch (e: any) {
-    ElMessage.error('加载健康档案失败: ' + (e.message || '未知错误'))
+    ElMessage.error('加载健康档案失败: ' + apiErrorMessage(e, '未知错误'))
     hasProfile.value = false
   } finally {
     loading.value = false
@@ -476,7 +448,7 @@ const handleSave = async () => {
     ElMessage.success('健康档案保存成功')
     editMode.value = false
   } catch (e: any) {
-    ElMessage.error('保存失败: ' + (e.message || '未知错误'))
+    ElMessage.error('保存失败: ' + apiErrorMessage(e, '未知错误'))
   } finally {
     saving.value = false
   }
@@ -509,7 +481,7 @@ const handleDelete = async () => {
     })
   } catch (e: any) {
     if (e === 'cancel' || e === 'close') return
-    ElMessage.error('删除失败: ' + (e.message || '未知错误'))
+    ElMessage.error('删除失败: ' + apiErrorMessage(e, '未知错误'))
   }
 }
 

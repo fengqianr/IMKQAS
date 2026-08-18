@@ -309,6 +309,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { apiErrorMessage } from '@/utils/error'
+import { downloadBlob } from '@/utils/format'
 import { documentService } from '@/api/services/document.service'
 import { documentChunkService } from '@/api/services/document-chunk.service'
 import type { Document as ApiDocument } from '@/api/types/document'
@@ -534,12 +536,7 @@ const downloadDocument = async () => {
     ElMessage.error('预览文件不可用，无法下载')
     return
   }
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = doc.name
-  anchor.click()
-  URL.revokeObjectURL(url)
+  downloadBlob(blob, doc.name)
   ElMessage.success('已开始下载')
 }
 
@@ -558,7 +555,7 @@ const fetchDocumentChunks = async (documentId: string) => {
         ElMessage.info('该文档暂无分块数据')
       }
     } else {
-      ElMessage.error(response.message || '获取文档分块失败')
+      ElMessage.error(apiErrorMessage(response, '获取文档分块失败'))
     }
   } catch (error) {
     console.error('获取文档分块失败:', error)
@@ -711,7 +708,7 @@ const uploadFiles = async (files: FileList) => {
         // 刷新文档列表
         fetchDocuments()
       } else {
-        ElMessage.error(`上传失败: ${response.message}`)
+        ElMessage.error(`上传失败: ${apiErrorMessage(response)}`)
       }
     } catch (error) {
       console.error('上传文件失败:', error)
@@ -746,7 +743,7 @@ const handleDocAction = (command: string, doc: UiDocument) => {
             selectedDoc.value = null
           }
         } else {
-          ElMessage.error(`删除失败: ${response.message}`)
+          ElMessage.error(`删除失败: ${apiErrorMessage(response)}`)
         }
       }).catch(() => {
         // 用户取消删除
@@ -807,7 +804,7 @@ const handleDocAction = (command: string, doc: UiDocument) => {
             }
           }, 5000)  // 每5秒轮询一次
         } else {
-          ElMessage.error(`重新处理失败: ${response.message}`)
+          ElMessage.error(`重新处理失败: ${apiErrorMessage(response)}`)
         }
       }).catch(() => {
         // 用户取消
@@ -826,7 +823,7 @@ const fetchDocuments = async () => {
       // 更新分类数据
       updateCategoriesFromDocuments()
     } else {
-      ElMessage.error(response.message || '获取文档列表失败')
+      ElMessage.error(apiErrorMessage(response, '获取文档列表失败'))
     }
   } catch (error) {
     console.error('获取文档列表失败:', error)

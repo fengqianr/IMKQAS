@@ -216,6 +216,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { interviewService, type TrendPoint } from '@/api/services/interview.service'
 import type { AnalysisReport } from '@/api/types/interview'
+import { formatDate } from '@/utils/date'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -429,7 +430,6 @@ const showReport = async (r: HistoryRecord) => {
 
 // ===== 工具函数 =====
 const formatScore = (score?: number): string => (score == null ? '—' : String(Math.round(score)))
-const formatDate = (d?: string): string => (d ? d.slice(0, 10) : '—')
 const formatShortDate = (d: string): string => (d ? d.slice(5, 10) : '')
 
 const goQa = () => {

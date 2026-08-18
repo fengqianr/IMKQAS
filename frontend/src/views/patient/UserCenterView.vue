@@ -18,7 +18,7 @@
         <!-- 个人资料卡 -->
         <section class="profile-card">
           <div class="avatar-wrap">
-            <div class="profile-avatar">{{ displayName.charAt(0) || '用' }}</div>
+            <div class="profile-avatar">{{ initialOf(displayName, 'U') }}</div>
             <div class="avatar-dot">
               <span class="material-symbols-outlined">check</span>
             </div>
@@ -32,7 +32,7 @@
             </span>
             <span class="tag-id">
               <span class="material-symbols-outlined">shield</span>
-              {{ genderText }}<template v-if="ageText !== null"> · {{ ageText }}岁</template>
+              {{ genderText(form.gender) }}<template v-if="ageText !== null"> · {{ ageText }}岁</template>
             </span>
           </div>
           <button class="btn-photo" @click="enterEdit">
@@ -77,7 +77,7 @@
                 </div>
                 <div class="info-item">
                   <span class="info-label">性别</span>
-                  <span class="info-value">{{ genderText || '—' }}</span>
+                  <span class="info-value">{{ genderText(form.gender) || '—' }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">出生日期</span>
@@ -199,6 +199,10 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.store'
 import { userService } from '@/api/services/user.service'
+import { apiErrorMessage } from '@/utils/error'
+import { maskIdNumber } from '@/utils/mask'
+import { initialOf } from '@/utils/format'
+import { genderText, calcAge } from '@/api/types/fhir'
 
 const authStore = useAuthStore()
 const userId = computed(() => authStore.userId)
@@ -235,34 +239,8 @@ const displayName = computed(
   () => form.name || authStore.user?.name || authStore.user?.username || ''
 )
 
-/** 性别中文 */
-const genderText = computed(() => {
-  switch (form.gender) {
-    case 'MALE': return '男'
-    case 'FEMALE': return '女'
-    case 'OTHER': return '其他'
-    default: return ''
-  }
-})
-
-/** 由出生日期计算年龄（无出生日期时返回 null） */
-const ageText = computed(() => {
-  if (!form.birthDate) return null
-  const birth = new Date(form.birthDate)
-  if (Number.isNaN(birth.getTime())) return null
-  const today = new Date()
-  let age = today.getFullYear() - birth.getFullYear()
-  const m = today.getMonth() - birth.getMonth()
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
-  return age >= 0 ? age : null
-})
-
-/** 证件号脱敏：保留前 6 后 4 */
-const maskIdNumber = (id?: string) => {
-  if (!id) return ''
-  if (id.length < 11) return id
-  return id.slice(0, 6) + '*'.repeat(Math.max(id.length - 10, 4)) + id.slice(-4)
-}
+/** 由出生日期计算年龄（无出生日期或无效日期返回 null） */
+const ageText = computed(() => calcAge(form.birthDate))
 
 // 加载身份信息
 const loadIdentity = async () => {
@@ -283,7 +261,7 @@ const loadIdentity = async () => {
       form.phone = authStore.user?.phone || ''
     }
   } catch (e: any) {
-    ElMessage.error('加载身份信息失败: ' + (e.message || '未知错误'))
+    ElMessage.error('加载身份信息失败: ' + apiErrorMessage(e, '未知错误'))
   } finally {
     loading.value = false
   }
@@ -317,7 +295,7 @@ const handleSave = async () => {
     ElMessage.success('身份信息保存成功，已同步至医生端')
     editing.value = false
   } catch (e: any) {
-    ElMessage.error(e.response?.data?.message || e.message || '保存失败，请稍后重试')
+    ElMessage.error(apiErrorMessage(e, '保存失败，请稍后重试'))
   } finally {
     saving.value = false
   }

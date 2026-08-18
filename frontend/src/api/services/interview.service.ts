@@ -12,6 +12,7 @@ import type {
   InterviewSession,
   BatchSubmitResponse
 } from '../types/interview'
+import { apiErrorMessage } from '@/utils/error'
 
 /** 评分趋势点（/his/interview/trend 返回） */
 export interface TrendPoint {
@@ -31,7 +32,7 @@ class InterviewService {
       return response.data.data as InterviewSuggestion
     } catch (error: any) {
       console.error('获取问卷建议失败:', error)
-      throw new Error(error.response?.data?.message || '网络错误')
+      throw new Error(apiErrorMessage(error, '网络错误'))
     }
   }
 
@@ -245,7 +246,7 @@ class InterviewService {
       return response.data.data as BatchSubmitResponse
     } catch (error: any) {
       console.error('批量提交失败:', error)
-      throw new Error(error.response?.data?.message || '批量提交失败')
+      throw new Error(apiErrorMessage(error, '批量提交失败'))
     }
   }
 

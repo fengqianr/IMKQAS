@@ -2,6 +2,10 @@
 // 服务端通过 HAPI FHIR 序列化返回标准 R4 JSON，此处按实际返回结构声明
 // 说明：HIS 通过 FHIR Bundle 导入患者数据，因此各字段可能缺失，解析函数均做容错处理
 
+// 脱敏与日期工具统一复用 src/utils 实现，保持全站唯一规范（本文件仅透传导出）
+export { maskPhone, maskIdNumber } from '@/utils/mask'
+export { formatDate } from '@/utils/date'
+
 // ==================== 通用基础类型 ====================
 
 export interface FhirCoding {
@@ -73,10 +77,13 @@ export function patientInitial(p?: FhirPatient | null): string {
   return name === '未知患者' ? '?' : name.charAt(0)
 }
 
-/** 性别中文映射 */
+/** 性别中文映射（兼容大小写：FHIR 规范为小写，健康档案/用户中心数据为大写） */
+const GENDER_MAP: Record<string, string> = {
+  MALE: '男', FEMALE: '女', OTHER: '其他', UNKNOWN: '未知'
+}
 export function genderText(gender?: string): string {
-  const map: Record<string, string> = { male: '男', female: '女', other: '其他', unknown: '未知' }
-  return (gender && map[gender]) || gender || '未知'
+  if (!gender) return '未知'
+  return GENDER_MAP[gender.toUpperCase()] || gender
 }
 
 /** 由出生日期计算年龄（周岁），无效时返回 null */
@@ -106,31 +113,7 @@ export function patientAddress(p?: FhirPatient | null): string {
   return p?.address?.[0]?.text ?? ''
 }
 
-/** 手机号脱敏：13812345678 -> 138-****-5678 */
-export function maskPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length >= 11) {
-    return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`
-  }
-  if (digits.length > 7) {
-    return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`
-  }
-  return phone || '—'
-}
-
-/** 证件号脱敏：前4位 + 星号 + 后4位 */
-export function maskIdNumber(value?: string): string {
-  if (!value) return '—'
-  if (value.length <= 8) return `${value.slice(0, 2)}***${value.slice(-2)}`
-  const maskLen = value.length - 8
-  return `${value.slice(0, 4)}${'*'.repeat(maskLen)}${value.slice(-4)}`
-}
-
-/** 显示出生日期（取日期部分） */
-export function formatDate(dateStr?: string): string {
-  if (!dateStr) return '—'
-  return dateStr.slice(0, 10)
-}
+// 手机号脱敏 / 证件号脱敏 / 日期格式化已统一在 src/utils/mask.ts、src/utils/date.ts（顶部 re-export）
 
 // ==================== Condition 病情 ====================
 

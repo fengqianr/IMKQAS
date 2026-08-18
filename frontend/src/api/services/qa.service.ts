@@ -14,6 +14,7 @@ import type {
   RagStatsResponse
 } from '../types/qa'
 import { authService } from './auth.service'
+import { apiErrorMessage } from '@/utils/error'
 
 class QaService {
   private sseController: AbortController | null = null
@@ -33,7 +34,7 @@ class QaService {
     } catch (error: any) {
       console.error('问答请求失败:', error)
       console.error('错误详情:', error.response?.data)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -173,7 +174,7 @@ class QaService {
       }
     } catch (error: any) {
       console.error('科室导诊失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -194,7 +195,7 @@ class QaService {
       }
     } catch (error: any) {
       console.error('药物查询失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -210,7 +211,7 @@ class QaService {
       }
     } catch (error: any) {
       console.error('获取RAG统计失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 }

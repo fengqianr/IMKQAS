@@ -122,7 +122,7 @@
                   </div>
                   <div class="info-item">
                     <span class="info-label">性别</span>
-                    <span class="info-value">{{ healthGenderText(healthProfile.gender) }}</span>
+                    <span class="info-value">{{ genderText(healthProfile.gender) }}</span>
                   </div>
                   <div class="info-item">
                     <span class="info-label">年龄</span>
@@ -326,12 +326,6 @@ const recentVisitText = computed(() => {
 })
 
 // ==================== 健康档案辅助 ====================
-
-/** 健康档案性别显示：MALE/FEMALE/OTHER -> 男/女/其他 */
-const healthGenderText = (g?: string) => {
-  if (!g) return '—'
-  return ({ MALE: '男', FEMALE: '女', OTHER: '其他' } as Record<string, string>)[g] || g
-}
 
 /** 健康档案分组展示（过滤空值项） */
 const healthGroups = computed(() => {

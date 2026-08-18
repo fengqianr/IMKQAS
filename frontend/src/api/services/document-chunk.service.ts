@@ -9,6 +9,7 @@ import type {
   DocumentChunkListResponse,
   DocumentChunkDetailResponse
 } from '../types/document-chunk'
+import { apiErrorMessage } from '@/utils/error'
 
 class DocumentChunkService {
   // 获取文档分块列表（分页）
@@ -22,7 +23,7 @@ class DocumentChunkService {
       console.error('获取文档分块列表失败:', error)
       return {
         success: false,
-        message: error.response?.data?.message || '获取文档分块列表失败',
+        message: apiErrorMessage(error, '获取文档分块列表失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -44,7 +45,7 @@ class DocumentChunkService {
       console.error(`获取文档分块失败 (文档ID: ${documentId}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '获取文档分块失败',
+        message: apiErrorMessage(error, '获取文档分块失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -68,7 +69,7 @@ class DocumentChunkService {
       console.error('搜索文档分块失败:', error)
       return {
         success: false,
-        message: error.response?.data?.message || '搜索文档分块失败',
+        message: apiErrorMessage(error, '搜索文档分块失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -85,7 +86,7 @@ class DocumentChunkService {
       console.error(`获取文档分块详情失败 (ID: ${id}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '获取文档分块详情失败',
+        message: apiErrorMessage(error, '获取文档分块详情失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -102,7 +103,7 @@ class DocumentChunkService {
       console.error('创建文档分块失败:', error)
       return {
         success: false,
-        message: error.response?.data?.message || '创建文档分块失败',
+        message: apiErrorMessage(error, '创建文档分块失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -119,7 +120,7 @@ class DocumentChunkService {
       console.error(`更新文档分块失败 (ID: ${id}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '更新文档分块失败',
+        message: apiErrorMessage(error, '更新文档分块失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -136,7 +137,7 @@ class DocumentChunkService {
       console.error(`删除文档分块失败 (ID: ${id}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '删除文档分块失败',
+        message: apiErrorMessage(error, '删除文档分块失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()

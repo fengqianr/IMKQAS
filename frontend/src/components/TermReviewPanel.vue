@@ -145,6 +145,7 @@ import { ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminService } from '@/api/services/admin.service'
 import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
+import { apiErrorMessage } from '@/utils/error'
 
 // ========== Props & Emits ==========
 const props = defineProps<{ modelValue: boolean }>()
@@ -204,7 +205,7 @@ async function loadData() {
     total.value = res.total
     currentPage.value = res.page
   } catch (e: any) {
-    ElMessage.error('加载词条列表失败: ' + (e.message || '未知错误'))
+    ElMessage.error('加载词条列表失败: ' + apiErrorMessage(e, '未知错误'))
   }
 }
 
@@ -229,7 +230,7 @@ async function approveOne(row: UnmappedTermItem) {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('标注失败: ' + (e.message || '未知错误'))
+    ElMessage.error('标注失败: ' + apiErrorMessage(e, '未知错误'))
   }
 }
 
@@ -277,7 +278,7 @@ async function doBatchApprove() {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('批量标注失败: ' + (e.message || '未知错误'))
+    ElMessage.error('批量标注失败: ' + apiErrorMessage(e, '未知错误'))
   } finally {
     batchSubmitting.value = false
   }

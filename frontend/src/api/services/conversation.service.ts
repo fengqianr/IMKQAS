@@ -11,6 +11,7 @@ import type {
   TrashListResponse,
   RestoreResponse
 } from '../types/qa'
+import { apiErrorMessage } from '@/utils/error'
 
 class ConversationService {
   // 获取对话列表（传入 userId 时按用户过滤，避免不同用户的会话混在一起）
@@ -33,7 +34,7 @@ class ConversationService {
       }
     } catch (error: any) {
       console.error('获取对话列表失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -49,7 +50,7 @@ class ConversationService {
       }
     } catch (error: any) {
       console.error('创建对话失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -65,7 +66,7 @@ class ConversationService {
       }
     } catch (error: any) {
       console.error('获取对话失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -84,7 +85,7 @@ class ConversationService {
       }
     } catch (error: any) {
       console.error('更新对话标题失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -96,7 +97,7 @@ class ConversationService {
       return response.data.success
     } catch (error: any) {
       console.error('删除对话失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -110,7 +111,7 @@ class ConversationService {
       return response.data
     } catch (error: any) {
       console.error('导出对话失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -131,7 +132,7 @@ class ConversationService {
       }
     } catch (error: any) {
       console.error('获取消息列表失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -147,7 +148,7 @@ class ConversationService {
       }
     } catch (error: any) {
       console.error('创建消息失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -159,7 +160,7 @@ class ConversationService {
       return response.data.success
     } catch (error: any) {
       console.error('删除消息失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -177,7 +178,7 @@ class ConversationService {
       }
     } catch (error: any) {
       console.error('获取回收站列表失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -192,7 +193,7 @@ class ConversationService {
       return response.data.success
     } catch (error: any) {
       console.error('恢复对话失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
@@ -208,7 +209,7 @@ class ConversationService {
       return response.data.success
     } catch (error: any) {
       console.error('彻底删除对话失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 }

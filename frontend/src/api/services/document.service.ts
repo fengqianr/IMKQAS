@@ -11,6 +11,7 @@ import type {
   DocumentProcessApiResponse
 } from '../types/document'
 import { DocumentStatus } from '../types/document'
+import { apiErrorMessage } from '@/utils/error'
 
 class DocumentService {
   // 获取文档列表（分页）
@@ -24,7 +25,7 @@ class DocumentService {
       console.error('获取文档列表失败:', error)
       return {
         success: false,
-        message: error.response?.data?.message || '获取文档列表失败',
+        message: apiErrorMessage(error, '获取文档列表失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -49,7 +50,7 @@ class DocumentService {
       console.error('搜索文档失败:', error)
       return {
         success: false,
-        message: error.response?.data?.message || '搜索文档失败',
+        message: apiErrorMessage(error, '搜索文档失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -66,7 +67,7 @@ class DocumentService {
       console.error(`获取文档详情失败 (ID: ${id}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '获取文档详情失败',
+        message: apiErrorMessage(error, '获取文档详情失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -101,7 +102,7 @@ class DocumentService {
       console.error('上传文档失败:', error)
       return {
         success: false,
-        message: error.response?.data?.message || '上传文档失败',
+        message: apiErrorMessage(error, '上传文档失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -118,7 +119,7 @@ class DocumentService {
       console.error(`删除文档失败 (ID: ${id}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '删除文档失败',
+        message: apiErrorMessage(error, '删除文档失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -135,7 +136,7 @@ class DocumentService {
       console.error(`更新文档失败 (ID: ${id}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '更新文档失败',
+        message: apiErrorMessage(error, '更新文档失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()
@@ -237,7 +238,7 @@ class DocumentService {
       console.error(`重新处理文档失败 (ID: ${documentId}):`, error)
       return {
         success: false,
-        message: error.response?.data?.message || '重新处理文档失败',
+        message: apiErrorMessage(error, '重新处理文档失败'),
         data: undefined,
         code: error.response?.status?.toString() || '500',
         timestamp: Date.now()

@@ -55,7 +55,7 @@
             <tr v-for="user in pagedUsers" :key="user.id" class="result-row">
               <td>
                 <div class="user-cell">
-                  <span class="avatar" :class="avatarClass(user.role)">{{ avatarText(user.username) }}</span>
+                  <span class="avatar" :class="avatarClass(user.role)">{{ initialOf(user.username, 'U') }}</span>
                   <span class="user-name">{{ user.username }}</span>
                 </div>
               </td>
@@ -148,6 +148,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 import { adminUserService, type UserItem, type UserUpsertRequest } from '@/api/services/admin-user.service'
 import { ROLE_LABELS } from '@/config/menus'
+import { apiErrorMessage } from '@/utils/error'
+import { maskPhone } from '@/utils/mask'
+import { initialOf } from '@/utils/format'
 
 /** 角色下拉选项（对齐后端 Role 枚举） */
 const ROLE_OPTIONS = [
@@ -296,8 +299,7 @@ const save = async () => {
     dialogVisible.value = false
     await handleSearch()
   } catch (error) {
-    const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message
-    ElMessage.error(msg || '保存失败，请稍后重试')
+    ElMessage.error(apiErrorMessage(error, '保存失败，请稍后重试'))
   } finally {
     saving.value = false
   }
@@ -324,15 +326,6 @@ const handleDelete = async (user: UserItem) => {
 
 // ===== 展示辅助 =====
 const roleLabel = (role: string) => ROLE_LABELS[role] || role
-const avatarText = (name: string) => (name ? name.slice(0, 2).toUpperCase() : 'U')
-
-/** 手机号脱敏：138****8888 */
-const maskPhone = (phone?: string) => {
-  if (!phone) return '—'
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length >= 7) return `${digits.slice(0, 3)}****${digits.slice(-4)}`
-  return phone
-}
 
 const formatTime = (t?: string) => (t ? dayjs(t).format('YYYY-MM-DD HH:mm') : '—')
 

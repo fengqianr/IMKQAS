@@ -77,7 +77,7 @@
           </button>
           <el-dropdown trigger="click" @command="handleUserCommand">
             <div class="avatar">
-              {{ userName?.charAt(0) || 'U' }}
+              {{ initialOf(userName, 'U') }}
             </div>
             <template #dropdown>
               <el-dropdown-menu>
@@ -130,8 +130,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.store'
+import { useAuthActions } from '@/composables/useAuthActions'
+import { initialOf } from '@/utils/format'
 import { ROLE_LABELS, ROLE_TO_LAYOUT, isActive, type MenuItem } from '@/config/menus'
 
 /**
@@ -210,24 +212,12 @@ const handleUserCommand = async (command: string) => {
     sidebarOpen.value = false
     router.push('/user')
   } else if (command === 'logout') {
-    await handleLogout()
+    await logoutWithConfirm()
   }
 }
 
-const handleLogout = async () => {
-  try {
-    await ElMessageBox.confirm('确定要退出登录吗？', '退出确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    await authStore.logout()
-    ElMessage.success('已退出登录')
-    router.push('/login')
-  } catch (error) {
-    // 用户取消退出
-  }
-}
+// 退出登录：统一走 useAuthActions（确认 → logout → 提示 → 回登录页）
+const { logoutWithConfirm } = useAuthActions()
 </script>
 
 <style scoped>

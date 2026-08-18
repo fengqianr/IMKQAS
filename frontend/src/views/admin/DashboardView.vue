@@ -101,11 +101,11 @@
           <div class="metric-list">
             <div class="metric-row">
               <span class="metric-name">规则引擎</span>
-              <span class="metric-value">{{ fmtMs(ruleAvg) }}</span>
+              <span class="metric-value">{{ formatDuration(ruleAvg) }}</span>
             </div>
             <div class="metric-row">
               <span class="metric-name">大语言模型</span>
-              <span class="metric-value secondary">{{ fmtMs(llmAvg) }}</span>
+              <span class="metric-value secondary">{{ formatDuration(llmAvg) }}</span>
             </div>
           </div>
         </div>
@@ -163,6 +163,7 @@ import { dashboardService } from '@/api/services/dashboard.service'
 import { documentService } from '@/api/services/document.service'
 import { adminService } from '@/api/services/admin.service'
 import { ROLE_LABELS } from '@/config/menus'
+import { formatDuration } from '@/utils/format'
 
 const router = useRouter()
 
@@ -221,8 +222,6 @@ const alertWidth = computed(() => {
   if (alertThreshold.value <= 0) return 0
   return Math.min(100, Math.round((unmappedRate.value / alertThreshold.value) * 100))
 })
-
-const fmtMs = (ms: number) => (ms ? `${Math.round(ms)}ms` : '—')
 
 // ===== 图表 =====
 const roleChartEl = ref<HTMLDivElement>()
