@@ -58,9 +58,12 @@
   color: var(--theme-primary);
 }
 
-/* ===== 侧边栏 ===== */
+/* ===== 侧边栏 =====
+ * 注意：不能用 100vh。qa-header 为 fixed 脱离文档流，qa-main-content 已 flex:1
+ * 撑满全高并带 padding-top，此处应取父容器内容盒高度（height:100%），
+ * 否则侧边栏底边会超出视口，底部操作区被裁切。 */
 .qa-sidebar {
-  height: 100vh;
+  height: 100%;
   width: 18rem;
   background-color: var(--theme-surface-container-low);
   display: flex;

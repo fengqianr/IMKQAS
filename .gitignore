@@ -73,3 +73,6 @@ uploads/
 
 # Lucene 运行时索引目录 (前端本地检索生成，非源码)
 frontend/lucene-index/
+# 页面样式验证截图（本地检查用，不入库）
+*-check.png
+term-review-1366.png

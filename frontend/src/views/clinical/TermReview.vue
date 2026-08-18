@@ -3,221 +3,238 @@
     <!-- 主内容区域（导航由外部布局框架提供） -->
     <main class="term-review-main">
       <div class="term-review-main-inner">
-
-      <!-- 统计卡片：匹配原型 4 列布局 -->
-      <section class="custom-grid custom-grid-cols-4 custom-gap-6 custom-mb-8">
-        <!-- 卡片1：待审核数 -->
-        <div class="stat-card">
-          <div>
-            <p class="stat-card-label">待审核数</p>
-            <h3 class="stat-card-value">{{ stats.pendingCount }}</h3>
-            <p class="stat-card-sub">
-              <span class="material-symbols-outlined text-sm text-error">trending_up</span>
-              较昨日持平
-            </p>
-          </div>
-          <div class="stat-card-icon-wrap" style="background-color: rgba(0,71,141,0.1);">
-            <span class="material-symbols-outlined text-primary">pending_actions</span>
-          </div>
-        </div>
-        <!-- 卡片2：未映射率 -->
-        <div class="stat-card" :class="{ 'border-l-4 border-l-error': stats.alertTriggered }">
-          <div>
-            <p class="stat-card-label">未映射率</p>
-            <h3 class="stat-card-value-neutral" :class="{ 'text-error': stats.alertTriggered }">{{ Number(stats.unmappedRate).toFixed(1) }}%</h3>
-            <p class="stat-card-sub">
-              <span class="material-symbols-outlined text-sm text-primary">check_circle</span>
-              数据状态良好
-            </p>
-          </div>
-          <div class="stat-card-icon-wrap bg-secondary-fixed">
-            <span class="material-symbols-outlined" style="color:#021b3c;">analytics</span>
-          </div>
-        </div>
-        <!-- 卡片3：今日已审核 -->
-        <div class="stat-card">
-          <div>
-            <p class="stat-card-label">今日已审核</p>
-            <h3 class="stat-card-value-neutral">{{ stats.approvedTodayCount }}</h3>
-            <p class="stat-card-sub">
-              <span class="material-symbols-outlined text-sm text-on-surface-variant">notifications</span>
-              等待开始任务
-            </p>
-          </div>
-          <div class="stat-card-icon-wrap bg-surface-container-high">
-            <span class="material-symbols-outlined text-on-surface-variant">fact_check</span>
-          </div>
-        </div>
-        <!-- 卡片4：告警状态 -->
-        <div class="stat-card">
-          <div>
-            <p class="stat-card-label">告警状态</p>
-            <h3 class="stat-card-value">{{ stats.alertTriggered ? '告警中' : '正常' }}</h3>
-            <p class="stat-card-sub">
-              <span class="material-symbols-outlined text-sm text-primary">verified</span>
-              系统运行稳定
-            </p>
-          </div>
-          <div class="stat-card-icon-wrap" style="background-color: rgba(0,71,141,0.1);">
-            <span class="material-symbols-outlined text-primary">security</span>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- 主内容：词条审核表格 -->
-      <section class="table-card">
-        <!-- 表格头部栏 -->
-        <div class="table-header-bar">
-          <h2 class="table-header-title">待审核列表</h2>
-          <button class="btn-batch" :disabled="selectedRows.length === 0" @click="showBatchApprove">
-            <span class="material-symbols-outlined text-sm">done_all</span>
-            批量通过
-          </button>
-        </div>
-
-        <!-- 筛选栏 -->
-        <div class="filter-bar">
-          <div class="custom-flex custom-items-center custom-gap-4">
-            <div class="filter-search-wrap">
-              <span class="filter-search-icon material-symbols-outlined">search</span>
-              <input
-                v-model="searchKeyword"
-                class="filter-search-input"
-                placeholder="搜索词条、上下文或LLM猜测..."
-                type="text"
-                @input="debouncedFilter"
-              />
+        <!-- 统计卡片：匹配原型 4 列布局 -->
+        <section class="custom-grid custom-grid-cols-4 custom-gap-6 custom-mb-8">
+          <!-- 卡片1：待审核数 -->
+          <div class="stat-card">
+            <div>
+              <p class="stat-card-label">待审核数</p>
+              <h3 class="stat-card-value">{{ stats.pendingCount }}</h3>
+              <p class="stat-card-sub">
+                <span class="material-symbols-outlined text-sm text-error">trending_up</span>
+                较昨日持平
+              </p>
             </div>
-            <select
-              v-model="filterStatus"
-              class="filter-select"
-              @change="loadData"
-            >
-              <option value="PENDING">待审核</option>
-              <option value="APPROVED">已通过</option>
-              <option value="REJECTED">已拒绝</option>
-              <option value="ALL">全部</option>
-            </select>
+            <div class="stat-card-icon-wrap" style="background-color: rgba(0,71,141,0.1);">
+              <span class="material-symbols-outlined text-primary">pending_actions</span>
+            </div>
           </div>
-          <span class="text-xs text-on-surface-variant">共 {{ total }} 条记录</span>
-        </div>
+          <!-- 卡片2：未映射率 -->
+          <div class="stat-card" :class="{ 'border-l-4 border-l-error': stats.alertTriggered }">
+            <div>
+              <p class="stat-card-label">未映射率</p>
+              <h3 class="stat-card-value-neutral" :class="{ 'text-error': stats.alertTriggered }">{{ Number(stats.unmappedRate).toFixed(1) }}%</h3>
+              <p class="stat-card-sub">
+                <span class="material-symbols-outlined text-sm text-primary">check_circle</span>
+                数据状态良好
+              </p>
+            </div>
+            <div class="stat-card-icon-wrap bg-secondary-fixed">
+              <span class="material-symbols-outlined" style="color:#021b3c;">analytics</span>
+            </div>
+          </div>
+          <!-- 卡片3：今日已审核 -->
+          <div class="stat-card">
+            <div>
+              <p class="stat-card-label">今日已审核</p>
+              <h3 class="stat-card-value-neutral">{{ stats.approvedTodayCount }}</h3>
+              <p class="stat-card-sub">
+                <span class="material-symbols-outlined text-sm text-on-surface-variant">notifications</span>
+                等待开始任务
+              </p>
+            </div>
+            <div class="stat-card-icon-wrap bg-surface-container-high">
+              <span class="material-symbols-outlined text-on-surface-variant">fact_check</span>
+            </div>
+          </div>
+          <!-- 卡片4：告警状态 -->
+          <div class="stat-card">
+            <div>
+              <p class="stat-card-label">告警状态</p>
+              <h3 class="stat-card-value">{{ stats.alertTriggered ? '告警中' : '正常' }}</h3>
+              <p class="stat-card-sub">
+                <span class="material-symbols-outlined text-sm text-primary">verified</span>
+                系统运行稳定
+              </p>
+            </div>
+            <div class="stat-card-icon-wrap" style="background-color: rgba(0,71,141,0.1);">
+              <span class="material-symbols-outlined text-primary">security</span>
+            </div>
+          </div>
+        </section>
 
-        <!-- 表格 -->
-        <div class="custom-overflow-x-auto">
-          <table class="term-table">
-            <thead>
-              <tr>
-                <th class="custom-w-10">
-                  <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
-                </th>
-                <th>口语表达</th>
-                <th>上下文</th>
-                <th>实体类型</th>
-                <th>LLM猜测</th>
-                <th>置信度</th>
-                <th>频次</th>
-                <th>首次出现</th>
-                <th>标准化</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="loading">
-                <td colspan="10" class="table-empty">
-                  <div class="custom-flex custom-flex-col custom-items-center custom-gap-3">
-                    <span class="material-symbols-outlined text-3xl text-on-surface-variant" style="animation: spin 1.5s linear infinite;">refresh</span>
-                    <p class="text-sm text-on-surface-variant">加载中...</p>
-                  </div>
-                </td>
-              </tr>
-              <tr v-else-if="displayTerms.length === 0">
-                <td colspan="10" class="table-empty">
-                  <div class="custom-flex custom-flex-col custom-items-center custom-gap-3">
-                    <span class="material-symbols-outlined text-3xl text-on-surface-variant">text_snippet</span>
-                    <p class="text-sm text-on-surface-variant">暂无词条数据</p>
-                  </div>
-                </td>
-              </tr>
-              <tr
-                v-for="row in displayTerms"
-                :key="row.id"
-                :class="{ 'row-selected': selectedIds.has(row.id) }"
+
+        <!-- 主内容：词条审核表格 -->
+        <section class="table-card">
+          <!-- 表格头部栏 -->
+          <div class="table-header-bar">
+            <h2 class="table-header-title">待审核列表</h2>
+            <button class="btn-batch" :disabled="selectedRows.length === 0" @click="showBatchApprove">
+              <span class="material-symbols-outlined text-sm">done_all</span>
+              批量通过
+            </button>
+          </div>
+
+          <!-- 筛选栏 -->
+          <div class="filter-bar">
+            <div class="custom-flex custom-items-center custom-gap-4">
+              <div class="filter-search-wrap">
+                <span class="filter-search-icon material-symbols-outlined">search</span>
+                <input
+                  v-model="searchKeyword"
+                  class="filter-search-input"
+                  placeholder="搜索词条、上下文或LLM猜测..."
+                  type="text"
+                  @input="debouncedFilter"
+                >
+              </div>
+              <select
+                v-model="filterStatus"
+                class="filter-select"
+                @change="loadData"
               >
-                <td>
-                  <input type="checkbox" :checked="selectedIds.has(row.id)" @change="toggleRow(row)" />
-                </td>
-                <td><span class="term-name">{{ row.term }}</span></td>
-                <td>
-                  <span class="term-context">{{ row.contextQuery || '-' }}</span>
-                </td>
-                <td>
-                  <span :class="['entity-badge', entityBadgeClass(row.guessedEntityType)]">
-                    {{ row.guessedEntityType || '-' }}
-                  </span>
-                </td>
-                <td class="text-sm text-on-surface-variant custom-max-w-36 truncate">
-                  {{ row.llmGuess || '-' }}
-                </td>
-                <td>
-                  <div v-if="row.llmConfidence != null" class="confidence-bar-wrap">
-                    <div class="confidence-bar-bg">
-                      <div class="confidence-bar-fill" :style="{ width: (row.llmConfidence * 100) + '%' }"></div>
-                    </div>
-                    <span class="confidence-bar-text" :class="confidenceClass(row.llmConfidence)">
-                      {{ (row.llmConfidence * 100).toFixed(0) }}%
-                    </span>
-                  </div>
-                  <span v-else class="text-xs text-on-surface-variant">-</span>
-                </td>
-                <td class="text-sm text-on-surface-variant text-center">{{ row.occurrenceCount }}</td>
-                <td class="text-xs text-on-surface-variant">{{ formatDate(row.firstSeenAt) }}</td>
-                <td>
-                  <div v-if="row.status === 'PENDING'" class="custom-flex custom-items-center custom-gap-2">
-                    <input
-                      v-model="approveInputs[row.id]"
-                      class="standard-input"
-                      placeholder="输入标准术语"
-                    />
-                    <button class="action-btn-approve" title="通过" @click="approveOne(row)">
-                      <span class="material-symbols-outlined text-lg">check_circle</span>
-                    </button>
-                    <button class="action-btn-reject" title="拒绝" @click="rejectOne(row)">
-                      <span class="material-symbols-outlined text-lg">cancel</span>
-                    </button>
-                  </div>
-                  <span v-else :class="['status-badge', row.status === 'APPROVED' ? 'status-badge-approved' : 'status-badge-rejected']">
-                    <span class="material-symbols-outlined text-sm">
-                      {{ row.status === 'APPROVED' ? 'check' : 'block' }}
-                    </span>
-                    {{ row.status === 'APPROVED' ? '已通过' : '已拒绝' }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 分页：匹配原型页码式分页 -->
-        <div class="pagination-bar">
-          <span>显示 {{ displayTerms.length }} 条，共 {{ total }} 条</span>
-          <div class="custom-flex custom-items-center custom-gap-2">
-            <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage--; loadData()">
-              <span class="material-symbols-outlined">chevron_left</span>
-            </button>
-            <button
-              v-for="p in totalPages"
-              :key="p"
-              :class="['page-num', p === currentPage ? 'page-num-active' : '']"
-              @click="currentPage = p; loadData()"
-            >{{ p }}</button>
-            <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage++; loadData()">
-              <span class="material-symbols-outlined">chevron_right</span>
-            </button>
+                <option value="PENDING">待审核</option>
+                <option value="APPROVED">已通过</option>
+                <option value="REJECTED">已拒绝</option>
+                <option value="ALL">全部</option>
+              </select>
+            </div>
+            <span class="text-xs text-on-surface-variant">共 {{ total }} 条记录</span>
           </div>
-        </div>
-      </section><!-- /table-card -->
-    </div><!-- /term-review-main-inner -->
+
+          <!-- 表格 -->
+          <div class="custom-overflow-x-auto">
+            <table class="term-table">
+              <colgroup>
+                <col class="col-select" style="width: 40px">
+                <col class="col-term" style="width: 140px">
+                <!-- 上下文列：宽度由拖拽手柄控制 -->
+                <col class="col-context" :style="{ width: contextColWidth + 'px' }">
+                <col class="col-entity" style="width: 90px">
+                <col class="col-llm" style="width: 160px">
+                <col class="col-confidence" style="width: 100px">
+                <col class="col-count" style="width: 60px">
+                <col class="col-date" style="width: 100px">
+                <col class="col-standard" style="width: 230px">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="custom-w-10">
+                    <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll">
+                  </th>
+                  <th>口语表达</th>
+                  <th class="th-context">
+                    上下文
+                    <span class="col-resizer" title="拖拽调整列宽" @mousedown.prevent="startResize" />
+                  </th>
+                  <th>实体类型</th>
+                  <th>LLM猜测</th>
+                  <th>置信度</th>
+                  <th>频次</th>
+                  <th>首次出现</th>
+                  <!-- 标准化列：固定在表格右侧，编辑操作始终可见 -->
+                  <th class="col-sticky">标准化</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="loading">
+                  <td colspan="9" class="table-empty">
+                    <div class="custom-flex custom-flex-col custom-items-center custom-gap-3">
+                      <span class="material-symbols-outlined text-3xl text-on-surface-variant" style="animation: spin 1.5s linear infinite;">refresh</span>
+                      <p class="text-sm text-on-surface-variant">加载中...</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-else-if="displayTerms.length === 0">
+                  <td colspan="9" class="table-empty">
+                    <div class="custom-flex custom-flex-col custom-items-center custom-gap-3">
+                      <span class="material-symbols-outlined text-3xl text-on-surface-variant">text_snippet</span>
+                      <p class="text-sm text-on-surface-variant">暂无词条数据</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr
+                  v-for="row in displayTerms"
+                  :key="row.id"
+                  :class="{ 'row-selected': selectedIds.has(row.id) }"
+                >
+                  <td>
+                    <input type="checkbox" :checked="selectedIds.has(row.id)" @change="toggleRow(row)">
+                  </td>
+                  <td><span class="term-name">{{ row.term }}</span></td>
+                  <td>
+                    <!-- 悬停 title 提示查看被截断的上下文全文 -->
+                    <span class="term-context" :title="row.contextQuery || '-'">{{ row.contextQuery || '-' }}</span>
+                  </td>
+                  <td>
+                    <span :class="['entity-badge', entityBadgeClass(row.guessedEntityType)]">
+                      {{ row.guessedEntityType || '-' }}
+                    </span>
+                  </td>
+                  <td class="text-sm text-on-surface-variant custom-max-w-36 truncate">
+                    {{ row.llmGuess || '-' }}
+                  </td>
+                  <td>
+                    <div v-if="row.llmConfidence != null" class="confidence-bar-wrap">
+                      <div class="confidence-bar-bg">
+                        <div class="confidence-bar-fill" :style="{ width: (row.llmConfidence * 100) + '%' }" />
+                      </div>
+                      <span class="confidence-bar-text" :class="confidenceClass(row.llmConfidence)">
+                        {{ (row.llmConfidence * 100).toFixed(0) }}%
+                      </span>
+                    </div>
+                    <span v-else class="text-xs text-on-surface-variant">-</span>
+                  </td>
+                  <td class="text-sm text-on-surface-variant text-center">{{ row.occurrenceCount }}</td>
+                  <td class="text-xs text-on-surface-variant">{{ formatDate(row.firstSeenAt) }}</td>
+                  <td class="col-sticky">
+                    <div v-if="row.status === 'PENDING'" class="custom-flex custom-items-center custom-gap-2">
+                      <input
+                        v-model="approveInputs[row.id]"
+                        class="standard-input"
+                        placeholder="输入标准术语"
+                      >
+                      <button class="action-btn-approve" title="通过" @click="approveOne(row)">
+                        <span class="material-symbols-outlined text-lg">check_circle</span>
+                      </button>
+                      <button class="action-btn-reject" title="拒绝" @click="rejectOne(row)">
+                        <span class="material-symbols-outlined text-lg">cancel</span>
+                      </button>
+                    </div>
+                    <span v-else :class="['status-badge', row.status === 'APPROVED' ? 'status-badge-approved' : 'status-badge-rejected']">
+                      <span class="material-symbols-outlined text-sm">
+                        {{ row.status === 'APPROVED' ? 'check' : 'block' }}
+                      </span>
+                      {{ row.status === 'APPROVED' ? '已通过' : '已拒绝' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 分页：匹配原型页码式分页 -->
+          <div class="pagination-bar">
+            <span>显示 {{ displayTerms.length }} 条，共 {{ total }} 条</span>
+            <div class="custom-flex custom-items-center custom-gap-2">
+              <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage--; loadData()">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button
+                v-for="p in totalPages"
+                :key="p"
+                :class="['page-num', p === currentPage ? 'page-num-active' : '']"
+                @click="currentPage = p; loadData()"
+              >
+                {{ p }}
+              </button>
+              <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage++; loadData()">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </section><!-- /table-card -->
+      </div><!-- /term-review-main-inner -->
     </main>
 
     <!-- 批量标注弹窗 -->
@@ -232,7 +249,7 @@
             v-model="batchStandardTerm"
             class="modal-input custom-mb-6"
             placeholder="标准医学术语"
-          />
+          >
           <div class="custom-flex custom-items-center custom-gap-3 custom-justify-end">
             <button class="btn-cancel" @click="batchDialogVisible = false">取消</button>
             <button class="btn-confirm" :disabled="batchSubmitting" @click="doBatchApprove">
@@ -246,7 +263,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminService } from '@/api/services/admin.service'
 import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
@@ -438,6 +455,45 @@ onMounted(() => {
   loadData()
   loadStats()
 })
+
+// ========== 上下文列宽可拖拽（列宽伸缩） ==========
+// 初始宽度（px）；拖拽范围限制在 120~480，避免过窄/过宽
+const contextColWidth = ref(220)
+let resizeStartX = 0
+let resizeStartWidth = 0
+
+/** 同步上下文列宽度到 colgroup 与文本截断宽度（内容区 = 列宽 - 单元格 padding 32px） */
+function applyContextColWidth(width: number) {
+  contextColWidth.value = width
+  document.querySelectorAll<HTMLElement>('.term-context').forEach((el) => {
+    el.style.maxWidth = `${width - 32}px`
+  })
+}
+
+function onResizeMove(e: MouseEvent) {
+  const next = resizeStartWidth + (e.clientX - resizeStartX)
+  applyContextColWidth(Math.min(480, Math.max(120, next)))
+}
+
+function startResize(e: MouseEvent) {
+  resizeStartX = e.clientX
+  resizeStartWidth = contextColWidth.value
+  document.addEventListener('mousemove', onResizeMove)
+  document.addEventListener('mouseup', stopResize)
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+}
+
+function stopResize() {
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup', stopResize)
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+}
+
+onUnmounted(() => {
+  stopResize()
+})
 </script>
 
 <style scoped>
@@ -596,8 +652,12 @@ onMounted(() => {
 /* ===== 表格 ===== */
 .term-table {
   width: 100%;
+  /* 各列宽度之和：40+140+220+90+160+100+60+100+230 = 1140（上下文列可拖拽调整） */
+  min-width: 1140px;
   text-align: left;
   border-collapse: collapse;
+  /* 固定布局：列宽由 colgroup 控制，上下文列可拖拽调整 */
+  table-layout: fixed;
 }
 
 .term-table thead tr {
@@ -611,6 +671,28 @@ onMounted(() => {
   color: #424752;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* 上下文列表头：相对定位以容纳拖拽手柄 */
+.th-context {
+  position: relative;
+  user-select: none;
+}
+
+/* 列宽拖拽手柄：悬停高亮，拖拽改变上下文列宽度 */
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 150ms;
+}
+
+.col-resizer:hover {
+  background-color: rgba(0, 71, 141, 0.3);
 }
 
 .term-table th:first-child {
@@ -656,12 +738,22 @@ onMounted(() => {
 }
 
 .term-context {
+  /* 块级显示使 max-width/ellipsis 生效；宽度随上下文列拖拽同步 */
+  display: block;
   font-size: 0.75rem;
   color: #424752;
-  max-width: 10rem;
+  max-width: 188px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 标准化列：sticky 固定在表格右侧，编辑操作始终可见 */
+.col-sticky {
+  position: sticky;
+  right: 0;
+  background-color: #ffffff;
+  box-shadow: -1px 0 0 rgba(194, 198, 212, 0.25);
 }
 
 .term-context-highlight {

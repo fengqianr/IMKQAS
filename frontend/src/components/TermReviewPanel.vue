@@ -60,23 +60,25 @@
       style="width: 100%; margin-top: 16px"
       max-height="calc(100vh - 380px)"
       size="small"
+      border
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" width="40" />
-      <el-table-column prop="term" label="口语表达" min-width="100" show-overflow-tooltip />
-      <el-table-column prop="contextQuery" label="上下文" min-width="140" show-overflow-tooltip />
-      <el-table-column label="实体类型" width="80">
+      <el-table-column type="selection" width="40" :resizable="false" />
+      <el-table-column prop="term" label="口语表达" min-width="100" show-overflow-tooltip :resizable="false" />
+      <!-- 上下文列：可拖拽调整列宽（配合 border），内容过长悬停查看全文 -->
+      <el-table-column prop="contextQuery" label="上下文" min-width="140" show-overflow-tooltip resizable />
+      <el-table-column label="实体类型" width="80" :resizable="false">
         <template #default="{ row }">
           <el-tag size="small" type="info">{{ row.guessedEntityType || '-' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="LLM猜测" min-width="100" show-overflow-tooltip>
+      <el-table-column label="LLM猜测" min-width="100" show-overflow-tooltip :resizable="false">
         <template #default="{ row }">
           <span v-if="row.llmGuess">{{ row.llmGuess }}</span>
           <span v-else style="color: #999">-</span>
         </template>
       </el-table-column>
-      <el-table-column label="LLM置信度" width="90">
+      <el-table-column label="LLM置信度" width="90" :resizable="false">
         <template #default="{ row }">
           <span
             v-if="row.llmConfidence != null"
@@ -87,13 +89,13 @@
           <span v-else style="color: #999">-</span>
         </template>
       </el-table-column>
-      <el-table-column prop="occurrenceCount" label="频次" width="60" align="center" />
-      <el-table-column label="首次出现" width="110">
+      <el-table-column prop="occurrenceCount" label="频次" width="60" align="center" :resizable="false" />
+      <el-table-column label="首次出现" width="110" :resizable="false">
         <template #default="{ row }">
           <span style="font-size: 12px; color: #666">{{ formatDate(row.firstSeenAt) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="240" fixed="right" :resizable="false">
         <template #default="{ row }">
           <div v-if="row.status === 'PENDING'" class="action-cell">
             <el-input
@@ -357,6 +359,12 @@ watch(
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+/* 编辑输入框在操作列中禁止压缩，确保完整显示 */
+.action-cell :deep(.el-input) {
+  flex-shrink: 0;
 }
 .pagination-wrap {
   display: flex;
