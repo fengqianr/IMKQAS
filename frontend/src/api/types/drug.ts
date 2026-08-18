@@ -5,7 +5,12 @@
 // ==================== Drug 药品 ====================
 
 export interface Drug {
-  id: number
+  /**
+   * 药品ID
+   * 注意：后端 LongToStringJacksonConfig 将 Long 统一序列化为字符串（雪花ID防精度丢失），
+   * 因此前端收到的 id 始终为字符串。
+   */
+  id: string
   /** 通用名 */
   genericName?: string
   /** 商品名 */
@@ -64,10 +69,10 @@ export function drugSubtitle(d?: Drug | null): string {
 
 export interface DrugInteraction {
   id?: number
-  /** 药品 A ID */
-  drugAId: number
-  /** 药品 B ID */
-  drugBId: number
+  /** 药品 A ID（字符串形式，见 Drug.id 说明） */
+  drugAId: string
+  /** 药品 B ID（字符串形式，见 Drug.id 说明） */
+  drugBId: string
   /** 相互作用类型（英文枚举名） */
   interactionType?: string
   /** 严重程度（英文枚举名） */

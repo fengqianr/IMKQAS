@@ -295,7 +295,9 @@ const drugs = ref<Drug[]>([])
 const loading = ref(false)
 
 /** 相互作用检查状态 */
-const selected = ref<number[]>([])
+const selected = ref<string[]>([])
+/** 已选药品对象表（id → Drug），跨搜索保留用药方案并支持名称反查 */
+const selectedDrugs = ref<Record<string, Drug>>({})
 const interactions = ref<DrugInteraction[]>([])
 const checking = ref(false)
 
@@ -307,19 +309,20 @@ const currentDrug = ref<Drug | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 
 /** 药品是否已勾选 */
-const isSelected = (id: number) => selected.value.includes(id)
+const isSelected = (id: string) => selected.value.includes(id)
 
-/** 由 ID 反查药品对象（chips 移除用） */
-const drugById = (id: number) => drugs.value.find((x) => x.id === id)
+/** 由 ID 反查药品对象：优先已选方案表，其次当前搜索结果 */
+const drugById = (id: string) =>
+  selectedDrugs.value[id] || drugs.value.find((x) => x.id === id)
 
-/** 由 ID 反查药品名称（batch 接口不返回药品名，需从已加载列表反查） */
-const drugNameById = (id: number) => {
+/** 由 ID 反查药品名称（batch 接口不返回药品名，需从已选方案/已加载列表反查） */
+const drugNameById = (id: string) => {
   const d = drugById(id)
   return d ? drugTitle(d) : `#${id}`
 }
 
 /** 药品卡风险色条类：按该药与已选药品的相互作用严重度编码 */
-const drugRiskClass = (id: number): string => {
+const drugRiskClass = (id: string): string => {
   const it = interactions.value.find((x) => x.drugAId === id || x.drugBId === id)
   if (!it) return 'drug-risk-neutral'
   const t = severityTone(it.severity)
@@ -365,9 +368,7 @@ const handleSearch = async () => {
     return
   }
   loading.value = true
-  // 切换搜索结果时清空已选药品与检查结果，避免 ID 反查失效
-  selected.value = []
-  interactions.value = []
+  // 保留"当前用药方案"勾选，允许跨搜索累积药品以比较相互作用
   try {
     if (kw) {
       drugs.value = await drugService.searchByName(kw)
@@ -384,20 +385,23 @@ const toggleSelect = (d: Drug) => {
   const idx = selected.value.indexOf(d.id)
   if (idx >= 0) {
     selected.value.splice(idx, 1)
+    delete selectedDrugs.value[d.id]
   } else {
     selected.value.push(d.id)
+    selectedDrugs.value[d.id] = d
   }
 }
 
-/** 从用药方案移除单个药品（chips 关闭按钮） */
-const removeSelected = (id: number) => {
+/** 从用药方案移除单个药品（chips 关闭按钮），剩余组合由 watch 自动重新检查 */
+const removeSelected = (id: string) => {
   selected.value = selected.value.filter((x) => x !== id)
-  interactions.value = []
+  delete selectedDrugs.value[id]
 }
 
 /** 清空已选药品（关闭相互作用面板） */
 const clearSelected = () => {
   selected.value = []
+  selectedDrugs.value = {}
   interactions.value = []
 }
 

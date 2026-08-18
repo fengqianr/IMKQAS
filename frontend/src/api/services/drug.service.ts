@@ -53,8 +53,8 @@ class DrugService {
     }
   }
 
-  /** 批量检查药物相互作用（后端对 ID 列表做两两组合检查） */
-  async checkBatch(drugIds: number[]): Promise<DrugInteraction[]> {
+  /** 批量检查药物相互作用（后端对 ID 列表做两两组合检查，ID 为字符串形式） */
+  async checkBatch(drugIds: string[]): Promise<DrugInteraction[]> {
     try {
       const response = await request.post('/drugs/interactions/batch', drugIds)
       return (response.data || []) as DrugInteraction[]
