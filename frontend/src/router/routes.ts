@@ -1,7 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
+// 仅近入口的小页面保持静态导入（登录/404），大页面一律路由级懒加载（() => import）
 import LoginView from '@/views/auth/LoginView.vue'
-import QaView from '@/views/chat/QaView.vue'
-import KnowledgeView from '@/views/knowledge/KnowledgeView.vue'
 import NotFoundView from '@/views/common/NotFoundView.vue'
 
 // 角色组常量（与后端 User.Role 枚举及 config/menus.ts 的归并一致）
@@ -35,7 +34,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/qa',
     name: 'qa',
-    component: QaView,
+    component: () => import('@/views/chat/QaView.vue'),
     meta: { title: '智能问答', requiresAuth: false, noLayout: true }
   },
   {
@@ -83,7 +82,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/knowledge',
     name: 'knowledge',
-    component: KnowledgeView,
+    component: () => import('@/views/knowledge/KnowledgeView.vue'),
     meta: { title: '知识库管理', requiresAuth: true, roles: ['ADMIN'] }
   },
   {

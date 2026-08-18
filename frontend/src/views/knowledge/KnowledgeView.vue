@@ -310,7 +310,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { apiErrorMessage } from '@/utils/error'
 import { downloadBlob } from '@/utils/format'
@@ -318,9 +318,13 @@ import { documentService } from '@/api/services/document.service'
 import { documentChunkService } from '@/api/services/document-chunk.service'
 import type { Document as ApiDocument } from '@/api/types/document'
 import type { DocumentChunk } from '@/api/types/document-chunk'
-import ContraindicationRules from '@/views/clinical/ContraindicationRules.vue'
-import TermReview from '@/views/clinical/TermReview.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+
+// 两个千行级子面板改为异步组件：切到对应标签才加载 chunk，主包不包含这两块逻辑
+const ContraindicationRules = defineAsyncComponent(
+  () => import('@/views/clinical/ContraindicationRules.vue')
+)
+const TermReview = defineAsyncComponent(() => import('@/views/clinical/TermReview.vue'))
 
 // 类型定义
 interface Category {

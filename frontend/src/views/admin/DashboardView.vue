@@ -157,8 +157,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import * as echarts from 'echarts'
+// echarts 按需引入：仅注册本页 4 张图实际用到的图表与组件（pie/bar + grid/tooltip/legend + canvas 渲染）
+import * as echarts from 'echarts/core'
+import { PieChart, BarChart } from 'echarts/charts'
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+// type-only 导入，编译期擦除，不增加产物体积
 import type { EChartsOption } from 'echarts'
+
+echarts.use([PieChart, BarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 import { dashboardService } from '@/api/services/dashboard.service'
 import { documentService } from '@/api/services/document.service'
 import { adminService } from '@/api/services/admin.service'
