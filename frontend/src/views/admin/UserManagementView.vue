@@ -57,15 +57,20 @@
                 <div class="user-cell">
                   <span
                     class="avatar-initial"
-                    :class="user.role === 'ADMIN' ? 'tone-brand' : user.role === 'DOCTOR' ? 'tone-success' : 'tone-soft'"
+                    :class="
+                      user.role === 'ADMIN' ? 'tone-brand' : user.role === 'DOCTOR' ? 'tone-success' : 'tone-soft'
+                    "
                     :title="user.username"
-                  >{{ user.username ? user.username.charAt(0) : '?' }}</span>
+                    >{{ user.username ? user.username.charAt(0) : '?' }}</span
+                  >
                   <span class="user-name">{{ user.username }}</span>
                 </div>
               </td>
               <td class="code-text">{{ maskPhone(user.phone) }}</td>
               <td>
-                <StatusBadge :tone="user.role === 'ADMIN' ? 'info' : user.role === 'DOCTOR' ? 'success' : 'neutral'">{{ roleLabel(user.role) }}</StatusBadge>
+                <StatusBadge :tone="user.role === 'ADMIN' ? 'info' : user.role === 'DOCTOR' ? 'success' : 'neutral'">{{
+                  roleLabel(user.role)
+                }}</StatusBadge>
               </td>
               <td class="time-text">{{ formatTime(user.createdAt) }}</td>
               <td class="text-right">
@@ -129,13 +134,7 @@
           </el-select>
         </el-form-item>
         <el-form-item :label="isEdit ? '密码（留空则不修改）' : '密码'" required>
-          <el-input
-            v-model="form.password"
-            type="password"
-            show-password
-            placeholder="至少 6 位"
-            maxlength="32"
-          />
+          <el-input v-model="form.password" type="password" show-password placeholder="至少 6 位" maxlength="32" />
         </el-form-item>
       </el-form>
       <template #footer>

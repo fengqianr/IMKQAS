@@ -165,7 +165,11 @@ class DocumentService {
   }
 
   // 获取文档统计信息
-  async getDocumentStats(): Promise<{ total: number, byStatus: Record<DocumentStatus, number>, byCategory: Record<string, number> }> {
+  async getDocumentStats(): Promise<{
+    total: number
+    byStatus: Record<DocumentStatus, number>
+    byCategory: Record<string, number>
+  }> {
     try {
       const response = await this.getDocuments(1, 1000)
       if (response.success && response.data) {

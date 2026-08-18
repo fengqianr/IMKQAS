@@ -35,14 +35,16 @@ export interface BatchImportResult {
 
 class ContraindicationService {
   /** 分页查询 */
-  async list(params: {
-    page?: number
-    size?: number
-    drugName?: string
-    populationName?: string
-    contraindicationType?: string
-    isActive?: number
-  } = {}): Promise<PaginationResponse<ContraindicationRule[]>> {
+  async list(
+    params: {
+      page?: number
+      size?: number
+      drugName?: string
+      populationName?: string
+      contraindicationType?: string
+      isActive?: number
+    } = {}
+  ): Promise<PaginationResponse<ContraindicationRule[]>> {
     const query = new URLSearchParams()
     query.append('page', (params.page || 1).toString())
     query.append('size', (params.size || 20).toString())
@@ -101,9 +103,7 @@ class ContraindicationService {
 
   /** 删除 */
   async delete(id: number): Promise<void> {
-    const response = await request.delete<{ success: boolean; message: string }>(
-      `/admin/contraindications/${id}`
-    )
+    const response = await request.delete<{ success: boolean; message: string }>(`/admin/contraindications/${id}`)
     if (!response.data.success) {
       throw new Error(response.data.message || '删除失败')
     }

@@ -55,9 +55,7 @@
           <span class="material-symbols-outlined">filter_list</span>
           更多筛选
         </button>
-        <el-button type="primary" class="search-btn" :loading="loading" @click="handleSearch(true)">
-          搜索
-        </el-button>
+        <el-button type="primary" class="search-btn" :loading="loading" @click="handleSearch(true)"> 搜索 </el-button>
       </div>
     </section>
 
@@ -84,12 +82,7 @@
             </tr>
           </thead>
           <tbody class="table-body">
-            <tr
-              v-for="p in patients"
-              :key="p.id"
-              class="result-row"
-              @click="goDetail(p.id)"
-            >
+            <tr v-for="p in patients" :key="p.id" class="result-row" @click="goDetail(p.id)">
               <td>
                 <div class="name-cell">
                   <span class="avatar">{{ patientInitial(p) }}</span>
@@ -395,7 +388,9 @@ onMounted(async () => {
   border: 1px solid var(--theme-outline-variant);
   border-radius: 0.375rem;
   overflow: hidden;
-  transition: border-color 150ms, box-shadow 150ms;
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
 }
 
 .search-group:focus-within {
@@ -558,7 +553,6 @@ onMounted(async () => {
   text-transform: uppercase;
   color: var(--theme-on-surface-variant);
   white-space: nowrap;
-  
 }
 
 .table-body {
@@ -567,7 +561,9 @@ onMounted(async () => {
 
 .result-row {
   cursor: pointer;
-  transition: background 150ms, border-color 150ms;
+  transition:
+    background 150ms,
+    border-color 150ms;
   border-bottom: 1px solid rgba(195, 198, 208, 0.5);
   border-left: 2px solid transparent;
 }
@@ -735,6 +731,10 @@ onMounted(async () => {
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>

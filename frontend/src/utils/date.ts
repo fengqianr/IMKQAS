@@ -12,8 +12,7 @@ import dayjs from 'dayjs'
 export const formatDate = (v?: string | null, fb = '—'): string => (v ? v.slice(0, 10) : fb)
 
 /** 日期时间（YYYY-MM-DD HH:mm） */
-export const formatDateTime = (v?: string | null, fb = '—'): string =>
-  v ? dayjs(v).format('YYYY-MM-DD HH:mm') : fb
+export const formatDateTime = (v?: string | null, fb = '—'): string => (v ? dayjs(v).format('YYYY-MM-DD HH:mm') : fb)
 
 /** 仅时间（HH:mm） */
 export const formatTime = (v?: string | null, fb = '—'): string => (v ? dayjs(v).format('HH:mm') : fb)

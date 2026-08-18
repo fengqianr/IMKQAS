@@ -14,23 +14,12 @@
         @submit.prevent="handleRegister"
       >
         <el-form-item prop="username">
-          <el-input
-            v-model="registerForm.username"
-            placeholder="用户名"
-            size="large"
-            :prefix-icon="User"
-          />
+          <el-input v-model="registerForm.username" placeholder="用户名" size="large" :prefix-icon="User" />
         </el-form-item>
 
         <el-form-item prop="phone">
-          <el-input
-            v-model="registerForm.phone"
-            placeholder="手机号"
-            size="large"
-            :prefix-icon="Iphone"
-          />
+          <el-input v-model="registerForm.phone" placeholder="手机号" size="large" :prefix-icon="Iphone" />
         </el-form-item>
-
 
         <el-form-item prop="password">
           <el-input
@@ -71,12 +60,7 @@
             :prefix-icon="UserFilled"
             class="full-width"
           >
-            <el-option
-              v-for="(label, value) in REGISTRABLE_ROLES"
-              :key="value"
-              :label="label"
-              :value="value"
-            />
+            <el-option v-for="(label, value) in REGISTRABLE_ROLES" :key="value" :label="label" :value="value" />
           </el-select>
         </el-form-item>
 
@@ -90,13 +74,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            class="register-btn"
-            :loading="registerLoading"
-            native-type="submit"
-          >
+          <el-button type="primary" size="large" class="register-btn" :loading="registerLoading" native-type="submit">
             注册
           </el-button>
         </el-form-item>
@@ -126,9 +104,7 @@ const registerFormRef = ref<FormInstance>()
 
 // 可自助注册的角色（医生/管理员需由管理员在用户管理中创建，不出现在选项里）
 const REGISTRABLE_ROLES = Object.fromEntries(
-  Object.entries(ROLE_LABELS).filter(([value]) =>
-    ['PATIENT', 'STUDENT', 'NURSE', 'HEALTH_MANAGER'].includes(value)
-  )
+  Object.entries(ROLE_LABELS).filter(([value]) => ['PATIENT', 'STUDENT', 'NURSE', 'HEALTH_MANAGER'].includes(value))
 )
 
 // 表单数据
@@ -197,29 +173,16 @@ const validateAgree = (_rule: any, value: boolean, callback: any) => {
 }
 
 const registerRules: FormRules = {
-  username: [
-    { validator: validateUsername, trigger: 'blur' }
-  ],
-  phone: [
-    { validator: validatePhone, trigger: 'blur' }
-  ],
-  password: [
-    { validator: validatePassword, trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { validator: validateConfirmPassword, trigger: 'blur' }
-  ],
-  realName: [
-    { required: true, message: '请输入真实姓名', trigger: 'blur' }
-  ],
-  agree: [
-    { validator: validateAgree, trigger: 'change' }
-  ]
+  username: [{ validator: validateUsername, trigger: 'blur' }],
+  phone: [{ validator: validatePhone, trigger: 'blur' }],
+  password: [{ validator: validatePassword, trigger: 'blur' }],
+  confirmPassword: [{ validator: validateConfirmPassword, trigger: 'blur' }],
+  realName: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
+  agree: [{ validator: validateAgree, trigger: 'change' }]
 }
 
 // 注册状态
 const registerLoading = ref(false)
-
 
 // 处理注册：真实调用后端注册接口（真实姓名随注册同步建立医生端患者档案）
 const handleRegister = async () => {
@@ -295,7 +258,6 @@ const gotoLogin = () => {
 .full-width {
   width: 100%;
 }
-
 
 .register-btn {
   width: 100%;

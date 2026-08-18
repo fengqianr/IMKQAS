@@ -81,45 +81,62 @@ const cls = computed(() => [
   background: var(--theme-surface-container);
   color: var(--theme-on-surface-variant);
 }
-.tone-neutral .status-dot { background: var(--theme-outline); }
+.tone-neutral .status-dot {
+  background: var(--theme-outline);
+}
 
 .tone-info {
   background: var(--theme-primary-soft);
   color: var(--theme-primary);
 }
-.tone-info .status-dot { background: var(--theme-primary); }
+.tone-info .status-dot {
+  background: var(--theme-primary);
+}
 
 .tone-success {
   background: rgba(46, 125, 50, 0.12);
   color: var(--theme-success);
 }
-.tone-success .status-dot { background: var(--theme-success); }
+.tone-success .status-dot {
+  background: var(--theme-success);
+}
 
 .tone-warning {
   background: rgba(237, 108, 2, 0.12);
   color: var(--theme-processing);
 }
-.tone-warning .status-dot { background: var(--theme-processing); }
+.tone-warning .status-dot {
+  background: var(--theme-processing);
+}
 
 .tone-danger {
   background: rgba(186, 26, 26, 0.12);
   color: var(--theme-error);
 }
-.tone-danger .status-dot { background: var(--theme-error); }
+.tone-danger .status-dot {
+  background: var(--theme-error);
+}
 
 /* 实心（危急） */
 .tone-critical {
   background: var(--theme-error);
   color: var(--theme-on-error);
 }
-.tone-critical .status-dot { background: var(--theme-on-error); }
+.tone-critical .status-dot {
+  background: var(--theme-on-error);
+}
 
 /* 处理中圆点脉冲 */
 .is-pulse .status-dot {
   animation: status-pulse 1.5s ease-in-out infinite;
 }
 @keyframes status-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 </style>

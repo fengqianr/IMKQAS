@@ -55,9 +55,13 @@ const themeKey = computed(() => {
   return 'admin'
 })
 
-watch(themeKey, (val) => {
-  document.documentElement.setAttribute('data-theme', val)
-}, { immediate: true })
+watch(
+  themeKey,
+  (val) => {
+    document.documentElement.setAttribute('data-theme', val)
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

@@ -17,9 +17,7 @@
                 <span class="material-symbols-outlined input-prefix-icon">search</span>
               </template>
             </el-input>
-            <el-button type="primary" class="search-btn" :loading="loading" @click="handleSearch">
-              搜索
-            </el-button>
+            <el-button type="primary" class="search-btn" :loading="loading" @click="handleSearch"> 搜索 </el-button>
           </div>
         </div>
         <div class="search-class">
@@ -73,11 +71,7 @@
             <!-- 左侧风险色条（按与已选药品相互作用严重度编码） -->
             <div class="drug-accent" :class="drugRiskClass(d.id)" />
             <!-- 右上角勾选（参与相互作用检查），阻止冒泡避免触发详情 -->
-            <div
-              class="select-box"
-              :class="{ 'select-box-checked': isSelected(d.id) }"
-              @click.stop="toggleSelect(d)"
-            >
+            <div class="select-box" :class="{ 'select-box-checked': isSelected(d.id) }" @click.stop="toggleSelect(d)">
               <span v-if="isSelected(d.id)" class="material-symbols-outlined">check</span>
             </div>
             <div class="card-body">
@@ -89,7 +83,10 @@
                   <span class="material-symbols-outlined badge-icon">warning</span>
                   高风险
                 </span>
-                <span v-else-if="drugRiskClass(d.id) === 'drug-risk-warning'" class="badge badge-risk badge-risk-warning">
+                <span
+                  v-else-if="drugRiskClass(d.id) === 'drug-risk-warning'"
+                  class="badge badge-risk badge-risk-warning"
+                >
                   <span class="material-symbols-outlined badge-icon">monitor</span>
                   需监测
                 </span>
@@ -138,9 +135,7 @@
               <p class="risk-banner-desc">所选药品之间存在严重相互作用，请谨慎评估用药方案。</p>
             </div>
           </div>
-          <div v-if="checking" class="panel-loading">
-            <span class="loading-dot" />检查中…
-          </div>
+          <div v-if="checking" class="panel-loading"><span class="loading-dot" />检查中…</div>
           <div v-else-if="interactions.length" class="panel-list">
             <div
               v-for="(it, i) in interactions"
@@ -182,12 +177,7 @@
     </button>
 
     <!-- 药品详情弹窗 -->
-    <el-dialog
-      v-model="detailVisible"
-      :title="dialogTitle"
-      width="640px"
-      custom-class="drug-detail-dialog"
-    >
+    <el-dialog v-model="detailVisible" :title="dialogTitle" width="640px" custom-class="drug-detail-dialog">
       <div v-if="currentDrug" class="detail-body">
         <div class="detail-section">
           <h4 class="section-title">基本信息</h4>
@@ -313,8 +303,7 @@ const panelRef = ref<HTMLElement | null>(null)
 const isSelected = (id: string) => selected.value.includes(id)
 
 /** 由 ID 反查药品对象：优先已选方案表，其次当前搜索结果 */
-const drugById = (id: string) =>
-  selectedDrugs.value[id] || drugs.value.find((x) => x.id === id)
+const drugById = (id: string) => selectedDrugs.value[id] || drugs.value.find((x) => x.id === id)
 
 /** 由 ID 反查药品名称（batch 接口不返回药品名，需从已选方案/已加载列表反查） */
 const drugNameById = (id: string) => {
@@ -333,9 +322,7 @@ const drugRiskClass = (id: string): string => {
 }
 
 /** 是否存在最高档（danger）风险 → 触发 Major Risk banner */
-const hasMajorRisk = computed(() =>
-  interactions.value.some((it) => severityTone(it.severity) === 'danger')
-)
+const hasMajorRisk = computed(() => interactions.value.some((it) => severityTone(it.severity) === 'danger'))
 
 /** 详情弹窗标题 */
 const dialogTitle = computed(() => drugTitle(currentDrug.value))
@@ -606,7 +593,9 @@ onMounted(async () => {
   justify-content: center;
   padding: 0.125rem;
   border-radius: 9999px;
-  transition: color 150ms, background 150ms;
+  transition:
+    color 150ms,
+    background 150ms;
 }
 
 .chip-remove:hover {
@@ -630,7 +619,9 @@ onMounted(async () => {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 150ms, color 150ms;
+  transition:
+    background 150ms,
+    color 150ms;
 }
 
 .chip-add:hover {
@@ -662,7 +653,9 @@ onMounted(async () => {
   border-radius: 0.75rem;
   overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
 }
 
 .drug-card:hover {
@@ -1146,7 +1139,11 @@ onMounted(async () => {
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>
 

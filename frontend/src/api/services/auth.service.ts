@@ -1,11 +1,6 @@
 import axios from 'axios'
 import { API_CONFIG, AUTH_CONFIG } from '../config'
-import type {
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  ApiResponse
-} from '../types/auth'
+import type { LoginRequest, LoginResponse, RegisterRequest, ApiResponse } from '../types/auth'
 
 class AuthService {
   private baseURL = API_CONFIG.BASE_URL
@@ -13,11 +8,7 @@ class AuthService {
   // 发送登录验证码
   async sendLoginCode(phone: string): Promise<boolean> {
     try {
-      const response = await axios.post<ApiResponse>(
-        `${this.baseURL}/auth/send-code`,
-        null,
-        { params: { phone } }
-      )
+      const response = await axios.post<ApiResponse>(`${this.baseURL}/auth/send-code`, null, { params: { phone } })
       return response.data.success
     } catch (error) {
       console.error('发送验证码失败:', error)
@@ -28,10 +19,7 @@ class AuthService {
   // 验证码登录
   async loginWithCode(request: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await axios.post<ApiResponse<LoginResponse>>(
-        `${this.baseURL}/auth/login`,
-        request
-      )
+      const response = await axios.post<ApiResponse<LoginResponse>>(`${this.baseURL}/auth/login`, request)
 
       if (response.data.success && response.data.data) {
         const { token, refreshToken } = response.data.data
@@ -60,15 +48,11 @@ class AuthService {
   // 刷新令牌
   async refreshToken(oldToken: string): Promise<string | null> {
     try {
-      const response = await axios.post<ApiResponse<string>>(
-        `${this.baseURL}/auth/refresh`,
-        null,
-        {
-          headers: {
-            Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${oldToken}`
-          }
+      const response = await axios.post<ApiResponse<string>>(`${this.baseURL}/auth/refresh`, null, {
+        headers: {
+          Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${oldToken}`
         }
-      )
+      })
 
       if (response.data.success && response.data.data) {
         this.setToken(response.data.data)
@@ -84,15 +68,11 @@ class AuthService {
   // 用户登出
   async logout(token: string): Promise<boolean> {
     try {
-      const response = await axios.post<ApiResponse>(
-        `${this.baseURL}/auth/logout`,
-        null,
-        {
-          headers: {
-            Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${token}`
-          }
+      const response = await axios.post<ApiResponse>(`${this.baseURL}/auth/logout`, null, {
+        headers: {
+          Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${token}`
         }
-      )
+      })
 
       if (response.data.success) {
         this.clearTokens()
@@ -108,14 +88,11 @@ class AuthService {
   // 验证令牌
   async validateToken(token: string): Promise<boolean> {
     try {
-      const response = await axios.get<ApiResponse<boolean>>(
-        `${this.baseURL}/auth/validate`,
-        {
-          headers: {
-            Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${token}`
-          }
+      const response = await axios.get<ApiResponse<boolean>>(`${this.baseURL}/auth/validate`, {
+        headers: {
+          Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${token}`
         }
-      )
+      })
       return response.data.success && response.data.data === true
     } catch (error) {
       console.error('验证令牌失败:', error)
@@ -126,14 +103,11 @@ class AuthService {
   // 获取当前用户信息
   async getCurrentUser(token: string): Promise<any> {
     try {
-      const response = await axios.get<ApiResponse>(
-        `${this.baseURL}/auth/me`,
-        {
-          headers: {
-            Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${token}`
-          }
+      const response = await axios.get<ApiResponse>(`${this.baseURL}/auth/me`, {
+        headers: {
+          Authorization: `${AUTH_CONFIG.TOKEN_PREFIX}${token}`
         }
-      )
+      })
       return response.data.data
     } catch (error) {
       console.error('获取用户信息失败:', error)
@@ -144,10 +118,7 @@ class AuthService {
   // 用户注册（失败抛业务错误，便于前端精准提示）
   async register(request: RegisterRequest): Promise<void> {
     try {
-      const response = await axios.post<ApiResponse>(
-        `${this.baseURL}/auth/register`,
-        request
-      )
+      const response = await axios.post<ApiResponse>(`${this.baseURL}/auth/register`, request)
       if (response.data.success) {
         return
       }

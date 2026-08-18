@@ -318,37 +318,83 @@
 /* ===== 知识库专用辅助类 ===== */
 
 /* aspect-ratio */
-.aspect-square { aspect-ratio: 1 / 1; }
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
 
 /* 背景色透明度变体 */
-.bg-surface-container-low\/50 { background-color: rgba(243, 244, 245, 0.5); }
-.bg-surface\/80 { background-color: rgba(248, 249, 250, 0.8); }
-.bg-brand\/10 { background-color: rgba(0, 94, 184, 0.1); }
-.bg-processing\/10 { background-color: rgba(237, 108, 2, 0.1); }
-.hover-bg-processing\/20:hover { background-color: rgba(237, 108, 2, 0.2); }
-.bg-brand\/20 { background-color: rgba(0, 94, 184, 0.2); }
+.bg-surface-container-low\/50 {
+  background-color: rgba(243, 244, 245, 0.5);
+}
+.bg-surface\/80 {
+  background-color: rgba(248, 249, 250, 0.8);
+}
+.bg-brand\/10 {
+  background-color: rgba(0, 94, 184, 0.1);
+}
+.bg-processing\/10 {
+  background-color: rgba(237, 108, 2, 0.1);
+}
+.hover-bg-processing\/20:hover {
+  background-color: rgba(237, 108, 2, 0.2);
+}
+.bg-brand\/20 {
+  background-color: rgba(0, 94, 184, 0.2);
+}
 
 /* 边框色透明度变体 */
-.border-outline-variant\/30 { border-color: rgba(194, 198, 212, 0.3); }
-.border-brand\/20 { border-color: rgba(0, 94, 184, 0.2); }
-.border-primary\/50 { border-color: rgba(0, 71, 141, 0.5); }
-.hover-border-primary\/50:hover { border-color: rgba(0, 71, 141, 0.5); }
+.border-outline-variant\/30 {
+  border-color: rgba(194, 198, 212, 0.3);
+}
+.border-brand\/20 {
+  border-color: rgba(0, 94, 184, 0.2);
+}
+.border-primary\/50 {
+  border-color: rgba(0, 71, 141, 0.5);
+}
+.hover-border-primary\/50:hover {
+  border-color: rgba(0, 71, 141, 0.5);
+}
 
 /* 阴影变体 */
-.hover-shadow-brand\/10:hover { box-shadow: 0 12px 40px rgba(0, 94, 184, 0.1); }
+.hover-shadow-brand\/10:hover {
+  box-shadow: 0 12px 40px rgba(0, 94, 184, 0.1);
+}
 
 /* 定位辅助 */
-.custom-left-3 { left: 0.75rem; }
-.custom-right-3 { right: 0.75rem; }
-.custom-top-3 { top: 0.75rem; }
-.top-1\/2 { top: 50%; }
-.-translate-y-1\/2 { transform: translateY(-50%); }
+.custom-left-3 {
+  left: 0.75rem;
+}
+.custom-right-3 {
+  right: 0.75rem;
+}
+.custom-top-3 {
+  top: 0.75rem;
+}
+.top-1\/2 {
+  top: 50%;
+}
+.-translate-y-1\/2 {
+  transform: translateY(-50%);
+}
 
 /* 自定义尺寸 */
-.custom-h-580 { height: 580px; }
-.custom-max-w-420 { max-width: 420px; }
-.custom-py-12 { padding-top: 3rem; padding-bottom: 3rem; }
-.custom-mb-10 { margin-bottom: 2.5rem; }
+.custom-h-580 {
+  height: 580px;
+}
+.custom-max-w-420 {
+  max-width: 420px;
+}
+.custom-py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+.custom-mb-10 {
+  margin-bottom: 2.5rem;
+}
 
 /* backdrop-filter (毛玻璃) */
-.backdrop-blur-xl { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+.backdrop-blur-xl {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}

@@ -15,7 +15,7 @@
                 较昨日持平
               </p>
             </div>
-            <div class="stat-card-icon-wrap" style="background-color: rgba(0,71,141,0.1);">
+            <div class="stat-card-icon-wrap" style="background-color: rgba(0, 71, 141, 0.1)">
               <span class="material-symbols-outlined text-primary">pending_actions</span>
             </div>
           </div>
@@ -23,14 +23,16 @@
           <div class="stat-card" :class="{ 'border-l-4 border-l-error': stats.alertTriggered }">
             <div>
               <p class="stat-card-label">未映射率</p>
-              <h3 class="stat-card-value-neutral" :class="{ 'text-error': stats.alertTriggered }">{{ Number(stats.unmappedRate).toFixed(1) }}%</h3>
+              <h3 class="stat-card-value-neutral" :class="{ 'text-error': stats.alertTriggered }">
+                {{ Number(stats.unmappedRate).toFixed(1) }}%
+              </h3>
               <p class="stat-card-sub">
                 <span class="material-symbols-outlined text-sm text-primary">check_circle</span>
                 数据状态良好
               </p>
             </div>
             <div class="stat-card-icon-wrap bg-secondary-fixed">
-              <span class="material-symbols-outlined" style="color:#021b3c;">analytics</span>
+              <span class="material-symbols-outlined" style="color: #021b3c">analytics</span>
             </div>
           </div>
           <!-- 卡片3：今日已审核 -->
@@ -57,12 +59,11 @@
                 系统运行稳定
               </p>
             </div>
-            <div class="stat-card-icon-wrap" style="background-color: rgba(0,71,141,0.1);">
+            <div class="stat-card-icon-wrap" style="background-color: rgba(0, 71, 141, 0.1)">
               <span class="material-symbols-outlined text-primary">security</span>
             </div>
           </div>
         </section>
-
 
         <!-- 主内容：词条审核表格 -->
         <section class="table-card">
@@ -86,13 +87,9 @@
                   placeholder="搜索词条、上下文或LLM猜测..."
                   type="text"
                   @input="debouncedFilter"
-                >
+                />
               </div>
-              <select
-                v-model="filterStatus"
-                class="filter-select"
-                @change="loadData"
-              >
+              <select v-model="filterStatus" class="filter-select" @change="loadData">
                 <option value="PENDING">待审核</option>
                 <option value="APPROVED">已通过</option>
                 <option value="REJECTED">已拒绝</option>
@@ -106,21 +103,21 @@
           <div class="custom-overflow-x-auto">
             <table class="term-table">
               <colgroup>
-                <col class="col-select" style="width: 40px">
-                <col class="col-term" style="width: 140px">
+                <col class="col-select" style="width: 40px" />
+                <col class="col-term" style="width: 140px" />
                 <!-- 上下文列：宽度由拖拽手柄控制 -->
-                <col class="col-context" :style="{ width: contextColWidth + 'px' }">
-                <col class="col-entity" style="width: 90px">
-                <col class="col-llm" style="width: 160px">
-                <col class="col-confidence" style="width: 100px">
-                <col class="col-count" style="width: 60px">
-                <col class="col-date" style="width: 100px">
-                <col class="col-standard" style="width: 230px">
+                <col class="col-context" :style="{ width: contextColWidth + 'px' }" />
+                <col class="col-entity" style="width: 90px" />
+                <col class="col-llm" style="width: 160px" />
+                <col class="col-confidence" style="width: 100px" />
+                <col class="col-count" style="width: 60px" />
+                <col class="col-date" style="width: 100px" />
+                <col class="col-standard" style="width: 230px" />
               </colgroup>
               <thead>
                 <tr>
                   <th class="custom-w-10">
-                    <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll">
+                    <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
                   </th>
                   <th>口语表达</th>
                   <th class="th-context">
@@ -147,15 +144,13 @@
                     <EmptyState icon="text_snippet" title="暂无词条数据" />
                   </td>
                 </tr>
-                <tr
-                  v-for="row in displayTerms"
-                  :key="row.id"
-                  :class="{ 'row-selected': selectedIds.has(row.id) }"
-                >
+                <tr v-for="row in displayTerms" :key="row.id" :class="{ 'row-selected': selectedIds.has(row.id) }">
                   <td>
-                    <input type="checkbox" :checked="selectedIds.has(row.id)" @change="toggleRow(row)">
+                    <input type="checkbox" :checked="selectedIds.has(row.id)" @change="toggleRow(row)" />
                   </td>
-                  <td><span class="term-name">{{ row.term }}</span></td>
+                  <td>
+                    <span class="term-name">{{ row.term }}</span>
+                  </td>
                   <td>
                     <!-- 悬停 title 提示查看被截断的上下文全文 -->
                     <span class="term-context" :title="row.contextQuery || '-'">{{ row.contextQuery || '-' }}</span>
@@ -171,7 +166,7 @@
                   <td>
                     <div v-if="row.llmConfidence != null" class="confidence-bar-wrap">
                       <div class="confidence-bar-bg">
-                        <div class="confidence-bar-fill" :style="{ width: (row.llmConfidence * 100) + '%' }" />
+                        <div class="confidence-bar-fill" :style="{ width: row.llmConfidence * 100 + '%' }" />
                       </div>
                       <span class="confidence-bar-text" :class="confidenceClass(row.llmConfidence)">
                         {{ (row.llmConfidence * 100).toFixed(0) }}%
@@ -183,11 +178,7 @@
                   <td class="text-xs text-on-surface-variant">{{ formatDate(row.firstSeenAt) }}</td>
                   <td class="col-sticky">
                     <div v-if="row.status === 'PENDING'" class="custom-flex custom-items-center custom-gap-2">
-                      <input
-                        v-model="approveInputs[row.id]"
-                        class="standard-input"
-                        placeholder="输入标准术语"
-                      >
+                      <input v-model="approveInputs[row.id]" class="standard-input" placeholder="输入标准术语" />
                       <button class="action-btn-approve" title="通过" @click="approveOne(row)">
                         <span class="material-symbols-outlined text-lg">check_circle</span>
                       </button>
@@ -215,8 +206,10 @@
             :info="`显示 ${displayTerms.length} 条，共 ${total} 条`"
             @change="loadData"
           />
-        </section><!-- /table-card -->
-      </div><!-- /term-review-main-inner -->
+        </section>
+        <!-- /table-card -->
+      </div>
+      <!-- /term-review-main-inner -->
     </main>
 
     <!-- 批量标注弹窗 -->
@@ -227,11 +220,7 @@
           <p class="text-sm text-on-surface-variant custom-mb-6">
             已选择 <b class="text-primary">{{ selectedRows.length }}</b> 个词条，请输入统一的标准术语
           </p>
-          <input
-            v-model="batchStandardTerm"
-            class="modal-input custom-mb-6"
-            placeholder="标准医学术语"
-          >
+          <input v-model="batchStandardTerm" class="modal-input custom-mb-6" placeholder="标准医学术语" />
           <div class="custom-flex custom-items-center custom-gap-3 custom-justify-end">
             <button class="btn-cancel" @click="batchDialogVisible = false">取消</button>
             <button class="btn-confirm" :disabled="batchSubmitting" @click="doBatchApprove">
@@ -264,7 +253,7 @@ const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.v
 const filterStatus = ref('PENDING')
 const searchKeyword = ref('')
 const selectedRows = ref<UnmappedTermItem[]>([])
-const selectedIds = computed(() => new Set(selectedRows.value.map(r => r.id)))
+const selectedIds = computed(() => new Set(selectedRows.value.map((r) => r.id)))
 const approveInputs = ref<Record<number, string>>({})
 
 const stats = ref<AdminStats>({
@@ -284,7 +273,7 @@ const batchSubmitting = ref(false)
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
 const isAllSelected = computed(() => {
-  return displayTerms.value.length > 0 && displayTerms.value.every(t => selectedIds.value.has(t.id))
+  return displayTerms.value.length > 0 && displayTerms.value.every((t) => selectedIds.value.has(t.id))
 })
 
 const displayTerms = computed(() => {
@@ -341,7 +330,7 @@ function toggleSelectAll() {
 }
 
 function toggleRow(row: UnmappedTermItem) {
-  const idx = selectedRows.value.findIndex(r => r.id === row.id)
+  const idx = selectedRows.value.findIndex((r) => r.id === row.id)
   if (idx >= 0) {
     selectedRows.value.splice(idx, 1)
   } else {
@@ -649,10 +638,9 @@ onUnmounted(() => {
 
 .term-table thead tr {
   border-bottom: 1px solid rgba(194, 198, 212, 0.1);
-  
 }
-.term-table tr{
-text-align:center
+.term-table tr {
+  text-align: center;
 }
 
 .term-table th {
@@ -886,7 +874,11 @@ text-align:center
 
 /* ===== Material Icons ===== */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 /* ===== 批量弹窗（保持原有） ===== */
@@ -906,7 +898,9 @@ text-align:center
   padding: 2rem;
   width: 100%;
   max-width: 28rem;
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px rgba(0, 0, 0, 0.1),
+    0 10px 10px rgba(0, 0, 0, 0.04);
 }
 
 .modal-input {

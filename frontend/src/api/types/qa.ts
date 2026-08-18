@@ -66,8 +66,18 @@ export type SourceReference = SourceCitation
 
 // 流式问答响应块
 export interface QaStreamChunk {
-  type: 'text' | 'sources' | 'retrievalPath' | 'done' | 'error'
-        | 'question' | 'completion' | 'safety_alert' | 'progress' | 'clarify' | 'degradation'
+  type:
+    | 'text'
+    | 'sources'
+    | 'retrievalPath'
+    | 'done'
+    | 'error'
+    | 'question'
+    | 'completion'
+    | 'safety_alert'
+    | 'progress'
+    | 'clarify'
+    | 'degradation'
   content?: string
   sources?: SourceReference[]
   conversationId?: string

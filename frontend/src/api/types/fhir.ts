@@ -23,9 +23,9 @@ export interface FhirCodeableConcept {
 export function conceptText(concept?: FhirCodeableConcept | null): string {
   if (!concept) return ''
   if (concept.text) return concept.text
-  const display = concept.coding?.find(c => c.display)?.display
+  const display = concept.coding?.find((c) => c.display)?.display
   if (display) return display
-  return concept.coding?.find(c => c.code)?.code ?? ''
+  return concept.coding?.find((c) => c.code)?.code ?? ''
 }
 
 // ==================== Patient 患者 ====================
@@ -79,7 +79,10 @@ export function patientInitial(p?: FhirPatient | null): string {
 
 /** 性别中文映射（兼容大小写：FHIR 规范为小写，健康档案/用户中心数据为大写） */
 const GENDER_MAP: Record<string, string> = {
-  MALE: '男', FEMALE: '女', OTHER: '其他', UNKNOWN: '未知'
+  MALE: '男',
+  FEMALE: '女',
+  OTHER: '其他',
+  UNKNOWN: '未知'
 }
 export function genderText(gender?: string): string {
   if (!gender) return '未知'
@@ -100,7 +103,7 @@ export function calcAge(birthDate?: string): number | null {
 
 /** 联系电话（telecom 中 phone 类型） */
 export function patientPhone(p?: FhirPatient | null): string {
-  return p?.telecom?.find(t => !t.system || t.system === 'phone')?.value ?? ''
+  return p?.telecom?.find((t) => !t.system || t.system === 'phone')?.value ?? ''
 }
 
 /** 证件号（identifier 第一条） */
@@ -190,7 +193,7 @@ export function observationValue(o?: FhirObservation | null): string {
   if (o.valueCodeableConcept) return conceptText(o.valueCodeableConcept)
   if (o.component?.length) {
     return o.component
-      .map(c => {
+      .map((c) => {
         const q = c.valueQuantity
         if (q?.value == null) return ''
         const label = conceptText(c.code)

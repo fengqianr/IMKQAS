@@ -120,7 +120,9 @@
   border: none;
   cursor: pointer;
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
   font-family: inherit;
 }
 
@@ -168,7 +170,7 @@
 
 /* 侧边栏底部 */
 .qa-sidebar-footer {
-  margin-top: auto;
+  margin-top: 1rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   margin-bottom: 1rem;
@@ -273,7 +275,9 @@
   border-bottom-left-radius: 0.125rem;
   padding: 1.25rem 1.5rem;
   border: 1px solid var(--theme-outline-variant);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    0 4px 6px -2px rgba(0, 0, 0, 0.03);
   max-width: 90%;
 }
 
@@ -298,7 +302,9 @@
   align-items: center;
   gap: 0.25rem;
   cursor: pointer;
-  transition: color 150ms, background-color 150ms;
+  transition:
+    color 150ms,
+    background-color 150ms;
 }
 
 .qa-citation-tag:hover {
@@ -334,7 +340,10 @@
   font-size: 0.75rem;
   line-height: 1.25rem;
   cursor: pointer;
-  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), color 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .qa-quick-chip:hover {
@@ -350,13 +359,19 @@
   background-color: var(--theme-surface-container-lowest);
   border-radius: 1rem;
   border: 1px solid var(--theme-outline-variant);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  transition:
+    border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .qa-input-wrapper:focus-within {
   border-color: var(--theme-primary);
-  box-shadow: 0 0 0 3px var(--theme-primary-soft), 0 10px 30px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 0 0 3px var(--theme-primary-soft),
+    0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
 .qa-input-field {
@@ -414,7 +429,9 @@
   border: none;
   cursor: pointer;
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.12),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .qa-send-btn:hover {
@@ -553,10 +570,22 @@
   font-size: 10px;
   font-weight: 600;
 }
-.qa-step-status-primary { background-color: var(--theme-primary-soft); color: var(--theme-primary); }
-.qa-step-status-secondary { background-color: var(--theme-surface-container); color: var(--theme-on-surface-variant); }
-.qa-step-status-warning { background-color: rgba(237, 108, 2, 0.12); color: #92400e; }
-.qa-step-status-error { background-color: var(--theme-error-container); color: var(--theme-on-error-container); }
+.qa-step-status-primary {
+  background-color: var(--theme-primary-soft);
+  color: var(--theme-primary);
+}
+.qa-step-status-secondary {
+  background-color: var(--theme-surface-container);
+  color: var(--theme-on-surface-variant);
+}
+.qa-step-status-warning {
+  background-color: rgba(237, 108, 2, 0.12);
+  color: #92400e;
+}
+.qa-step-status-error {
+  background-color: var(--theme-error-container);
+  color: var(--theme-on-error-container);
+}
 
 /* 步骤卡片头部（状态 + 耗时） */
 .qa-step-card-header {
@@ -729,7 +758,9 @@
   border-radius: 1rem;
   background-color: var(--theme-surface-container-lowest);
   border: 1px solid var(--theme-outline-variant);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 
@@ -766,7 +797,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 150ms, background-color 150ms;
+  transition:
+    color 150ms,
+    background-color 150ms;
 }
 
 .qa-icon-btn:hover {
@@ -826,35 +859,79 @@
 
 /* ===== 通用辅助类（兼容 v-html 动态内容，使用 Tailwind 命名） ===== */
 /* 外边距 */
-.mt-6 { margin-top: 1.5rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mb-3 { margin-bottom: 0.75rem; }
-.mb-6 { margin-bottom: 1.5rem; }
+.mt-6 {
+  margin-top: 1.5rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
 
 /* 内边距 */
-.pt-4 { padding-top: 1rem; }
-.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.pt-4 {
+  padding-top: 1rem;
+}
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
 
 /* 弹性布局辅助 */
-.flex { display: flex; }
-.items-center { align-items: center; }
-.flex-wrap { flex-wrap: wrap; }
-.justify-between { justify-content: space-between; }
-.justify-end { justify-content: flex-end; }
-.justify-start { justify-content: flex-start; }
+.flex {
+  display: flex;
+}
+.items-center {
+  align-items: center;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.justify-end {
+  justify-content: flex-end;
+}
+.justify-start {
+  justify-content: flex-start;
+}
 
 /* 间距 */
-.gap-1 { gap: 0.25rem; }
-.gap-2 { gap: 0.5rem; }
-.gap-3 { gap: 0.75rem; }
-.gap-4 { gap: 1rem; }
-.gap-6 { gap: 1.5rem; }
-.gap-8 { gap: 2rem; }
+.gap-1 {
+  gap: 0.25rem;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-3 {
+  gap: 0.75rem;
+}
+.gap-4 {
+  gap: 1rem;
+}
+.gap-6 {
+  gap: 1.5rem;
+}
+.gap-8 {
+  gap: 2rem;
+}
 
 /* 固定像素字号（兼容 v-html ） */
-.text-\[10px\] { font-size: 10px; }
-.text-\[11px\] { font-size: 11px; }
+.text-\[10px\] {
+  font-size: 10px;
+}
+.text-\[11px\] {
+  font-size: 11px;
+}
 
 /* 过渡效果 */
 .transition-colors {

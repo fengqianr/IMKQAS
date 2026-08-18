@@ -67,9 +67,7 @@ export async function syncGuestSessionsToAccount(): Promise<GuestSyncResult> {
     clearGuestSessions()
   } else if (succeeded > 0) {
     // 部分成功：移除已成功的，保留失败的供下次重试
-    const successIds = new Set(
-      sessions.filter((s) => !failedIds.includes(s.localId)).map((s) => s.localId)
-    )
+    const successIds = new Set(sessions.filter((s) => !failedIds.includes(s.localId)).map((s) => s.localId))
     successIds.forEach((id) => removeGuestSession(id))
   }
   // 全部失败：本地数据保留

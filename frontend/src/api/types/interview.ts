@@ -245,7 +245,7 @@ export interface InterviewHistoryItem {
 
 /** 批量提交请求 */
 export interface BatchSubmitRequest {
-  answers: Record<string, string>  // linkId -> code
+  answers: Record<string, string> // linkId -> code
 }
 
 /** 批量提交响应 */

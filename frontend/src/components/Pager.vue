@@ -30,7 +30,7 @@ const pageItems = computed<number[]>(() => {
   if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1)
   const pages = new Set([1, totalPages, current - 1, current, current + 1])
   const sorted = Array.from(pages)
-    .filter(p => p >= 1 && p <= totalPages)
+    .filter((p) => p >= 1 && p <= totalPages)
     .sort((a, b) => a - b)
   const items: number[] = []
   for (let i = 0; i < sorted.length; i++) {
@@ -45,24 +45,12 @@ const pageItems = computed<number[]>(() => {
   <div class="pagination-bar">
     <span v-if="info" class="page-info">{{ info }}</span>
     <div class="page-actions">
-      <button
-        class="page-btn"
-        type="button"
-        :disabled="current <= 1"
-        :aria-label="'上一页'"
-        @click="go(current - 1)"
-      >
+      <button class="page-btn" type="button" :disabled="current <= 1" :aria-label="'上一页'" @click="go(current - 1)">
         <span class="material-symbols-outlined">chevron_left</span>
       </button>
       <template v-for="p in pageItems" :key="p">
         <span v-if="p === -1" class="page-ellipsis">…</span>
-        <button
-          v-else
-          type="button"
-          class="page-num"
-          :class="p === current ? 'page-num-active' : ''"
-          @click="go(p)"
-        >
+        <button v-else type="button" class="page-num" :class="p === current ? 'page-num-active' : ''" @click="go(p)">
           {{ p }}
         </button>
       </template>

@@ -62,7 +62,11 @@ const cls = computed(() => ({ 'is-full': props.full }))
 }
 
 @keyframes loading-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

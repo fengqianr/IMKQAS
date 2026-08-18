@@ -291,7 +291,7 @@ const aiSummary = computed(() => {
   if (conditions.value.length) parts.push(`共 ${conditions.value.length} 条病情记录`)
   if (observations.value.length) parts.push(`${observations.value.length} 条检验观察`)
   if (questionnaireRecords.value.length) parts.push(`${questionnaireRecords.value.length} 份问卷`)
-  const dates = observations.value.map(o => o.effectiveDateTime).filter(Boolean) as string[]
+  const dates = observations.value.map((o) => o.effectiveDateTime).filter(Boolean) as string[]
   if (dates.length) {
     parts.push(`最近检验 ${formatDate(dates.sort().reverse()[0])}`)
   }
@@ -311,10 +311,10 @@ const statusMeta = computed<{ text: string; tone: string }>(() => {
 /** 最近一条临床记录时间（检验/问卷的最近时间，用于 Hero 展示） */
 const recentVisitText = computed(() => {
   const dates: string[] = []
-  observations.value.forEach(o => {
+  observations.value.forEach((o) => {
     if (o.effectiveDateTime) dates.push(o.effectiveDateTime)
   })
-  questionnaireRecords.value.forEach(qr => {
+  questionnaireRecords.value.forEach((qr) => {
     if (qr.authoredDate) dates.push(qr.authoredDate)
   })
   if (!dates.length) return '暂无就诊记录'
@@ -933,6 +933,10 @@ onMounted(async () => {
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>

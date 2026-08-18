@@ -48,11 +48,13 @@ export interface AdminStats {
 
 class AdminService {
   /** 分页获取待审核词条 */
-  async getUnmappedTerms(params: {
-    page?: number
-    size?: number
-    status?: string
-  } = {}): Promise<PaginationResponse<UnmappedTermItem[]>> {
+  async getUnmappedTerms(
+    params: {
+      page?: number
+      size?: number
+      status?: string
+    } = {}
+  ): Promise<PaginationResponse<UnmappedTermItem[]>> {
     const { page = 1, size = 20, status } = params
     const query = new URLSearchParams()
     query.append('page', page.toString())
@@ -79,9 +81,7 @@ class AdminService {
 
   /** 获取统计数据 */
   async getStats(): Promise<AdminStats> {
-    const response = await request.get<{ success: boolean; data: AdminStats }>(
-      '/admin/unmapped-terms/stats'
-    )
+    const response = await request.get<{ success: boolean; data: AdminStats }>('/admin/unmapped-terms/stats')
     if (response.data.success && response.data.data) {
       return response.data.data
     }
@@ -90,10 +90,7 @@ class AdminService {
 
   /** 单个审核通过 */
   async approveTerm(id: number, standardTerm: string): Promise<void> {
-    await request.post(
-      `/admin/unmapped-terms/${id}/approve`,
-      { standardTerm }
-    )
+    await request.post(`/admin/unmapped-terms/${id}/approve`, { standardTerm })
   }
 
   /** 批量审核通过 */
@@ -102,10 +99,7 @@ class AdminService {
       success: boolean
       message: string
       data: { total: number; success: number; failed: number }
-    }>(
-      '/admin/unmapped-terms/batch-approve',
-      requests
-    )
+    }>('/admin/unmapped-terms/batch-approve', requests)
     if (response.data.success && response.data.data) {
       return response.data.data
     }
@@ -114,17 +108,12 @@ class AdminService {
 
   /** 拒绝词条 */
   async rejectTerm(id: number, reason: string = ''): Promise<void> {
-    await request.post(
-      `/admin/unmapped-terms/${id}/reject`,
-      { reason }
-    )
+    await request.post(`/admin/unmapped-terms/${id}/reject`, { reason })
   }
 
   /** 获取未映射率 */
   async getUnmappedRate(): Promise<AdminStats> {
-    const response = await request.get<{ success: boolean; data: AdminStats }>(
-      '/admin/stats/unmapped-rate'
-    )
+    const response = await request.get<{ success: boolean; data: AdminStats }>('/admin/stats/unmapped-rate')
     if (response.data.success && response.data.data) {
       return response.data.data
     }

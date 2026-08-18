@@ -27,11 +27,7 @@
           </div>
         </div>
 
-        <button
-          class="add-symptom-btn"
-          :disabled="symptomCount >= 20"
-          @click="addSymptom"
-        >
+        <button class="add-symptom-btn" :disabled="symptomCount >= 20" @click="addSymptom">
           <span class="material-symbols-outlined">add</span>
           添加症状
         </button>
@@ -95,7 +91,9 @@
             :class="{ 'result-card-emergency': r.emergencyCheck?.emergency }"
           >
             <div class="result-head">
-              <span class="result-index" :class="{ 'result-index-emergency': r.emergencyCheck?.emergency }">Case #{{ i + 1 }}</span>
+              <span class="result-index" :class="{ 'result-index-emergency': r.emergencyCheck?.emergency }"
+                >Case #{{ i + 1 }}</span
+              >
               <p class="result-symptom">{{ r.symptoms }}</p>
               <StatusBadge tone="info" size="sm" :text="sourceText(r.source)" />
             </div>
@@ -110,7 +108,11 @@
                   <div class="rec-dept">
                     <div class="rec-dept-label">推荐科室</div>
                     <div class="rec-name">
-                      <span class="material-symbols-outlined rec-dept-icon" :class="{ 'rec-dept-icon-emergency': rec.emergency }">file_copy</span>
+                      <span
+                        class="material-symbols-outlined rec-dept-icon"
+                        :class="{ 'rec-dept-icon-emergency': rec.emergency }"
+                        >file_copy</span
+                      >
                       <span>{{ rec.departmentName }}</span>
                       <span v-if="rec.emergency" class="rec-emergency-tag">急诊</span>
                     </div>
@@ -159,12 +161,7 @@ import { triageService } from '@/api/services/triage.service'
 import StatusBadge from '@/components/StatusBadge.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import LoadingState from '@/components/LoadingState.vue'
-import {
-  type DepartmentTriageResult,
-  sourceText,
-  emergencyLevelText,
-  confidenceText
-} from '@/api/types/triage'
+import { type DepartmentTriageResult, sourceText, emergencyLevelText, confidenceText } from '@/api/types/triage'
 
 /** 症状清单：每行一条，最多 20 条 */
 const symptoms = ref<string[]>([''])
@@ -176,9 +173,7 @@ const results = ref<DepartmentTriageResult[]>([])
 const symptomCount = computed(() => symptoms.value.filter((s) => s.trim()).length)
 
 /** 存在急诊风险的结果条目 */
-const emergencyItems = computed(() =>
-  results.value.filter((r) => r.emergencyCheck?.emergency === true)
-)
+const emergencyItems = computed(() => results.value.filter((r) => r.emergencyCheck?.emergency === true))
 
 /** 急诊分级（取最高等级用于横幅徽标） */
 const highestLevel = computed(() => {
@@ -362,7 +357,9 @@ async function handleBatchTriage() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 150ms, color 150ms;
+  transition:
+    background-color 150ms,
+    color 150ms;
 }
 
 .symptom-remove:hover {
@@ -387,7 +384,9 @@ async function handleBatchTriage() {
   border-radius: 0.5rem;
   padding: 0.5rem;
   cursor: pointer;
-  transition: border-color 150ms, color 150ms;
+  transition:
+    border-color 150ms,
+    color 150ms;
 }
 
 .add-symptom-btn:hover:not(:disabled) {
@@ -811,6 +810,10 @@ async function handleBatchTriage() {
 }
 
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>

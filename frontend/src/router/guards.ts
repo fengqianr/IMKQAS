@@ -51,7 +51,12 @@ export function setupRouterGuards(router: Router) {
 
     // 角色权限校验：目标页是否对当前角色开放（meta.roles 白名单）
     const allowedRoles = to.meta.roles as string[] | undefined
-    if (to.meta.requiresAuth && authStore.isAuthenticated && allowedRoles && !allowedRoles.includes(authStore.userRole)) {
+    if (
+      to.meta.requiresAuth &&
+      authStore.isAuthenticated &&
+      allowedRoles &&
+      !allowedRoles.includes(authStore.userRole)
+    ) {
       ElMessage.warning('您没有权限访问该页面')
       next({ path: '/qa' })
       return

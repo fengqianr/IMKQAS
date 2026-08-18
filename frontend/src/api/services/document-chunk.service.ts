@@ -56,14 +56,17 @@ class DocumentChunkService {
   // 搜索文档分块
   async searchDocumentChunks(params: DocumentChunkSearchParams): Promise<DocumentChunkListResponse> {
     try {
-      const response = await request.get<DocumentChunkApiResponse<DocumentChunkPageResponse>>('/document-chunks/search', {
-        params: {
-          keyword: params.keyword,
-          documentId: params.documentId,
-          current: params.current || 1,
-          size: params.size || 10
+      const response = await request.get<DocumentChunkApiResponse<DocumentChunkPageResponse>>(
+        '/document-chunks/search',
+        {
+          params: {
+            keyword: params.keyword,
+            documentId: params.documentId,
+            current: params.current || 1,
+            size: params.size || 10
+          }
         }
-      })
+      )
       return response.data
     } catch (error: any) {
       console.error('搜索文档分块失败:', error)

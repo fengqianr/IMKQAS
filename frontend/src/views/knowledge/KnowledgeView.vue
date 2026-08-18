@@ -18,14 +18,7 @@
             <p class="kb-upload-title">拖拽 PDF 到此处</p>
             <p class="kb-upload-hint">或点击选择文件（≤50MB）</p>
           </div>
-          <input
-            ref="fileInput"
-            type="file"
-            class="custom-hidden"
-            accept=".pdf"
-            multiple
-            @change="handleFileSelect"
-          />
+          <input ref="fileInput" type="file" class="custom-hidden" accept=".pdf" multiple @change="handleFileSelect" />
         </div>
 
         <!-- 分类（chips 横向排列） -->
@@ -127,7 +120,9 @@
                   </td>
                   <td>
                     <StatusBadge
-                      :tone="doc.status === 'completed' ? 'success' : doc.status === 'processing' ? 'warning' : 'neutral'"
+                      :tone="
+                        doc.status === 'completed' ? 'success' : doc.status === 'processing' ? 'warning' : 'neutral'
+                      "
                       dot
                       :pulse="doc.status === 'processing'"
                     >
@@ -321,9 +316,7 @@ import type { DocumentChunk } from '@/api/types/document-chunk'
 import StatusBadge from '@/components/StatusBadge.vue'
 
 // 两个千行级子面板改为异步组件：切到对应标签才加载 chunk，主包不包含这两块逻辑
-const ContraindicationRules = defineAsyncComponent(
-  () => import('@/views/clinical/ContraindicationRules.vue')
-)
+const ContraindicationRules = defineAsyncComponent(() => import('@/views/clinical/ContraindicationRules.vue'))
 const TermReview = defineAsyncComponent(() => import('@/views/clinical/TermReview.vue'))
 
 // 类型定义
@@ -333,7 +326,7 @@ interface Category {
 }
 
 interface UiDocument {
-  id: string  // 使用字符串类型存储大整数ID，避免JavaScript精度损失
+  id: string // 使用字符串类型存储大整数ID，避免JavaScript精度损失
   name: string
   size: string
   category: string
@@ -344,15 +337,15 @@ interface UiDocument {
 }
 
 interface UiChunk extends DocumentChunk {
-  similarity?: number  // 相似度（向量搜索时使用）
-  tags?: string[]     // 标签（前端展示用）
+  similarity?: number // 相似度（向量搜索时使用）
+  tags?: string[] // 标签（前端展示用）
 }
 
 // 用于显示的分块数据接口
 interface DisplayChunk {
   id: string
-  similarity?: number  // 相似度仅向量搜索时有值
-  chunkIndex: number   // 分块序号
+  similarity?: number // 相似度仅向量搜索时有值
+  chunkIndex: number // 分块序号
   content: string
   tags?: string[]
 }
@@ -374,10 +367,10 @@ const displayChunks = ref<DisplayChunk[]>([]) // 用于显示的分块数据（�
 const zoomPercent = ref(100)
 
 // 预览相关状态
-const previewLoading = ref(false)      // 预览加载中
-const previewError = ref(false)         // 预览加载失败
-const previewText = ref('')             // 文本预览内容
-const previewBlobUrl = ref('')          // PDF预览的Blob URL
+const previewLoading = ref(false) // 预览加载中
+const previewError = ref(false) // 预览加载失败
+const previewText = ref('') // 文本预览内容
+const previewBlobUrl = ref('') // PDF预览的Blob URL
 const previewContainer = ref<HTMLElement | null>(null) // 预览容器引用
 
 // 标签页切换
@@ -438,13 +431,11 @@ const convertToDisplayChunks = (chunks: UiChunk[]): DisplayChunk[] => {
     const tags = extractTagsFromContent(chunk.content)
 
     // 截取内容，避免显示过长
-    const displayContent = chunk.content.length > 200
-      ? chunk.content.substring(0, 200) + '...'
-      : chunk.content
+    const displayContent = chunk.content.length > 200 ? chunk.content.substring(0, 200) + '...' : chunk.content
 
     return {
       id: `chunk-${chunk.id}`,
-      similarity: chunk.similarity,  // 仅向量搜索时才有值，按文档浏览时为 undefined
+      similarity: chunk.similarity, // 仅向量搜索时才有值，按文档浏览时为 undefined
       chunkIndex: chunk.chunkIndex,
       content: displayContent,
       tags
@@ -456,11 +447,20 @@ const convertToDisplayChunks = (chunks: UiChunk[]): DisplayChunk[] => {
 const extractTagsFromContent = (content: string): string[] => {
   const tags: string[] = []
   const medicalKeywords = [
-    '糖尿病', '胰岛素', 'HbA1c', '血糖', '治疗', '诊断',
-    '药物', '并发症', '筛查', '生活方式', '二甲双胍'
+    '糖尿病',
+    '胰岛素',
+    'HbA1c',
+    '血糖',
+    '治疗',
+    '诊断',
+    '药物',
+    '并发症',
+    '筛查',
+    '生活方式',
+    '二甲双胍'
   ]
 
-  medicalKeywords.forEach(keyword => {
+  medicalKeywords.forEach((keyword) => {
     if (content.includes(keyword)) {
       tags.push(keyword)
     }
@@ -476,9 +476,7 @@ const filteredDocuments = computed(() => {
   // 分类过滤（空值表示全部文档）
   if (selectedCategory.value) {
     const categoryName = selectedCategory.value.split(' ')[0]
-    result = result.filter(
-      (doc) => doc.category === categoryName || selectedCategory.value.includes(doc.category)
-    )
+    result = result.filter((doc) => doc.category === categoryName || selectedCategory.value.includes(doc.category))
   }
 
   // 搜索过滤
@@ -624,11 +622,12 @@ const copyChunkContent = () => {
     fullContent = originalChunk.content
   }
 
-  navigator.clipboard.writeText(fullContent)
+  navigator.clipboard
+    .writeText(fullContent)
     .then(() => {
       ElMessage.success('内容已复制到剪贴板')
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('复制失败:', err)
       ElMessage.error('复制失败')
     })
@@ -732,30 +731,28 @@ const handleDocAction = (command: string, doc: UiDocument) => {
       break
     case 'delete':
       // 确认删除
-      ElMessageBox.confirm(
-        `确定要删除文档 "${doc.name}" 吗？`,
-        '确认删除',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-      ).then(async () => {
-        const response = await documentService.deleteDocument(doc.id)
-        if (response.success) {
-          ElMessage.success('删除成功')
-          // 刷新文档列表
-          fetchDocuments()
-          // 如果删除的是当前选中的文档，清空选中
-          if (selectedDoc.value?.id === doc.id) {
-            selectedDoc.value = null
-          }
-        } else {
-          ElMessage.error(`删除失败: ${apiErrorMessage(response)}`)
-        }
-      }).catch(() => {
-        // 用户取消删除
+      ElMessageBox.confirm(`确定要删除文档 "${doc.name}" 吗？`, '确认删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
+        .then(async () => {
+          const response = await documentService.deleteDocument(doc.id)
+          if (response.success) {
+            ElMessage.success('删除成功')
+            // 刷新文档列表
+            fetchDocuments()
+            // 如果删除的是当前选中的文档，清空选中
+            if (selectedDoc.value?.id === doc.id) {
+              selectedDoc.value = null
+            }
+          } else {
+            ElMessage.error(`删除失败: ${apiErrorMessage(response)}`)
+          }
+        })
+        .catch(() => {
+          // 用户取消删除
+        })
       break
     case 'reprocess':
       // 确认重新处理
@@ -767,56 +764,58 @@ const handleDocAction = (command: string, doc: UiDocument) => {
           cancelButtonText: '取消',
           type: 'warning'
         }
-      ).then(async () => {
-        ElMessage.info(`文档 ${doc.name} 重新处理中...`)
-        const response = await documentService.reprocessDocument(doc.id)
-        if (response.success) {
-          ElMessage.success('文档重新处理请求已提交，处理中...')
-          // 轮询文档状态直到处理完成
-          const maxAttempts = 60  // 最多等待5分钟
-          let attempts = 0
-          const pollInterval = setInterval(async () => {
-            attempts++
-            try {
-              // 刷新文档列表获取最新状态
-              const listResponse = await documentService.getDocuments(1, 100)
-              if (listResponse.success && listResponse.data) {
-                rawDocuments.value = listResponse.data.data
-                updateCategoriesFromDocuments()
-                // 查找当前文档的最新状态
-                const updatedDoc = listResponse.data.data.find((d: ApiDocument) => d.id === doc.id)
-                if (updatedDoc) {
-                  if (updatedDoc.status === 'COMPLETED') {
-                    clearInterval(pollInterval)
-                    ElMessage.success('文档处理完成')
-                    // 如果当前选中的是这个文档，刷新其分块数据
-                    if (selectedDoc.value?.id === doc.id) {
-                      fetchDocumentChunks(doc.id)
+      )
+        .then(async () => {
+          ElMessage.info(`文档 ${doc.name} 重新处理中...`)
+          const response = await documentService.reprocessDocument(doc.id)
+          if (response.success) {
+            ElMessage.success('文档重新处理请求已提交，处理中...')
+            // 轮询文档状态直到处理完成
+            const maxAttempts = 60 // 最多等待5分钟
+            let attempts = 0
+            const pollInterval = setInterval(async () => {
+              attempts++
+              try {
+                // 刷新文档列表获取最新状态
+                const listResponse = await documentService.getDocuments(1, 100)
+                if (listResponse.success && listResponse.data) {
+                  rawDocuments.value = listResponse.data.data
+                  updateCategoriesFromDocuments()
+                  // 查找当前文档的最新状态
+                  const updatedDoc = listResponse.data.data.find((d: ApiDocument) => d.id === doc.id)
+                  if (updatedDoc) {
+                    if (updatedDoc.status === 'COMPLETED') {
+                      clearInterval(pollInterval)
+                      ElMessage.success('文档处理完成')
+                      // 如果当前选中的是这个文档，刷新其分块数据
+                      if (selectedDoc.value?.id === doc.id) {
+                        fetchDocumentChunks(doc.id)
+                      }
+                    } else if (updatedDoc.status === 'FAILED') {
+                      clearInterval(pollInterval)
+                      ElMessage.error('文档处理失败，请重试')
+                      if (selectedDoc.value?.id === doc.id) {
+                        fetchDocumentChunks(doc.id)
+                      }
                     }
-                  } else if (updatedDoc.status === 'FAILED') {
-                    clearInterval(pollInterval)
-                    ElMessage.error('文档处理失败，请重试')
-                    if (selectedDoc.value?.id === doc.id) {
-                      fetchDocumentChunks(doc.id)
-                    }
+                    // PROCESSING / UPLOADED 状态继续等待
                   }
-                  // PROCESSING / UPLOADED 状态继续等待
                 }
+              } catch (e) {
+                console.error('轮询文档状态失败:', e)
               }
-            } catch (e) {
-              console.error('轮询文档状态失败:', e)
-            }
-            if (attempts >= maxAttempts) {
-              clearInterval(pollInterval)
-              ElMessage.warning('文档处理超时，请刷新页面查看状态')
-            }
-          }, 5000)  // 每5秒轮询一次
-        } else {
-          ElMessage.error(`重新处理失败: ${apiErrorMessage(response)}`)
-        }
-      }).catch(() => {
-        // 用户取消
-      })
+              if (attempts >= maxAttempts) {
+                clearInterval(pollInterval)
+                ElMessage.warning('文档处理超时，请刷新页面查看状态')
+              }
+            }, 5000) // 每5秒轮询一次
+          } else {
+            ElMessage.error(`重新处理失败: ${apiErrorMessage(response)}`)
+          }
+        })
+        .catch(() => {
+          // 用户取消
+        })
       break
   }
 }
@@ -844,7 +843,7 @@ const fetchDocuments = async () => {
 // 从文档数据更新分类
 const updateCategoriesFromDocuments = () => {
   const categoryCounts: Record<string, number> = {}
-  rawDocuments.value.forEach(doc => {
+  rawDocuments.value.forEach((doc) => {
     if (doc.category) {
       categoryCounts[doc.category] = (categoryCounts[doc.category] || 0) + 1
     }
@@ -998,7 +997,7 @@ onUnmounted(() => {
 }
 
 .kb-category-active {
-  background: rgba(0, 71, 141, 0.10);
+  background: rgba(0, 71, 141, 0.1);
   border-color: var(--theme-primary);
   color: var(--theme-primary);
   font-weight: 600;
@@ -1613,7 +1612,7 @@ onUnmounted(() => {
 }
 
 .kb-action-secondary:hover:not(:disabled) {
-  background: rgba(237, 108, 2, 0.20);
+  background: rgba(237, 108, 2, 0.2);
 }
 
 /* ===== 响应式：窄屏时顶部行（上传+分类）上下堆叠 ===== */
@@ -1635,6 +1634,10 @@ onUnmounted(() => {
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>

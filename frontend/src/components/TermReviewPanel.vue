@@ -98,15 +98,8 @@
       <el-table-column label="操作" width="240" :resizable="false">
         <template #default="{ row }">
           <div v-if="row.status === 'PENDING'" class="action-cell">
-            <el-input
-              v-model="approveInputs[row.id]"
-              placeholder="标准术语"
-              size="small"
-              style="width: 110px"
-            />
-            <el-button type="success" size="small" @click="approveOne(row as UnmappedTermItem)">
-              通过
-            </el-button>
+            <el-input v-model="approveInputs[row.id]" placeholder="标准术语" size="small" style="width: 110px" />
+            <el-button type="success" size="small" @click="approveOne(row as UnmappedTermItem)"> 通过 </el-button>
             <el-button type="danger" size="small" :icon="'Close'" @click="rejectOne(row as UnmappedTermItem)" />
           </div>
           <el-tag v-else size="small" :type="row.status === 'APPROVED' ? 'success' : 'danger'">
@@ -130,7 +123,9 @@
 
     <!-- 批量标注弹窗 -->
     <el-dialog v-model="batchDialogVisible" title="批量标注" width="420px">
-      <p style="margin-bottom: 12px">已选择 <b>{{ selectedRows.length }}</b> 个词条，请输入统一的标准术语：</p>
+      <p style="margin-bottom: 12px">
+        已选择 <b>{{ selectedRows.length }}</b> 个词条，请输入统一的标准术语：
+      </p>
       <el-input v-model="batchStandardTerm" placeholder="标准医学术语" />
       <template #footer>
         <el-button @click="batchDialogVisible = false">取消</el-button>

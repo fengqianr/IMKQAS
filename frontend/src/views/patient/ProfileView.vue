@@ -250,13 +250,7 @@
                 class="tag-input-field"
                 @keyup.enter="addItem(field.key)"
               />
-              <el-button
-                size="small"
-                type="primary"
-                plain
-                class="tag-add-btn"
-                @click="addItem(field.key)"
-              >
+              <el-button size="small" type="primary" plain class="tag-add-btn" @click="addItem(field.key)">
                 <span class="material-symbols-outlined">add</span>
               </el-button>
             </div>
@@ -437,7 +431,7 @@ const addItem = (key: string) => {
 
 // 删除一项病史
 const removeItem = (key: string, index: number) => {
-  (form[key as keyof HealthProfile] as string[]).splice(index, 1)
+  ;(form[key as keyof HealthProfile] as string[]).splice(index, 1)
 }
 
 // 保存档案（人口学字段由个人中心兜底，仅提交病史；保存后返回视图态）
@@ -457,16 +451,12 @@ const handleSave = async () => {
 // 删除档案
 const handleDelete = async () => {
   try {
-    await ElMessageBox.confirm(
-      '确定要删除您的健康档案吗？删除后不可恢复。',
-      '删除确认',
-      {
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
-        type: 'warning',
-        confirmButtonClass: 'el-button--danger'
-      }
-    )
+    await ElMessageBox.confirm('确定要删除您的健康档案吗？删除后不可恢复。', '删除确认', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger'
+    })
     await userService.deleteHealthProfile(userId.value)
     ElMessage.success('健康档案已删除')
     hasProfile.value = false
@@ -1202,6 +1192,10 @@ onMounted(loadProfile)
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>

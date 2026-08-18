@@ -48,11 +48,7 @@
           <span class="material-symbols-outlined">verified_user</span>
           <span class="nav-label role-label">{{ roleLabel }}</span>
         </div>
-        <button
-          class="collapse-toggle"
-          :title="sidebarCollapsed ? '展开菜单' : '折叠菜单'"
-          @click="toggleSidebar"
-        >
+        <button class="collapse-toggle" :title="sidebarCollapsed ? '展开菜单' : '折叠菜单'" @click="toggleSidebar">
           <span class="material-symbols-outlined">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
         </button>
       </div>
@@ -172,7 +168,10 @@ const isPatientSide = computed(() => ROLE_TO_LAYOUT[authStore.userRole] === 'pat
  * 三端变体配置：底部 CTA（tone 决定主/危险色）与激活态差异。
  * 品牌区（图标/名字/副标题）三端一致，不改。
  */
-const VARIANT_CFG: Record<string, { cta: { label: string; icon: string; path: string; tone: 'danger' | 'primary' } | null }> = {
+const VARIANT_CFG: Record<
+  string,
+  { cta: { label: string; icon: string; path: string; tone: 'danger' | 'primary' } | null }
+> = {
   clinical: { cta: { label: '紧急导诊', icon: 'emergency', path: '/triage', tone: 'danger' } },
   portal: { cta: { label: '新建咨询', icon: 'add', path: '/qa', tone: 'primary' } },
   admin: { cta: null }
@@ -276,7 +275,7 @@ const { logoutWithConfirm } = useAuthActions()
 }
 
 .brand-name {
-  font-size: 1.0rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--theme-brand);
   letter-spacing: -0.01em;
@@ -694,6 +693,10 @@ const { logoutWithConfirm } = useAuthActions()
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>

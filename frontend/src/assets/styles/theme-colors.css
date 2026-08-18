@@ -12,13 +12,13 @@
 
 :root {
   /* ---- 管理端（默认）：别名指现有体系 ---- */
-  --theme-brand: #005eb8;                    /* 品牌主色 */
-  --theme-primary: #00478d;                  /* 主操作/激活 */
-  --theme-on-primary: #ffffff;               /* primary 底上文字 */
-  --theme-primary-strong: #00386f;           /* 主按钮 hover */
-  --theme-primary-container: #c0d5ff;        /* 浅蓝容器 */
+  --theme-brand: #005eb8; /* 品牌主色 */
+  --theme-primary: #00478d; /* 主操作/激活 */
+  --theme-on-primary: #ffffff; /* primary 底上文字 */
+  --theme-primary-strong: #00386f; /* 主按钮 hover */
+  --theme-primary-container: #c0d5ff; /* 浅蓝容器 */
   --theme-on-primary-container: #c8daff;
-  --theme-primary-soft: rgba(0, 71, 141, 0.10); /* 激活浅底 */
+  --theme-primary-soft: rgba(0, 71, 141, 0.1); /* 激活浅底 */
   --theme-secondary: #4a5f83;
   --theme-secondary-container: #c0d5ff;
   --theme-on-secondary-container: #475c80;
@@ -26,16 +26,16 @@
   --theme-on-tertiary-container: #ffcfb9;
   --theme-background: #f8f9fa;
   --theme-surface: #f8f9fa;
-  --theme-surface-bright: #ffffff;           /* 顶栏底 */
+  --theme-surface-bright: #ffffff; /* 顶栏底 */
   --theme-surface-container-lowest: #ffffff;
-  --theme-surface-container-low: #f3f4f5;    /* 侧边栏底 */
+  --theme-surface-container-low: #f3f4f5; /* 侧边栏底 */
   --theme-surface-container: #e7e8e9;
   --theme-surface-container-high: #e7e8e9;
   --theme-surface-container-highest: #e7e8e9;
   --theme-on-surface: #191c1d;
-  --theme-on-surface-variant: #4a5f83;       /* 次要文字 */
+  --theme-on-surface-variant: #4a5f83; /* 次要文字 */
   --theme-outline: #727783;
-  --theme-outline-variant: #c2c6d4;          /* 边框/分隔线 */
+  --theme-outline-variant: #c2c6d4; /* 边框/分隔线 */
   --theme-error: #ba1a1a;
   --theme-on-error: #ffffff;
   --theme-error-container: #ffdad6;
@@ -65,7 +65,7 @@
   --theme-primary-strong: #38514a;
   --theme-primary-container: #86a697;
   --theme-on-primary-container: #1e3c30;
-  --theme-primary-soft: rgba(70, 101, 88, 0.10);
+  --theme-primary-soft: rgba(70, 101, 88, 0.1);
   --theme-secondary: #476179;
   --theme-secondary-container: #c4e0fd;
   --theme-on-secondary-container: #49637c;

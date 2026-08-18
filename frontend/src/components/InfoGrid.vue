@@ -9,10 +9,7 @@ withDefaults(
 </script>
 
 <template>
-  <div
-    class="info-grid"
-    :style="{ gridTemplateColumns: `repeat(auto-fill, minmax(${minColWidth}px, 1fr))` }"
-  >
+  <div class="info-grid" :style="{ gridTemplateColumns: `repeat(auto-fill, minmax(${minColWidth}px, 1fr))` }">
     <slot />
   </div>
 </template>

@@ -66,9 +66,7 @@ class UserService {
    * GET /api/users/{userId}/health-profile
    */
   async getHealthProfile(userId: string | number): Promise<HealthProfileResult> {
-    const response = await request.get<HealthProfileResult>(
-      `/users/${userId}/health-profile`
-    )
+    const response = await request.get<HealthProfileResult>(`/users/${userId}/health-profile`)
     return response.data
   }
 
@@ -77,10 +75,7 @@ class UserService {
    * PUT /api/users/{userId}/health-profile
    */
   async updateHealthProfile(userId: string | number, profile: HealthProfile): Promise<void> {
-    const response = await request.put<HealthProfileActionResult>(
-      `/users/${userId}/health-profile`,
-      profile
-    )
+    const response = await request.put<HealthProfileActionResult>(`/users/${userId}/health-profile`, profile)
     if (!response.data.success) {
       throw new Error(response.data.message || '保存失败')
     }
@@ -91,9 +86,7 @@ class UserService {
    * DELETE /api/users/{userId}/health-profile
    */
   async deleteHealthProfile(userId: string | number): Promise<void> {
-    const response = await request.delete<HealthProfileActionResult>(
-      `/users/${userId}/health-profile`
-    )
+    const response = await request.delete<HealthProfileActionResult>(`/users/${userId}/health-profile`)
     if (!response.data.success) {
       throw new Error(response.data.message || '删除失败')
     }
@@ -104,9 +97,7 @@ class UserService {
    * GET /api/users/{userId}/identity
    */
   async getIdentity(userId: string | number): Promise<IdentityResult> {
-    const response = await request.get<IdentityResult>(
-      `/users/${userId}/identity`
-    )
+    const response = await request.get<IdentityResult>(`/users/${userId}/identity`)
     return response.data
   }
 
@@ -115,10 +106,7 @@ class UserService {
    * PUT /api/users/{userId}/identity
    */
   async updateIdentity(userId: string | number, identity: IdentityInfo): Promise<void> {
-    const response = await request.put<HealthProfileActionResult>(
-      `/users/${userId}/identity`,
-      identity
-    )
+    const response = await request.put<HealthProfileActionResult>(`/users/${userId}/identity`, identity)
     if (!response.data.success) {
       throw new Error(response.data.message || '保存失败')
     }

@@ -21,42 +21,20 @@
         @submit.prevent="handleNextStep"
       >
         <el-form-item prop="phone">
-          <el-input
-            v-model="form.phone"
-            placeholder="手机号"
-            size="large"
-            :prefix-icon="Iphone"
-          />
+          <el-input v-model="form.phone" placeholder="手机号" size="large" :prefix-icon="Iphone" />
         </el-form-item>
 
         <el-form-item prop="code">
           <div class="code-input-wrapper">
-            <el-input
-              v-model="form.code"
-              placeholder="验证码"
-              size="large"
-              :prefix-icon="Message"
-              class="code-input"
-            />
-            <el-button
-              type="text"
-              class="send-code-btn"
-              :disabled="sendCodeDisabled"
-              @click="sendCode"
-            >
+            <el-input v-model="form.code" placeholder="验证码" size="large" :prefix-icon="Message" class="code-input" />
+            <el-button type="text" class="send-code-btn" :disabled="sendCodeDisabled" @click="sendCode">
               {{ sendCodeText }}
             </el-button>
           </div>
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            class="next-btn"
-            :loading="loading"
-            native-type="submit"
-          >
+          <el-button type="primary" size="large" class="next-btn" :loading="loading" native-type="submit">
             下一步
           </el-button>
         </el-form-item>
@@ -94,17 +72,8 @@
 
         <el-form-item>
           <div class="form-actions">
-            <el-button size="large" @click="activeStep = 0">
-              上一步
-            </el-button>
-            <el-button
-              type="primary"
-              size="large"
-              :loading="loading"
-              native-type="submit"
-            >
-              重置密码
-            </el-button>
+            <el-button size="large" @click="activeStep = 0"> 上一步 </el-button>
+            <el-button type="primary" size="large" :loading="loading" native-type="submit"> 重置密码 </el-button>
           </div>
         </el-form-item>
       </el-form>
@@ -115,14 +84,7 @@
         </el-icon>
         <h2>密码重置成功</h2>
         <p>您的密码已成功重置，请使用新密码登录</p>
-        <el-button
-          type="primary"
-          size="large"
-          class="login-btn"
-          @click="gotoLogin"
-        >
-          立即登录
-        </el-button>
+        <el-button type="primary" size="large" class="login-btn" @click="gotoLogin"> 立即登录 </el-button>
       </div>
 
       <div class="forgot-password-footer">
@@ -165,12 +127,8 @@ const validatePhone = (_rule: any, value: string, callback: any) => {
 }
 
 const rules: FormRules = {
-  phone: [
-    { validator: validatePhone, trigger: 'blur' }
-  ],
-  code: [
-    { required: true, message: '请输入验证码', trigger: 'blur' }
-  ]
+  phone: [{ validator: validatePhone, trigger: 'blur' }],
+  code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
 }
 
 // 第二步表单
@@ -204,12 +162,8 @@ const validateConfirmPassword = (_rule: any, value: string, callback: any) => {
 }
 
 const passwordRules: FormRules = {
-  password: [
-    { validator: validatePassword, trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { validator: validateConfirmPassword, trigger: 'blur' }
-  ]
+  password: [{ validator: validatePassword, trigger: 'blur' }],
+  confirmPassword: [{ validator: validateConfirmPassword, trigger: 'blur' }]
 }
 
 // 验证码相关
@@ -247,7 +201,7 @@ const sendCode = async () => {
 
   try {
     // TODO: 调用发送验证码API
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
     ElMessage.success('验证码已发送')
   } catch (error) {
     ElMessage.error('验证码发送失败')
@@ -267,7 +221,7 @@ const handleNextStep = async () => {
   loading.value = true
   try {
     // TODO: 验证验证码
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
     activeStep.value = 1
   } catch (error) {
     ElMessage.error('验证失败，请检查验证码')
@@ -286,7 +240,7 @@ const handleResetPassword = async () => {
   loading.value = true
   try {
     // TODO: 调用重置密码API
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     activeStep.value = 2
   } catch (error) {
     ElMessage.error('重置密码失败，请稍后重试')

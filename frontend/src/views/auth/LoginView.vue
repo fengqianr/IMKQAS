@@ -6,19 +6,9 @@
         <p class="subtitle">医疗知识智能问答系统</p>
       </div>
 
-      <el-form
-        ref="loginFormRef"
-        :model="loginForm"
-        :rules="loginRules"
-        class="login-form"
-      >
+      <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
         <el-form-item prop="username">
-          <el-input
-            v-model="loginForm.username"
-            placeholder="用户名/手机号"
-            size="large"
-            :prefix-icon="User"
-          />
+          <el-input v-model="loginForm.username" placeholder="用户名/手机号" size="large" :prefix-icon="User" />
         </el-form-item>
 
         <el-form-item prop="password">
@@ -32,15 +22,8 @@
           />
         </el-form-item>
 
-
         <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            class="login-btn"
-            :loading="loginLoading"
-            @click="handleLogin"
-          >
+          <el-button type="primary" size="large" class="login-btn" :loading="loginLoading" @click="handleLogin">
             登录
           </el-button>
         </el-form-item>
@@ -73,12 +56,8 @@ const loginForm = reactive({
 })
 
 const loginRules: FormRules = {
-  username: [
-    { required: true, message: '请输入用户名或手机号', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
-  ]
+  username: [{ required: true, message: '请输入用户名或手机号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
 const loginLoading = ref(false)
@@ -111,7 +90,6 @@ const handleLogin = async () => {
     loginLoading.value = false
   }
 }
-
 
 const gotoRegister = () => {
   router.push('/register')
@@ -158,7 +136,6 @@ const gotoForgotPassword = () => {
 .login-form {
   margin-top: var(--spacing-xl);
 }
-
 
 .login-btn {
   width: 100%;

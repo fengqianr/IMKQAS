@@ -3,9 +3,7 @@
     <!-- 顶部导航栏 -->
     <header class="qa-header">
       <div class="custom-flex custom-items-center custom-gap-8">
-        <div class="qa-header-logo">
-          Clinical Precision RAG
-        </div>
+        <div class="qa-header-logo">Clinical Precision RAG</div>
         <nav v-if="navItems.length" class="custom-hidden custom-md-flex custom-items-center custom-gap-6">
           <router-link
             v-for="item in navItems"
@@ -58,7 +56,7 @@
         <div class="custom-p-6 custom-pt-4">
           <div class="qa-sidebar-header">
             <div class="qa-sidebar-icon">
-              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">clinical_notes</span>
             </div>
             <div>
               <div class="qa-sidebar-title">会话管理</div>
@@ -73,7 +71,8 @@
 
         <nav class="custom-flex-1 qa-no-scrollbar custom-overflow-y-auto space-y-1">
           <div
-            v-for="session in sessions" :key="session.id"
+            v-for="session in sessions"
+            :key="session.id"
             :class="['qa-session-item', session.id === activeSessionId ? 'qa-session-active' : 'qa-session-inactive']"
             @click="switchSession(session.id)"
           >
@@ -91,7 +90,11 @@
             <span class="material-symbols-outlined text-lg">delete</span>
             回收站
           </div>
-          <div v-if="authStore.userRole === 'ADMIN'" class="qa-sidebar-footer-item qa-clickable" @click="showReviewPanel = true">
+          <div
+            v-if="authStore.userRole === 'ADMIN'"
+            class="qa-sidebar-footer-item qa-clickable"
+            @click="showReviewPanel = true"
+          >
             <span class="material-symbols-outlined text-lg">rate_review</span>
             词条审核
           </div>
@@ -116,7 +119,8 @@
             <div class="qa-safety-tip">
               <span class="qa-safety-tip-icon material-symbols-outlined">warning</span>
               <p class="qa-safety-tip-text">
-                <span class="qa-safety-tip-bold">医疗安全提示：</span>本系统提供的信息仅供临床参考，不作为最终诊断及用药依据。请结合患者实际体征及相关检查结果，由执业医师进行最终决策。
+                <span class="qa-safety-tip-bold">医疗安全提示：</span
+                >本系统提供的信息仅供临床参考，不作为最终诊断及用药依据。请结合患者实际体征及相关检查结果，由执业医师进行最终决策。
               </p>
             </div>
           </div>
@@ -124,7 +128,8 @@
           <div class="qa-messages-container">
             <div class="qa-messages-list">
               <div
-                v-for="message in messages" :key="message.id"
+                v-for="message in messages"
+                :key="message.id"
                 :class="['custom-flex', message.role === 'user' ? 'custom-justify-end' : 'custom-justify-start']"
               >
                 <!-- 用户消息 -->
@@ -135,7 +140,9 @@
                 <div v-else class="qa-message-ai-wrapper">
                   <div class="qa-ai-identity">
                     <div class="qa-ai-avatar">
-                      <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                      <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1"
+                        >smart_toy</span
+                      >
                     </div>
                     <span class="qa-ai-name">PRECISION AI 临床决策支持</span>
                   </div>
@@ -149,14 +156,23 @@
                         <span class="qa-thinking-dot">.</span>
                       </span>
                     </div>
-                    <div v-else class="qa-ai-content text-sm text-on-surface leading-relaxed" v-html="message.content" />
+                    <div
+                      v-else
+                      class="qa-ai-content text-sm text-on-surface leading-relaxed"
+                      v-html="message.content"
+                    />
                   </div>
                   <!-- 问卷建议卡片 -->
-                  <div v-if="message.questionnaire?.type === 'suggestion'" class="qa-questionnaire-card qa-suggestion-card">
+                  <div
+                    v-if="message.questionnaire?.type === 'suggestion'"
+                    class="qa-questionnaire-card qa-suggestion-card"
+                  >
                     <div class="qa-suggestion-header">
                       <span class="material-symbols-outlined qa-suggestion-icon">assignment</span>
                       <div>
-                        <div class="qa-suggestion-title">{{ message.questionnaire.suggestionText || '检测到您可能需要填写量表' }}</div>
+                        <div class="qa-suggestion-title">
+                          {{ message.questionnaire.suggestionText || '检测到您可能需要填写量表' }}
+                        </div>
                         <div v-if="message.questionnaire.questionnaireTitle" class="qa-suggestion-subtitle">
                           建议填写：{{ message.questionnaire.questionnaireTitle }}
                         </div>
@@ -169,7 +185,12 @@
                       <button
                         :disabled="interviewActive"
                         class="qa-suggestion-btn qa-suggestion-btn-primary"
-                        @click="startInterviewFlow(message.questionnaire.questionnaireId!, message.questionnaire.questionnaireTitle!)"
+                        @click="
+                          startInterviewFlow(
+                            message.questionnaire.questionnaireId!,
+                            message.questionnaire.questionnaireTitle!
+                          )
+                        "
                       >
                         <span class="material-symbols-outlined text-sm">play_arrow</span>
                         {{ interviewActive ? '填表中...' : '开始填表' }}
@@ -182,7 +203,14 @@
                   <!-- 问卷问题卡片 -->
                   <div v-if="message.questionnaire?.type === 'question'" class="qa-questionnaire-card qa-question-card">
                     <div class="qa-question-progress-bar">
-                      <div class="qa-question-progress-fill" :style="{ width: ((message.questionnaire.currentIndex! + 1) / message.questionnaire.totalQuestions! * 100) + '%' }" />
+                      <div
+                        class="qa-question-progress-fill"
+                        :style="{
+                          width:
+                            ((message.questionnaire.currentIndex! + 1) / message.questionnaire.totalQuestions!) * 100 +
+                            '%'
+                        }"
+                      />
                     </div>
                     <div class="qa-question-progress-text">
                       问题 {{ message.questionnaire.currentIndex! + 1 }} / {{ message.questionnaire.totalQuestions }}
@@ -206,14 +234,22 @@
                     </div>
                   </div>
                   <!-- 问卷完成卡片 -->
-                  <div v-if="message.questionnaire?.type === 'completion'" class="qa-questionnaire-card qa-completion-card">
+                  <div
+                    v-if="message.questionnaire?.type === 'completion'"
+                    class="qa-questionnaire-card qa-completion-card"
+                  >
                     <div class="qa-completion-header">
                       <span class="material-symbols-outlined qa-completion-icon">check_circle</span>
                       <span class="qa-completion-title">问卷填写完成</span>
                     </div>
                     <div v-if="message.questionnaire.severity" class="qa-completion-score">
                       <span class="qa-completion-score-label">评估结果：</span>
-                      <span :class="['qa-severity-badge', 'qa-severity-' + getSeverityLevel(message.questionnaire.severity)]">
+                      <span
+                        :class="[
+                          'qa-severity-badge',
+                          'qa-severity-' + getSeverityLevel(message.questionnaire.severity)
+                        ]"
+                      >
                         {{ message.questionnaire.severity }}
                       </span>
                     </div>
@@ -240,7 +276,10 @@
                     </div>
                   </div>
                   <!-- 安全警报卡片 -->
-                  <div v-if="message.questionnaire?.type === 'safety_alert'" class="qa-questionnaire-card qa-safety-alert-card">
+                  <div
+                    v-if="message.questionnaire?.type === 'safety_alert'"
+                    class="qa-questionnaire-card qa-safety-alert-card"
+                  >
                     <div class="qa-safety-alert-header">
                       <span class="material-symbols-outlined qa-safety-alert-icon">warning</span>
                       <span class="qa-safety-alert-title">安全提醒</span>
@@ -253,17 +292,17 @@
                     </div>
                   </div>
                   <!-- 纯表单卡片（manual_form 降级时展示所有剩余题目） -->
-                  <div v-if="message.questionnaire?.type === 'manual_form'" class="qa-questionnaire-card qa-manual-form-card">
+                  <div
+                    v-if="message.questionnaire?.type === 'manual_form'"
+                    class="qa-questionnaire-card qa-manual-form-card"
+                  >
                     <div class="qa-manual-form-banner">
                       <span class="material-symbols-outlined qa-manual-form-banner-icon">info</span>
                       <span>LLM不可用，请点击问卷答案</span>
                     </div>
                     <div class="qa-manual-form-title">{{ message.questionnaire.questionnaireTitle || '问卷采集' }}</div>
                     <div class="qa-question-progress-bar">
-                      <div
-                        class="qa-question-progress-fill"
-                        :style="{ width: manualFormFillPercent + '%' }"
-                      />
+                      <div class="qa-question-progress-fill" :style="{ width: manualFormFillPercent + '%' }" />
                     </div>
                     <div class="qa-question-progress-text">
                       已选择 {{ manualFormSelectedCount }} / {{ message.questionnaire.manualFormItems?.length || 0 }} 题
@@ -281,9 +320,10 @@
                         <button
                           v-for="opt in item.options"
                           :key="opt.code"
-                          :class="['qa-option-btn',
-                                   manualFormAnswers[message.id]?.[item.linkId] === opt.code
-                                     ? 'qa-option-btn-selected' : '']"
+                          :class="[
+                            'qa-option-btn',
+                            manualFormAnswers[message.id]?.[item.linkId] === opt.code ? 'qa-option-btn-selected' : ''
+                          ]"
                           @click="selectManualFormOption(message.id, item.linkId, opt.code)"
                         >
                           <span class="qa-option-code">{{ opt.code }}</span>
@@ -291,7 +331,8 @@
                           <span
                             v-if="manualFormAnswers[message.id]?.[item.linkId] === opt.code"
                             class="qa-option-check material-symbols-outlined"
-                          >check</span>
+                            >check</span
+                          >
                         </button>
                       </div>
                     </div>
@@ -321,21 +362,19 @@
         <div class="qa-input-area">
           <!-- 快捷引导提问（按角色分组） -->
           <div class="qa-quick-prompts">
-            <button
-              v-for="prompt in quickPrompts" :key="prompt"
-              class="qa-quick-chip"
-              @click="useQuickPrompt(prompt)"
-            >
+            <button v-for="prompt in quickPrompts" :key="prompt" class="qa-quick-chip" @click="useQuickPrompt(prompt)">
               {{ prompt }}
             </button>
           </div>
           <div class="qa-input-wrapper">
             <textarea
-              v-model="inputText" class="qa-input-field"
+              v-model="inputText"
+              class="qa-input-field"
               placeholder="输入临床问题或上传病例附件..."
               rows="1"
               @keyup.enter="sendMessage"
-              @compositionstart="isComposing = true" @compositionend="isComposing = false"
+              @compositionstart="isComposing = true"
+              @compositionend="isComposing = false"
             />
             <div class="qa-input-actions">
               <button class="qa-input-btn material-symbols-outlined">attach_file</button>
@@ -359,7 +398,8 @@
           </h3>
           <div>
             <div
-              v-for="(step, index) in retrievalSteps" v-show="expandedSteps || index < 3"
+              v-for="(step, index) in retrievalSteps"
+              v-show="expandedSteps || index < 3"
               :key="index"
               class="qa-retrieval-step"
             >
@@ -380,11 +420,7 @@
                 </div>
               </div>
             </div>
-            <button
-              v-if="retrievalSteps.length > 3"
-              class="qa-expand-toggle"
-              @click="expandedSteps = !expandedSteps"
-            >
+            <button v-if="retrievalSteps.length > 3" class="qa-expand-toggle" @click="expandedSteps = !expandedSteps">
               {{ expandedSteps ? '收起' : `展开全部 ${retrievalSteps.length} 步` }}
             </button>
           </div>
@@ -414,13 +450,13 @@
           <div v-if="currentReport.riskAssessment" class="qa-report-section">
             <h4 class="qa-report-section-title">风险评估</h4>
             <div class="qa-report-risk">
-              <span :class="['qa-severity-badge', 'qa-severity-' + getSeverityLevel(currentReport.riskAssessment.level)]">
+              <span
+                :class="['qa-severity-badge', 'qa-severity-' + getSeverityLevel(currentReport.riskAssessment.level)]"
+              >
                 {{ currentReport.riskAssessment.level }}
               </span>
               <p class="qa-report-text">{{ currentReport.riskAssessment.description }}</p>
-              <p v-if="currentReport.riskAssessment.requiresUrgentAttention" class="qa-report-urgent">
-                需要紧急关注
-              </p>
+              <p v-if="currentReport.riskAssessment.requiresUrgentAttention" class="qa-report-urgent">需要紧急关注</p>
             </div>
           </div>
           <!-- 详细分析 -->
@@ -615,16 +651,16 @@ function stopHeartbeat() {
 
 // 纯表单卡片计算属性
 const manualFormSelectedCount = computed(() => {
-  const formMsg = messages.value.find(m => m.questionnaire?.type === 'manual_form')
+  const formMsg = messages.value.find((m) => m.questionnaire?.type === 'manual_form')
   if (!formMsg) return 0
   const answers = manualFormAnswers.value[formMsg.id]
   return answers ? Object.keys(answers).length : 0
 })
 
 const manualFormFillPercent = computed(() => {
-  const formMsg = messages.value.find(m => m.questionnaire?.type === 'manual_form')
+  const formMsg = messages.value.find((m) => m.questionnaire?.type === 'manual_form')
   if (!formMsg || !formMsg.questionnaire?.manualFormItems?.length) return 0
-  return manualFormSelectedCount.value / formMsg.questionnaire.manualFormItems.length * 100
+  return (manualFormSelectedCount.value / formMsg.questionnaire.manualFormItems.length) * 100
 })
 
 // 页面关闭/刷新前通知后端暂停访谈（保留MySQL数据，支持断点续填）
@@ -655,7 +691,7 @@ const isAdminSide = computed(() => ROLE_TO_LAYOUT[authStore.userRole] === 'admin
 
 // 浮动卡片顶部标题：取当前活跃会话标题，无会话时显示「新会话」
 const activeSessionTitle = computed(() => {
-  const s = sessions.value.find(item => item.id === activeSessionId.value)
+  const s = sessions.value.find((item) => item.id === activeSessionId.value)
   return s?.title || '新会话'
 })
 
@@ -712,7 +748,7 @@ const deleteActiveSession = async () => {
       await conversationService.deleteConversation(activeSessionId.value)
     }
     // 从侧边栏移除
-    sessions.value = sessions.value.filter(s => s.id !== activeSessionId.value)
+    sessions.value = sessions.value.filter((s) => s.id !== activeSessionId.value)
     // 切换到第一个剩余会话
     if (sessions.value.length > 0) {
       await switchSession(sessions.value[0].id)
@@ -760,9 +796,23 @@ const getStepResultItems = (step: RetrievalStep): { label: string; value: string
   if (step.outputCount > 0) items.push({ label: '输出', value: String(step.outputCount) })
   // 展示中间数据中的关键结果
   if (step.intermediateData) {
-    const displayKeys = ['结果', '命中片段', '示例来源', '通过', '丢弃', '通过率',
-                         '最高分', '最高置信度', '已改写', '候选数', '上下文片段',
-                         '答案长度', '引用数', '置信度', 'intentType']
+    const displayKeys = [
+      '结果',
+      '命中片段',
+      '示例来源',
+      '通过',
+      '丢弃',
+      '通过率',
+      '最高分',
+      '最高置信度',
+      '已改写',
+      '候选数',
+      '上下文片段',
+      '答案长度',
+      '引用数',
+      '置信度',
+      'intentType'
+    ]
     for (const key of displayKeys) {
       const val = step.intermediateData[key]
       if (val !== undefined && val !== null && String(val).length > 0) {
@@ -776,9 +826,12 @@ const getStepResultItems = (step: RetrievalStep): { label: string; value: string
 // 状态中文映射
 const getStatusLabel = (status: string): string => {
   switch (status) {
-    case 'BLOCKED': return '已阻断'
-    case 'ERROR': return '异常'
-    default: return '成功'
+    case 'BLOCKED':
+      return '已阻断'
+    case 'ERROR':
+      return '异常'
+    default:
+      return '成功'
   }
 }
 
@@ -788,7 +841,7 @@ const loadConversations = async () => {
     loadingSessions.value = true
     let conversations: Conversation[]
     if (isGuest.value) {
-      conversations = listGuestSessions().map(s => ({
+      conversations = listGuestSessions().map((s) => ({
         id: s.localId,
         userId: 0,
         title: s.title,
@@ -800,7 +853,7 @@ const loadConversations = async () => {
     } else {
       conversations = await conversationService.getConversations(authStore.userId)
     }
-    sessions.value = conversations.map(conv => ({
+    sessions.value = conversations.map((conv) => ({
       id: conv.id.toString(),
       title: conv.title,
       icon: getSessionIcon(conv.title),
@@ -818,7 +871,7 @@ const loadConversations = async () => {
   } finally {
     loadingSessions.value = false
     nextTick(() => scrollToBottom())
-  } 
+  }
 }
 
 // 从 sourceReferences JSON 构建参考文献 HTML
@@ -858,7 +911,7 @@ const loadMessages = async (sessionId: string) => {
         messages.value = []
         return
       }
-      messages.value = localSession.messages.map(msg => {
+      messages.value = localSession.messages.map((msg) => {
         let content = msg.content
         if (msg.role === 'assistant' && msg.sourceReferences) {
           content += buildReferenceSection(msg.sourceReferences)
@@ -874,7 +927,7 @@ const loadMessages = async (sessionId: string) => {
     }
     // sessionId就是conversationId
     const messagesList = await conversationService.getMessages(sessionId)
-    const historyMessages: ChatMessage[] = messagesList.map(msg => {
+    const historyMessages: ChatMessage[] = messagesList.map((msg) => {
       let content = msg.content
       if (msg.role === 'assistant' && msg.sourceReferences) {
         content += buildReferenceSection(msg.sourceReferences)
@@ -907,7 +960,7 @@ const loadMessages = async (sessionId: string) => {
 
       // 检测可恢复的访谈：只恢复 PAUSED 状态（用户关闭页面），忽略 ABANDONED/EXPIRED
       const pendingInterview = interviewMsgs
-        .filter(h => !h.completed && h.status === 'PAUSED')
+        .filter((h) => !h.completed && h.status === 'PAUSED')
         .sort((a, b) => new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime())[0]
       if (pendingInterview) {
         const resumed = await interviewService.resumeInterview(pendingInterview.sessionId)
@@ -955,7 +1008,7 @@ const buildQuestionnaireMessage = (im: InterviewMessageItem): ChatMessage | null
       return {
         id: 'um-' + im.id,
         role: 'user',
-        content: typeof d.text === 'string' ? d.text : (d.display || ''),
+        content: typeof d.text === 'string' ? d.text : d.display || ''
       }
     case 'completion':
       return {
@@ -1058,12 +1111,14 @@ const persistAssistantMessage = (content: string, sourceReferences?: string) => 
       saveGuestSession(localSession)
     }
   } else {
-    conversationService.createMessage({
-      conversationId: activeSessionId.value!,
-      content,
-      role: 'assistant',
-      sourceReferences
-    }).catch(err => console.error('保存AI消息失败:', err))
+    conversationService
+      .createMessage({
+        conversationId: activeSessionId.value!,
+        content,
+        role: 'assistant',
+        sourceReferences
+      })
+      .catch((err) => console.error('保存AI消息失败:', err))
   }
 }
 
@@ -1133,11 +1188,13 @@ const sendMessage = async () => {
         saveGuestSession(localSession)
       }
     } else {
-      conversationService.createMessage({
-        conversationId: activeSessionId.value,
-        content: content,
-        role: 'user'
-      }).catch(err => console.error('保存用户消息失败:', err))
+      conversationService
+        .createMessage({
+          conversationId: activeSessionId.value,
+          content: content,
+          role: 'user'
+        })
+        .catch((err) => console.error('保存用户消息失败:', err))
     }
 
     // 首条消息时自动更新对话标题（游客模式本地更新）
@@ -1150,12 +1207,13 @@ const sendMessage = async () => {
           localSession.title = newTitle
           saveGuestSession(localSession)
         }
-        const session = sessions.value.find(s => s.id === activeSessionId.value)
+        const session = sessions.value.find((s) => s.id === activeSessionId.value)
         if (session) session.title = newTitle
       } else {
-        conversationService.updateConversationTitle(activeSessionId.value, newTitle)
+        conversationService
+          .updateConversationTitle(activeSessionId.value, newTitle)
           .then(() => {
-            const session = sessions.value.find(s => s.id === activeSessionId.value)
+            const session = sessions.value.find((s) => s.id === activeSessionId.value)
             if (session) session.title = newTitle
           })
           .catch(() => {})
@@ -1175,9 +1233,8 @@ const sendMessage = async () => {
       (chunk) => {
         if (chunk.type === 'text' && chunk.content) {
           streamingContent += chunk.content
-          const msg = messages.value.find(m => m.id === aiMsgId)
+          const msg = messages.value.find((m) => m.id === aiMsgId)
           if (msg) msg.content = streamingContent
-         
         } else if (chunk.type === 'sources' && chunk.sources) {
           pendingSources = chunk.sources
         } else if (chunk.type === 'retrievalPath' && chunk.retrievalPath) {
@@ -1202,7 +1259,7 @@ const sendMessage = async () => {
       },
       // onError
       (error) => {
-        const msg = messages.value.find(m => m.id === aiMsgId)
+        const msg = messages.value.find((m) => m.id === aiMsgId)
         if (msg && !streamingContent) {
           msg.content = `抱歉，处理您的请求时出现错误：${apiErrorMessage(error)}。请稍后重试。`
         }
@@ -1247,7 +1304,7 @@ const sendMessage = async () => {
             score: s.relevanceScore || s.similarity
           }))
           const refSection = buildReferenceSection(JSON.stringify(sourceRefs))
-          const msg = messages.value.find(m => m.id === aiMsgId)
+          const msg = messages.value.find((m) => m.id === aiMsgId)
           if (msg) msg.content = streamingContent + refSection
           persistAssistantMessage(streamingContent, JSON.stringify(sourceRefs))
         } else {
@@ -1257,7 +1314,7 @@ const sendMessage = async () => {
     )
   } catch (error) {
     console.error('发送消息失败:', error)
-    const msg = messages.value.find(m => m.id === aiMsgId)
+    const msg = messages.value.find((m) => m.id === aiMsgId)
     if (msg && !streamingContent) {
       msg.content = `抱歉，处理您的请求时出现错误：${apiErrorMessage(error)}。请稍后重试。`
     }
@@ -1536,9 +1593,7 @@ const showDetailedReport = async (message: ChatMessage) => {
 
   try {
     // 从 analysisId 提取 sessionId (格式: analysis-{sessionId})
-    const sessionId = analysisId.startsWith('analysis-')
-      ? analysisId.substring(9)
-      : analysisId
+    const sessionId = analysisId.startsWith('analysis-') ? analysisId.substring(9) : analysisId
     const report = await interviewService.getAnalysisReport(sessionId)
     currentReport.value = report
   } catch (e) {
@@ -1580,7 +1635,7 @@ const isManualFormComplete = (message: ChatMessage): boolean => {
   if (!items || items.length === 0) return false
   const answers = manualFormAnswers.value[message.id]
   if (!answers) return false
-  return items.every(item => !!answers[item.linkId])
+  return items.every((item) => !!answers[item.linkId])
 }
 
 /** 提交纯表单所有答案 */
@@ -1600,7 +1655,7 @@ const submitAllManualFormAnswers = async (message: ChatMessage) => {
     const response = await interviewService.batchSubmit(sessionId, answers)
 
     // 替换 manual_form 卡片为 completion 卡片
-    const msgIndex = messages.value.findIndex(m => m.id === message.id)
+    const msgIndex = messages.value.findIndex((m) => m.id === message.id)
     if (msgIndex !== -1) {
       messages.value[msgIndex] = {
         ...message,
@@ -1659,8 +1714,8 @@ const initManualForm = async (sessionId: string, questionnaireId: string) => {
 
     // 筛出剩余未答题
     const remainingItems: ManualFormItem[] = template.items
-      .filter(item => !answeredLinkIds.has(item.linkId))
-      .map(item => ({
+      .filter((item) => !answeredLinkIds.has(item.linkId))
+      .map((item) => ({
         index: item.index,
         linkId: item.linkId,
         text: item.text,
@@ -1728,16 +1783,22 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-
-
 /* ===== Material Symbols 图标 ===== */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
   transition: font-variation-settings 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .material-symbols-outlined[style*="font-variation-settings: 'FILL' 1"] {
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 /* ===== 滚动区域 ===== */
@@ -1766,11 +1827,7 @@ onUnmounted(() => {
 /* ===== 玻璃效果 ===== */
 .glass-effect {
   backdrop-filter: blur(20px);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.7) 0%,
-    rgba(255, 255, 255, 0.4) 100%
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 100%);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -1812,7 +1869,9 @@ onUnmounted(() => {
 }
 
 @keyframes qa-dot-bounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     opacity: 0;
     transform: translateY(0);
   }
@@ -2086,7 +2145,7 @@ onUnmounted(() => {
 }
 
 .qa-severity-severe {
-  background: rgba(186, 26, 26, 0.10);
+  background: rgba(186, 26, 26, 0.1);
   color: var(--theme-error);
 }
 
@@ -2505,5 +2564,4 @@ onUnmounted(() => {
   background: var(--theme-primary-fixed);
   color: var(--theme-primary);
 }
-
 </style>

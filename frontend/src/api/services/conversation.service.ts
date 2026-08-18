@@ -73,10 +73,7 @@ class ConversationService {
   // 更新对话标题
   async updateConversationTitle(conversationId: string, title: string): Promise<Conversation> {
     try {
-      const response = await request.put<ConversationResponse>(
-        `/conversations/${conversationId}`,
-        { title }
-      )
+      const response = await request.put<ConversationResponse>(`/conversations/${conversationId}`, { title })
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -185,10 +182,7 @@ class ConversationService {
   // 从回收站恢复对话
   async restoreConversation(conversationId: string): Promise<boolean> {
     try {
-      const response = await request.put<RestoreResponse>(
-        `/conversations/${conversationId}/restore`,
-        {}
-      )
+      const response = await request.put<RestoreResponse>(`/conversations/${conversationId}/restore`, {})
 
       return response.data.success
     } catch (error: any) {
@@ -201,10 +195,7 @@ class ConversationService {
   async deleteConversationPermanently(conversationId: string): Promise<boolean> {
     try {
       // 复用封装的 request 实例（拦截器自动附带 Authorization），与其它方法保持一致
-      const response = await request.delete<RestoreResponse>(
-        `/conversations/${conversationId}/permanent`,
-        {}
-      )
+      const response = await request.delete<RestoreResponse>(`/conversations/${conversationId}/permanent`, {})
 
       return response.data.success
     } catch (error: any) {

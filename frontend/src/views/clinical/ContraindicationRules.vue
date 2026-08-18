@@ -48,15 +48,11 @@
             placeholder="输入通用名或商品名"
             type="text"
             @input="debouncedSearch"
-          >
+          />
         </div>
         <div class="filter-field filter-field-48">
           <label class="filter-label">适用人群</label>
-          <select
-            v-model="searchPopulation"
-            class="filter-select"
-            @change="loadRules"
-          >
+          <select v-model="searchPopulation" class="filter-select" @change="loadRules">
             <option value="">全部人群</option>
             <option value="妊娠期女性">妊娠期女性</option>
             <option value="老年患者">老年患者</option>
@@ -67,11 +63,7 @@
         </div>
         <div class="filter-field filter-field-40">
           <label class="filter-label">严重程度</label>
-          <select
-            v-model="searchType"
-            class="filter-select"
-            @change="loadRules"
-          >
+          <select v-model="searchType" class="filter-select" @change="loadRules">
             <option value="">所有等级</option>
             <option value="ABSOLUTE">禁用 (Absolute)</option>
             <option value="RELATIVE">慎用 (Relative)</option>
@@ -115,11 +107,7 @@
                   </EmptyState>
                 </td>
               </tr>
-              <tr
-                v-for="rule in rules"
-                :key="rule.id"
-                class="data-row"
-              >
+              <tr v-for="rule in rules" :key="rule.id" class="data-row">
                 <td>
                   <div class="drug-name">{{ rule.drugName }}</div>
                   <div class="drug-atc">{{ rule.atcCode ? 'ATC: ' + rule.atcCode : '-' }}</div>
@@ -128,7 +116,9 @@
                   <span class="pill" :class="populationPillClass(rule.populationName)">{{ rule.populationName }}</span>
                 </td>
                 <td>
-                  <span class="pill" :class="typePillClass(rule.contraindicationType)">{{ typeLabel(rule.contraindicationType) }}</span>
+                  <span class="pill" :class="typePillClass(rule.contraindicationType)">{{
+                    typeLabel(rule.contraindicationType)
+                  }}</span>
                 </td>
                 <td class="td-desc">
                   <p class="desc-text">{{ rule.description || '-' }}</p>
@@ -175,15 +165,15 @@
           <div class="modal-body">
             <div class="form-group">
               <label class="form-label">药物名称 <span class="required">*</span></label>
-              <input v-model="form.drugName" class="form-input" placeholder="如：布洛芬">
+              <input v-model="form.drugName" class="form-input" placeholder="如：布洛芬" />
             </div>
             <div class="form-group">
               <label class="form-label">ATC编码</label>
-              <input v-model="form.atcCode" class="form-input" placeholder="如：M01AE01">
+              <input v-model="form.atcCode" class="form-input" placeholder="如：M01AE01" />
             </div>
             <div class="form-group">
               <label class="form-label">人群名称 <span class="required">*</span></label>
-              <input v-model="form.populationName" class="form-input" placeholder="如：孕妇">
+              <input v-model="form.populationName" class="form-input" placeholder="如：孕妇" />
             </div>
             <div class="form-group">
               <label class="form-label">禁忌类型 <span class="required">*</span></label>
@@ -212,7 +202,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">来源</label>
-              <input v-model="form.source" class="form-input" placeholder="如：NMPA药品说明书 2023版">
+              <input v-model="form.source" class="form-input" placeholder="如：NMPA药品说明书 2023版" />
             </div>
           </div>
           <div class="modal-footer">
@@ -235,8 +225,14 @@
             rows="10"
             placeholder="布洛芬,M01AE01,孕妇,ABSOLUTE,GUIDELINE,孕妇禁用布洛芬&#10;四环素,J01AA07,儿童,ABSOLUTE,DRUG_LABEL,儿童禁用四环素类抗生素"
           />
-          <div v-if="importResult" class="import-result" :class="importResult.skipped > 0 ? 'import-result-warn' : 'import-result-success'">
-            <span class="material-symbols-outlined text-lg">{{ importResult.skipped > 0 ? 'warning' : 'check_circle' }}</span>
+          <div
+            v-if="importResult"
+            class="import-result"
+            :class="importResult.skipped > 0 ? 'import-result-warn' : 'import-result-success'"
+          >
+            <span class="material-symbols-outlined text-lg">{{
+              importResult.skipped > 0 ? 'warning' : 'check_circle'
+            }}</span>
             导入完成：成功 <b>{{ importResult.success }}</b> 条，跳过 <b>{{ importResult.skipped }}</b> 条
           </div>
           <div class="modal-footer">
@@ -246,13 +242,18 @@
         </div>
       </div>
     </Teleport>
-  </div><!-- /contraindication-content -->
+  </div>
+  <!-- /contraindication-content -->
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { contraindicationService, type ContraindicationRule, type BatchImportResult } from '@/api/services/contraindication.service'
+import {
+  contraindicationService,
+  type ContraindicationRule,
+  type BatchImportResult
+} from '@/api/services/contraindication.service'
 import Pager from '@/components/Pager.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -350,7 +351,15 @@ async function loadRules() {
 
 function openCreateDialog() {
   editingRule.value = null
-  form.value = { drugName: '', atcCode: '', populationName: '', contraindicationType: 'ABSOLUTE', evidenceLevel: '', description: '', source: '' }
+  form.value = {
+    drugName: '',
+    atcCode: '',
+    populationName: '',
+    contraindicationType: 'ABSOLUTE',
+    evidenceLevel: '',
+    description: '',
+    source: ''
+  }
   dialogVisible.value = true
 }
 
@@ -408,19 +417,24 @@ async function handleBatchImport() {
     ElMessage.warning('请输入导入数据')
     return
   }
-  const lines = importText.value.trim().split('\n').filter(l => l.trim())
-  const importRules: ContraindicationRule[] = lines.map(line => {
-    const parts = line.split(',').map(s => s.trim())
-    return {
-      drugName: parts[0] || '',
-      atcCode: parts[1] || '',
-      populationName: parts[2] || '',
-      contraindicationType: parts[3] || 'ABSOLUTE',
-      evidenceLevel: parts[4] || '',
-      description: parts[5] || '',
-      isActive: 1
-    }
-  }).filter(r => r.drugName && r.populationName)
+  const lines = importText.value
+    .trim()
+    .split('\n')
+    .filter((l) => l.trim())
+  const importRules: ContraindicationRule[] = lines
+    .map((line) => {
+      const parts = line.split(',').map((s) => s.trim())
+      return {
+        drugName: parts[0] || '',
+        atcCode: parts[1] || '',
+        populationName: parts[2] || '',
+        contraindicationType: parts[3] || 'ABSOLUTE',
+        evidenceLevel: parts[4] || '',
+        description: parts[5] || '',
+        isActive: 1
+      }
+    })
+    .filter((r) => r.drugName && r.populationName)
 
   if (importRules.length === 0) {
     ElMessage.warning('没有有效的规则数据')
@@ -458,7 +472,7 @@ function typePillClass(type: string): string {
 
 function populationPillClass(name: string): string {
   const kidney = ['严重肾功能不全', '肾功能受损', '肾功能不全']
-  if (kidney.some(k => name.includes(k))) return 'pill-kidney'
+  if (kidney.some((k) => name.includes(k))) return 'pill-kidney'
   return 'pill-population'
 }
 
@@ -471,7 +485,7 @@ function evidenceLabel(level?: string): string {
     EXPERT_CONSENSUS: '专家共识',
     CASE_REPORT: '病例报告'
   }
-  return level ? (map[level] || level) : '-'
+  return level ? map[level] || level : '-'
 }
 
 function statusClass(rule: ContraindicationRule): string {
@@ -548,9 +562,15 @@ onMounted(() => {
   letter-spacing: -0.025em;
 }
 
-.stat-value-primary { color: var(--theme-primary); }
-.stat-value-error { color: var(--theme-error); }
-.stat-value-tertiary { color: var(--theme-on-surface-variant); }
+.stat-value-primary {
+  color: var(--theme-primary);
+}
+.stat-value-error {
+  color: var(--theme-error);
+}
+.stat-value-tertiary {
+  color: var(--theme-on-surface-variant);
+}
 
 .stat-footer {
   margin-top: 0.75rem;
@@ -1106,7 +1126,11 @@ onMounted(() => {
 
 /* ===== Material Icons ===== */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
 .icon-sm {

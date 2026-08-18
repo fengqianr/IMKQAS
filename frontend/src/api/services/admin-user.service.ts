@@ -36,10 +36,9 @@ export interface UserUpsertRequest {
 class AdminUserService {
   /** 分页获取用户列表 */
   async listUsers(current = 1, size = 100): Promise<UserPageResult> {
-    const response = await request.get<{ success: boolean; message: string; data: UserPageResult }>(
-      '/users',
-      { params: { current, size } }
-    )
+    const response = await request.get<{ success: boolean; message: string; data: UserPageResult }>('/users', {
+      params: { current, size }
+    })
     if (response.data.success && response.data.data) {
       return response.data.data
     }
@@ -48,10 +47,9 @@ class AdminUserService {
 
   /** 关键词搜索用户（用户名/手机号模糊匹配） */
   async searchUsers(keyword: string, current = 1, size = 100): Promise<UserPageResult> {
-    const response = await request.get<{ success: boolean; message: string; data: UserPageResult }>(
-      '/users/search',
-      { params: { keyword, current, size } }
-    )
+    const response = await request.get<{ success: boolean; message: string; data: UserPageResult }>('/users/search', {
+      params: { keyword, current, size }
+    })
     if (response.data.success && response.data.data) {
       return response.data.data
     }

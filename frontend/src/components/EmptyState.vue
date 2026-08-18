@@ -17,11 +17,7 @@ withDefaults(
 </script>
 
 <template>
-  <div
-    class="empty-box"
-    :class="`is-${variant}`"
-    :style="minHeight ? { minHeight } : undefined"
-  >
+  <div class="empty-box" :class="`is-${variant}`" :style="minHeight ? { minHeight } : undefined">
     <div class="empty-icon">
       <span class="material-symbols-outlined">{{ icon }}</span>
     </div>

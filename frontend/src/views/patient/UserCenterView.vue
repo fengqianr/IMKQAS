@@ -93,14 +93,7 @@
           </template>
 
           <!-- 编辑态 -->
-          <el-form
-            v-else
-            ref="formRef"
-            :model="form"
-            :rules="rules"
-            label-position="top"
-            class="edit-form"
-          >
+          <el-form v-else ref="formRef" :model="form" :rules="rules" label-position="top" class="edit-form">
             <h4 class="info-group">基本资料</h4>
             <div class="form-grid">
               <el-form-item label="姓名" prop="name">
@@ -143,9 +136,7 @@
 
             <div class="form-actions">
               <el-button @click="cancelEdit">取消</el-button>
-              <el-button type="primary" :loading="saving" @click="handleSave">
-                保存身份信息
-              </el-button>
+              <el-button type="primary" :loading="saving" @click="handleSave"> 保存身份信息 </el-button>
             </div>
           </el-form>
         </section>
@@ -219,9 +210,7 @@ const rules: FormRules = {
  * 展示姓名（注册/登录回显的真实姓名优先）：
  * 身份信息 form.name > 登录/刷新后缓存的 authStore.user.name > 用户名
  */
-const displayName = computed(
-  () => form.name || authStore.user?.name || authStore.user?.username || ''
-)
+const displayName = computed(() => form.name || authStore.user?.name || authStore.user?.username || '')
 
 /** 由出生日期计算年龄（无出生日期或无效日期返回 null） */
 const ageText = computed(() => calcAge(form.birthDate))
@@ -694,6 +683,10 @@ onMounted(loadIdentity)
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>

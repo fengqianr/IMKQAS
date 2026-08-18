@@ -961,22 +961,51 @@ onMounted(loadRecords)
 
 /* ===== 风险色板（语义色，跨主题一致） ===== */
 /* 图标背景 */
-.icon-high { background: rgba(186, 26, 26, 0.1); color: var(--theme-error); }
-.icon-mid { background: rgba(237, 108, 2, 0.12); color: var(--theme-processing); }
-.icon-low { background: rgba(234, 179, 8, 0.12); color: #b45309; }
-.icon-normal { background: rgba(46, 125, 50, 0.12); color: var(--theme-success); }
-.icon-unknown { background: var(--theme-surface-container); color: var(--theme-outline); }
+.icon-high {
+  background: rgba(186, 26, 26, 0.1);
+  color: var(--theme-error);
+}
+.icon-mid {
+  background: rgba(237, 108, 2, 0.12);
+  color: var(--theme-processing);
+}
+.icon-low {
+  background: rgba(234, 179, 8, 0.12);
+  color: #b45309;
+}
+.icon-normal {
+  background: rgba(46, 125, 50, 0.12);
+  color: var(--theme-success);
+}
+.icon-unknown {
+  background: var(--theme-surface-container);
+  color: var(--theme-outline);
+}
 
 /* 趋势柱 */
-.bar-high { background: var(--theme-error); }
-.bar-mid { background: var(--theme-processing); }
-.bar-low { background: #eab308; }
-.bar-normal { background: var(--theme-success); }
-.bar-unknown { background: var(--theme-outline); }
+.bar-high {
+  background: var(--theme-error);
+}
+.bar-mid {
+  background: var(--theme-processing);
+}
+.bar-low {
+  background: #eab308;
+}
+.bar-normal {
+  background: var(--theme-success);
+}
+.bar-unknown {
+  background: var(--theme-outline);
+}
 
 /* Material Symbols 字体设置 */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 </style>
 
