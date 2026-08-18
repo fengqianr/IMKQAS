@@ -227,8 +227,13 @@ const rules: FormRules = {
   gender: [{ required: true, message: '请选择性别', trigger: 'change' }]
 }
 
-/** 展示姓名（身份信息未填时回退用户名） */
-const displayName = computed(() => form.name || authStore.user?.username || '')
+/**
+ * 展示姓名（注册/登录回显的真实姓名优先）：
+ * 身份信息 form.name > 登录/刷新后缓存的 authStore.user.name > 用户名
+ */
+const displayName = computed(
+  () => form.name || authStore.user?.name || authStore.user?.username || ''
+)
 
 /** 性别中文 */
 const genderText = computed(() => {

@@ -45,7 +45,7 @@ export interface InterviewSession {
   sessionId: string
   questionnaireId: string
   questionnaireTitle: string
-  userId: number | null
+  userId: string | number | null
   conversationId: number | null
   currentQuestionIndex: number
   totalQuestions: number
@@ -172,7 +172,7 @@ export interface QuestionnaireMessage {
 
 export interface StartInterviewRequest {
   questionnaireId: string
-  userId?: number
+  userId?: string | number
   conversationId?: string
 }
 

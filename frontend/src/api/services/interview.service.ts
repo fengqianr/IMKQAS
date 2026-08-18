@@ -250,7 +250,7 @@ class InterviewService {
   }
 
   // 获取用户历史填写记录（评分趋势等）
-  async getHistory(userId: number, questionnaireId?: string): Promise<any[]> {
+  async getHistory(userId: string | number, questionnaireId?: string): Promise<any[]> {
     try {
       const params: any = { userId }
       if (questionnaireId) params.questionnaireId = questionnaireId
@@ -266,7 +266,7 @@ class InterviewService {
   }
 
   // 获取评分趋势数据（用于图表展示）
-  async getTrend(userId: number, questionnaireId: string): Promise<TrendPoint[]> {
+  async getTrend(userId: string | number, questionnaireId: string): Promise<TrendPoint[]> {
     try {
       const response = await request.get(
         '/his/interview/trend',

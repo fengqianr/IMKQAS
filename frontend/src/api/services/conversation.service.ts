@@ -14,7 +14,7 @@ import type {
 
 class ConversationService {
   // 获取对话列表（传入 userId 时按用户过滤，避免不同用户的会话混在一起）
-  async getConversations(userId?: number): Promise<Conversation[]> {
+  async getConversations(userId?: string | number): Promise<Conversation[]> {
     try {
       // 按用户查询时复用后端已存在的 /conversations/by-user/{userId}，分页拉全量
       const url = userId ? `/conversations/by-user/${userId}` : '/conversations'
@@ -164,7 +164,7 @@ class ConversationService {
   }
 
   // 获取回收站中的已删除对话
-  async getDeletedConversations(userId?: number): Promise<Conversation[]> {
+  async getDeletedConversations(userId?: string | number): Promise<Conversation[]> {
     try {
       const response = await request.get<TrashListResponse>('/conversations/trash', {
         params: userId ? { userId } : {}
@@ -199,11 +199,10 @@ class ConversationService {
   // 从回收站彻底删除对话（物理删除，同时级联删除其消息）
   async deleteConversationPermanently(conversationId: string): Promise<boolean> {
     try {
-      const response = await axios.delete<RestoreResponse>(
-        `${this.baseURL}/conversations/${conversationId}/permanent`,
-        {
-          headers: this.getAuthHeaders()
-        }
+      // 复用封装的 request 实例（拦截器自动附带 Authorization），与其它方法保持一致
+      const response = await request.delete<RestoreResponse>(
+        `/conversations/${conversationId}/permanent`,
+        {}
       )
 
       return response.data.success

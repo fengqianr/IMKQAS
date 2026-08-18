@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -44,13 +45,16 @@ class UserControllerTest {
     @Mock
     private FhirPatientService fhirPatientService;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     // 带 JavaTimeModule 的 ObjectMapper：与生产注入一致，用于解析 identity 中的 LocalDate 出生日期
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         objectMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
-        userController = new UserController(userService, fhirPatientService, objectMapper);
+        userController = new UserController(userService, fhirPatientService, objectMapper, passwordEncoder);
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
     }
 
@@ -224,5 +228,83 @@ class UserControllerTest {
         mockMvc.perform(delete("/api/users/999/health-profile")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testCreate_EncodesPassword() throws Exception {
+        // 准备：管理员创建用户（含明文密码），入库前应 BCrypt 编码，保证登录密码校验可匹配
+        String rawPassword = "Password123";
+        when(passwordEncoder.encode(rawPassword)).thenReturn("$2a$10$encoded-hash");
+        when(userService.save(any(User.class))).thenReturn(true);
+
+        String body = """
+                {"username":"doc01","phone":"13800000001","password":"Password123","role":"DOCTOR"}
+                """;
+
+        // 执行请求
+        mockMvc.perform(post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isCreated());
+
+        // 验证：保存的是编码后的密码
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userService).save(captor.capture());
+        assertEquals("$2a$10$encoded-hash", captor.getValue().getPassword());
+        assertEquals(User.Role.DOCTOR, captor.getValue().getRole());
+    }
+
+    @Test
+    void testUpdate_EncodesNewPassword() throws Exception {
+        // 准备：管理员修改用户密码，应编码后入库
+        User existing = new User();
+        existing.setId(1L);
+        existing.setUsername("testuser");
+        existing.setPassword("$2a$10$old-hash");
+
+        String rawPassword = "NewPassword456";
+        when(userService.getById(1L)).thenReturn(existing);
+        when(passwordEncoder.encode(rawPassword)).thenReturn("$2a$10$new-hash");
+        when(userService.updateById(any(User.class))).thenReturn(true);
+
+        String body = """
+                {"password":"NewPassword456"}
+                """;
+
+        // 执行请求
+        mockMvc.perform(put("/api/users/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isOk());
+
+        // 验证：existing 密码被编码且其余字段（白名单外）未被清空
+        verify(userService).updateById(existing);
+        assertEquals("$2a$10$new-hash", existing.getPassword());
+    }
+
+    @Test
+    void testUpdate_BlankPasswordKeepsOld() throws Exception {
+        // 准备：密码留空则不修改，保留旧密码
+        User existing = new User();
+        existing.setId(1L);
+        existing.setUsername("testuser");
+        existing.setPassword("$2a$10$old-hash");
+
+        when(userService.getById(1L)).thenReturn(existing);
+        when(userService.updateById(any(User.class))).thenReturn(true);
+
+        String body = """
+                {"password":""}
+                """;
+
+        // 执行请求
+        mockMvc.perform(put("/api/users/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isOk());
+
+        // 验证：旧密码保留，未调用编码器
+        assertEquals("$2a$10$old-hash", existing.getPassword());
+        verify(passwordEncoder, never()).encode(anyString());
     }
 }

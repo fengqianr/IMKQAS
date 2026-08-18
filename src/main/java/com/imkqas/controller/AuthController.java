@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * 认证控制器
  * 处理用户登录、注册、验证码发送等认证相关接口
@@ -166,19 +168,20 @@ public class AuthController {
 
         String token = authorization.substring(7);
         Long userId = authService.getUserIdFromToken(token);
-        String role = authService.getRoleFromToken(token);
 
-        if (userId == null || role == null) {
+        if (userId == null) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("令牌无效或已过期"));
         }
 
-        // 返回用户基本信息，字段名需与前端UserInfo类型保持一致
-        final String userRoleValue = role;
-        return ResponseEntity.ok(ApiResponse.success("获取成功", new Object() {
-            public final Long id = userId;
-            public final String role = userRoleValue;
-        }));
+        // 返回用户完整信息（含真实姓名/手机号），字段名与前端 UserInfo 类型保持一致；
+        // 角色从数据库读取，管理员调整角色后无需重新登录即生效
+        Map<String, Object> userInfo = authService.getCurrentUserInfo(userId);
+        if (userInfo == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("用户不存在或已被删除"));
+        }
+        return ResponseEntity.ok(ApiResponse.success("获取成功", userInfo));
     }
 
     /**

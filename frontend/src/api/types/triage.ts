@@ -57,7 +57,7 @@ export interface DepartmentTriageResult {
   /** 综合建议 */
   advice?: string
   /** 用户 ID */
-  userId?: number
+  userId?: string | number
 }
 
 // ==================== 批量请求 ====================
@@ -66,7 +66,7 @@ export interface BatchTriageRequest {
   /** 症状描述列表（最多 20 条，不能为空） */
   symptomsList: string[]
   /** 用户 ID（可选） */
-  userId?: number
+  userId?: string | number
   /** 是否包含急诊检查（默认 true） */
   includeEmergencyCheck?: boolean
 }

@@ -40,7 +40,7 @@ export interface HealthProfileActionResult {
 /** 个人身份信息 */
 export interface IdentityInfo {
   /** 姓名 */
-  name: string
+  name?: string
   /** 性别: MALE | FEMALE | OTHER */
   gender: string
   /** 出生日期 yyyy-MM-dd */
@@ -65,7 +65,7 @@ class UserService {
    * 获取用户健康档案
    * GET /api/users/{userId}/health-profile
    */
-  async getHealthProfile(userId: number): Promise<HealthProfileResult> {
+  async getHealthProfile(userId: string | number): Promise<HealthProfileResult> {
     const response = await request.get<HealthProfileResult>(
       `/users/${userId}/health-profile`
     )
@@ -76,7 +76,7 @@ class UserService {
    * 更新用户健康档案
    * PUT /api/users/{userId}/health-profile
    */
-  async updateHealthProfile(userId: number, profile: HealthProfile): Promise<void> {
+  async updateHealthProfile(userId: string | number, profile: HealthProfile): Promise<void> {
     const response = await request.put<HealthProfileActionResult>(
       `/users/${userId}/health-profile`,
       profile
@@ -90,7 +90,7 @@ class UserService {
    * 删除用户健康档案
    * DELETE /api/users/{userId}/health-profile
    */
-  async deleteHealthProfile(userId: number): Promise<void> {
+  async deleteHealthProfile(userId: string | number): Promise<void> {
     const response = await request.delete<HealthProfileActionResult>(
       `/users/${userId}/health-profile`
     )
@@ -103,7 +103,7 @@ class UserService {
    * 获取用户个人身份信息
    * GET /api/users/{userId}/identity
    */
-  async getIdentity(userId: number): Promise<IdentityResult> {
+  async getIdentity(userId: string | number): Promise<IdentityResult> {
     const response = await request.get<IdentityResult>(
       `/users/${userId}/identity`
     )
@@ -114,7 +114,7 @@ class UserService {
    * 保存用户个人身份信息（同步 fhir_patient_cache，医生端立即可检索）
    * PUT /api/users/{userId}/identity
    */
-  async updateIdentity(userId: number, identity: IdentityInfo): Promise<void> {
+  async updateIdentity(userId: string | number, identity: IdentityInfo): Promise<void> {
     const response = await request.put<HealthProfileActionResult>(
       `/users/${userId}/identity`,
       identity

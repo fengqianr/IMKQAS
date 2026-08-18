@@ -34,6 +34,8 @@ public class RegisterRequest {
     @NotBlank(message = "确认密码不能为空")
     private String confirmPassword;
 
-    @Schema(description = "用户角色", allowableValues = {"PATIENT", "STUDENT", "NURSE", "DOCTOR", "HEALTH_MANAGER"})
+    // 角色白名单：医生/管理员账号需由管理员在用户管理中创建，禁止自助注册
+    @Schema(description = "用户角色（医生/管理员需由管理员创建，不可自助注册）",
+            allowableValues = {"PATIENT", "STUDENT", "NURSE", "HEALTH_MANAGER"})
     private User.Role role;
 }

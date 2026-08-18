@@ -15,6 +15,7 @@ import com.imkqas.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,7 @@ public class UserController {
     // Spring 管理的 ObjectMapper（带 JavaTimeModule），用于序列化 LocalDate 等身份字段；
     // 不能用 new ObjectMapper()（无 JavaTimeModule 会抛 InvalidDefinitionException）
     private final ObjectMapper objectMapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 创建用户（仅管理员可操作）
@@ -53,6 +55,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     public User create(@RequestBody User entity) {
+        // 密码加密存储（BCrypt），保证登录密码校验可匹配；不允许明文入库
+        if (entity.getPassword() != null && !entity.getPassword().isEmpty()) {
+            entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        }
         service.save(entity);
         return entity;
     }
@@ -87,9 +93,9 @@ public class UserController {
         if (entity.getRole() != null) {
             existing.setRole(entity.getRole());
         }
-        // 密码留空（null 或空串）则不修改，保留旧密码
+        // 密码留空（null 或空串）则不修改，保留旧密码；否则加密存储
         if (entity.getPassword() != null && !entity.getPassword().isEmpty()) {
-            existing.setPassword(entity.getPassword());
+            existing.setPassword(passwordEncoder.encode(entity.getPassword()));
         }
         service.updateById(existing);
 

@@ -63,6 +63,23 @@
           />
         </el-form-item>
 
+        <el-form-item prop="role">
+          <el-select
+            v-model="registerForm.role"
+            placeholder="身份角色（医生/管理员由管理员添加）"
+            size="large"
+            :prefix-icon="UserFilled"
+            class="full-width"
+          >
+            <el-option
+              v-for="(label, value) in REGISTRABLE_ROLES"
+              :key="value"
+              :label="label"
+              :value="value"
+            />
+          </el-select>
+        </el-form-item>
+
         <el-form-item prop="agree">
           <el-checkbox v-model="registerForm.agree">
             我已阅读并同意
@@ -102,9 +119,17 @@ import { User, Iphone, Lock, UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { authService } from '@/api/services/auth.service'
+import { ROLE_LABELS } from '@/config/menus'
 
 const router = useRouter()
 const registerFormRef = ref<FormInstance>()
+
+// 可自助注册的角色（医生/管理员需由管理员在用户管理中创建，不出现在选项里）
+const REGISTRABLE_ROLES = Object.fromEntries(
+  Object.entries(ROLE_LABELS).filter(([value]) =>
+    ['PATIENT', 'STUDENT', 'NURSE', 'HEALTH_MANAGER'].includes(value)
+  )
+)
 
 // 表单数据
 const registerForm = reactive({
@@ -113,6 +138,7 @@ const registerForm = reactive({
   password: '',
   confirmPassword: '',
   realName: '',
+  role: 'PATIENT',
   agree: false
 })
 
@@ -210,7 +236,8 @@ const handleRegister = async () => {
       name: registerForm.realName,
       phone: registerForm.phone,
       password: registerForm.password,
-      confirmPassword: registerForm.confirmPassword
+      confirmPassword: registerForm.confirmPassword,
+      role: registerForm.role
     })
 
     ElMessage.success('注册成功，请登录')
@@ -263,6 +290,10 @@ const gotoLogin = () => {
 
 .register-form {
   margin-top: var(--spacing-xl);
+}
+
+.full-width {
+  width: 100%;
 }
 
 

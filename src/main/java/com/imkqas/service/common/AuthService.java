@@ -1,9 +1,13 @@
 package com.imkqas.service.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.imkqas.dto.LoginRequest;
 import com.imkqas.dto.LoginResponse;
 import com.imkqas.dto.RegisterRequest;
+import com.imkqas.dto.user.IdentityResponse;
 import com.imkqas.entity.User;
+import com.imkqas.exception.BusinessException;
 import com.imkqas.service.his.FhirPatientService;
 import com.imkqas.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 认证服务
@@ -30,6 +37,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final FhirPatientService fhirPatientService;
+    private final ObjectMapper objectMapper;
 
     @Value("${imkqas.security.jwt.expiration:86400000}")
     private Long jwtExpiration;
@@ -94,10 +102,10 @@ public class AuthService {
             return LoginResponse.error("用户不存在");
         }
 
-//        // 验证密码
-//        if (!passwordEncoder.matches(password, user.getPassword())) {
-//            return LoginResponse.error("密码错误");
-//        }
+        // 验证密码（注册用户为 BCrypt 编码，兼容历史 MD5 种子账号）
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return LoginResponse.error("密码错误");
+        }
 
         // 生成JWT令牌
         String token = jwtUtil.generateToken(
@@ -106,12 +114,14 @@ public class AuthService {
                 user.getRole().name()
         );
 
-        // 构建登录响应
+        // 构建登录响应（真实姓名从身份信息 identity 解析，刷新令牌沿用 JWT）
         Long expiresAt = System.currentTimeMillis() + jwtExpiration;
         return LoginResponse.success(
                 token,
+                token,
                 user.getId(),
                 user.getUsername(),
+                resolveName(user),
                 user.getRole().name(),
                 user.getPhone(),
                 user.getHealthProfile(),
@@ -257,6 +267,13 @@ public class AuthService {
     public boolean register(RegisterRequest request) {
         log.info("用户注册请求: username={}, phone={}", request.getUsername(), request.getPhone());
 
+        // 角色白名单校验：医生/管理员账号仅能由管理员创建，禁止自助注册
+        User.Role role = request.getRole() != null ? request.getRole() : User.Role.PATIENT;
+        if (role == User.Role.DOCTOR || role == User.Role.ADMIN) {
+            log.warn("自助注册被拒绝: username={}, role={}", request.getUsername(), role);
+            throw new BusinessException("医生/管理员账号需由管理员在用户管理中创建");
+        }
+
         // 检查用户名是否已存在
         if (userService.isUsernameExists(request.getUsername())) {
             log.warn("用户名已存在: {}", request.getUsername());
@@ -275,12 +292,22 @@ public class AuthService {
             return false;
         }
 
-        // 创建用户
+        // 创建用户：真实姓名同步写入身份信息 identity，供用户中心回显
+        IdentityResponse identity = new IdentityResponse();
+        identity.setName(request.getName());
+        String identityJson;
+        try {
+            identityJson = objectMapper.writeValueAsString(identity);
+        } catch (JsonProcessingException e) {
+            log.error("序列化身份信息失败: username={}", request.getUsername(), e);
+            throw new BusinessException("注册失败，请稍后重试");
+        }
         User user = User.builder()
                 .username(request.getUsername())
                 .phone(request.getPhone())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? request.getRole() : User.Role.PATIENT)
+                .role(role)
+                .identity(identityJson)
                 .build();
 
         boolean saved = userService.save(user);
@@ -299,5 +326,43 @@ public class AuthService {
             log.error("用户注册失败: username={}", request.getUsername());
         }
         return saved;
+    }
+
+    /**
+     * 解析用户身份信息中的真实姓名
+     * @param user 用户实体
+     * @return 真实姓名，无身份信息或解析失败时返回 null
+     */
+    private String resolveName(User user) {
+        if (user.getIdentity() == null || user.getIdentity().isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(user.getIdentity(), IdentityResponse.class).getName();
+        } catch (JsonProcessingException e) {
+            log.warn("解析身份信息失败: userId={}", user.getId(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取当前登录用户信息（供 /auth/me 使用，不泄漏密码/健康档案）
+     * @param userId 用户ID
+     * @return 用户信息映射 {id, username, name, phone, role}；用户不存在返回 null
+     */
+    public Map<String, Object> getCurrentUserInfo(Long userId) {
+        User user = userService.getById(userId);
+        if (user == null) {
+            return null;
+        }
+        // 用 HashMap 而非 Map.of：resolveName 可能返回 null（用户无身份信息），
+        // Map.of 不允许 null 值，会抛 NullPointerException
+        Map<String, Object> info = new HashMap<>();
+        info.put("id", user.getId());
+        info.put("username", user.getUsername());
+        info.put("name", resolveName(user));
+        info.put("phone", user.getPhone());
+        info.put("role", user.getRole().name());
+        return info;
     }
 }

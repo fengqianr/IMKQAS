@@ -9,10 +9,12 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string
   refreshToken: string
-  userId: number
+  userId: string | number
   username: string
+  name: string
+  phone: string
   role: string
-  expiresIn: number
+  expiresAt?: string
   message?: string
 }
 
@@ -24,6 +26,8 @@ export interface RegisterRequest {
   password: string
   phone: string
   confirmPassword: string
+  /** 角色（仅患者/学生/护士/健康管理师可自助注册；医生/管理员由管理员创建） */
+  role?: string
 }
 
 // API响应格式
@@ -37,8 +41,9 @@ export interface ApiResponse<T = any> {
 
 // 用户信息
 export interface UserInfo {
-  id: number
+  id: string | number
   username: string
+  name: string
   phone: string
   email?: string
   role: string

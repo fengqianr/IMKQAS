@@ -1,8 +1,8 @@
 
 
-> 最后更新: 2026-04-17  
-> 报告版本: v1.7  
-> 测试周期: 阶段3业务模块完成（集成测试修复）
+> 最后更新: 2026-08-18  
+> 报告版本: v1.8  
+> 测试周期: 角色注册+真实姓名回显+认证链路打通（第16节）
 
 ## 1. 测试概述
 
@@ -755,6 +755,67 @@ src/test/
 ### 15.4 附带修正
 
 验证时发现 p2 的 `identity.birthDate=2000-01-03`（26 岁）与 `health_profile.age=30` 不一致（健康档案页已按出生日期显示 26，但健康档案 JSON 残留旧值 30，医生端健康档案 Tab 会读到 30）。已按「年龄由个人中心出生日期统一计算」的既定决策，将 `health_profile.age` 修正为 26，`GET /overview` 确认返回 `age:26`。个人中心/医生端列表/医生端健康档案 Tab 三处年龄现完全一致。
+
+---
+
+## 16. 2026-08-18 角色注册 + 真实姓名回显 + 注册登录链路打通
+
+> 本次验证针对「角色注册（医生/管理员不可自助注册）+ 真实姓名回显到用户中心 + 注册→登录→刷新全链路打通 + 密码校验启用」功能批次，采用浏览器端到端 + 后端单元测试方式验证。
+
+### 16.1 改动清单
+
+| 模块 | 文件 | 改动 |
+|------|------|------|
+| 数据库 | `V14__Normalize_user_role.sql`（新增） | `users.role` 由 ENUM 规范化为 VARCHAR(30)，清理 V1 种子残留 `role='USER'` → `'PATIENT'`（Java Role 枚举无 USER 值，会致枚举映射异常） |
+| 后端 | `LoginResponse.java` | 新增 `name`（username 后）与 `refreshToken`（token 后）字段，`success()`/`error()` 同步 |
+| 后端 | `AuthService.java` | ① 启用登录密码校验 `passwordEncoder.matches`；② 注册角色白名单（DOCTOR/ADMIN 抛 `BusinessException`）；③ 注册将真实姓名写入 `users.identity`（IdentityResponse 序列化）；④ `resolveName()` 从 identity 解析姓名；⑤ 新增 `getCurrentUserInfo()` 返回 `{id, username, name, phone, role}` |
+| 后端 | `AuthController.java` | `/auth/me` 改用 `getCurrentUserInfo`，返回完整用户信息（非裸 User 实体，防敏感字段泄漏） |
+| 后端 | `UserController.java` | `create()`/`update()` 密码 BCrypt 编码（修复明文密码 bug） |
+| 后端 | `RegisterRequest.java` | `@Schema allowableValues` 收窄为 PATIENT/STUDENT/NURSE/HEALTH_MANAGER |
+| 前端 | `RegisterView.vue` | 注册页新增"身份角色"下拉（白名单 4 角色），请求体带 `role` |
+| 前端 | `UserCenterView.vue` | `displayName` = `form.name || authStore.user.name || authStore.user.username` |
+| 前端 | `auth.store.ts` | `userId` 由 `Number(id)` 改为保留字符串原值（修复雪花 ID 精度丢失） |
+| 前端 | `user.service.ts`/`interview.service.ts`/`conversation.service.ts` + `types/*` | userId 参数类型放宽为 `string | number` |
+| 测试 | `AuthServiceTest` | 重写为 15 个用例：登录/手机号/密码错误/用户不存在/空用户名/空密码、DOCTOR/ADMIN 注册拒绝、注册成功（role+identity+FHIR 同步）、用户名已存在、密码不匹配、refreshToken 三态、logout |
+
+### 16.2 单元测试结果
+
+| 测试类 | 测试数 | 通过 | 状态 | 备注 |
+|--------|--------|------|------|------|
+| `AuthServiceTest` | 15 | 15 | ✅ | 覆盖密码校验 + 角色白名单 + identity 写入 + refreshToken |
+| `UserControllerTest` | 12 | 12 | ✅ | 新增密码编码三用例（create 编码 / update 改密编码 / 留空保留旧密码） |
+| `UserServiceTest` | 12 | 12 | ✅ | 合并主干后删除 `.deleted()` 调用（实体无逻辑删除列） |
+| `DrugQueryServiceImplTest` | 13 | 13 | ✅ | 同上删除逻辑删除断言 |
+
+> 相关测试 **52/52 通过**。全量 569 测试中 `QaServiceIntegrationTest`/`RagPerformanceTest`/`LlmTriageAdapterTest`/`LlmServiceImplTest` 的失败为**既有环境问题**（ApplicationContext 需远程 MySQL/Milvus 依赖，本地全量运行上下文加载失败；相关源码本批次无改动），与本批次无关。
+
+### 16.3 端到端验证结果（Playwright）
+
+| 验证项 | 结果 | 说明 |
+|--------|------|------|
+| 注册页角色选择器白名单 | ✅ 通过 | 下拉仅 患者/学生/护士/健康管理师，无医生/管理员 |
+| 注册（选学生）→ 跳转登录 | ✅ 通过 | `e2e_student/Password123` 注册成功，自动跳 `/login` |
+| 登录密码校验 | ✅ 通过 | 正确密码登录成功；错误密码返回「密码错误」 |
+| 用户中心显示真实姓名 | ✅ 通过 | `/user` 头像区「赵测试」+ 基本资料「姓名: 赵测试」 |
+| 刷新页面姓名不丢 | ✅ 通过 | 硬刷新后 `/auth/me` 返回 `{id, username, name, phone, role}` 完整信息，姓名仍显示 |
+| 患者编号精确显示 | ✅ 通过 | `pat-2089701837433147393`（修复前为丢精度的 `...47400`） |
+| DOCTOR 自助注册被拒 | ✅ 通过 | `POST /api/auth/register` role=DOCTOR → 400「医生/管理员账号需由管理员在用户管理中创建」 |
+| ADMIN 自助注册被拒 | ✅ 通过 | role=ADMIN → 同 400 提示 |
+| 前端 type-check | ✅ 通过 | `vue-tsc --noEmit` 无错误 |
+| V14 迁移 | ✅ 通过 | 远程库执行成功，`users.role` 已为 VARCHAR(30)，启动日志无 Flyway 报错 |
+
+### 16.4 新发现并修复：雪花 ID 精度丢失复发（getIdentity 404）
+
+- **现象**：端到端验证时 `/user` 页面 console 报 `GET /api/users/2089701837433147400/identity` 404，身份信息回退到登录缓存显示（姓名仍正确，但未真正从 identity 读取）。
+- **根因**：后端真实 id 为 `2089701837433147393`（19 位雪花 ID），前端 `authStore.userId = Number(user.value?.id)` 把字符串转 JS Number 时**超出 2^53 安全整数范围丢精度**（末尾 7393→7400），后端 `getById` 查不到 → 404。这是第 13 节修复（后端 Long→String 序列化）后，前端**违规把 ID 转回 number** 导致的复发。
+- **修复**：`authStore.userId` 改为 `user.value?.id ?? ''` 保留字符串原值透传；`user.service.ts`/`interview.service.ts`/`conversation.service.ts` 及 `types/*` 的 userId 参数类型统一放宽为 `string | number`。
+- **验证**：修复后刷新 `/user`，console **0 error**，患者编号精确为 `pat-2089701837433147393`，`GET /api/users/2089701837433147393/identity` 返回 200 且 identity 含 name「赵测试」。
+
+### 16.5 已知边界
+
+- **历史遗留安全项仍未处理**：`GET /api/users/{id}` 返回裸 User 含 password/identity；`/api/users/**` 无所有权校验——均属「安全加固」范畴，本次按用户决策未扩展。
+- 全量测试中 4 个测试类的上下文加载失败为既有环境问题（需远程 MySQL/Milvus），非本批次引入。
+- 本次端到端产生的注册数据（e2e_student/赵测试）保留在远程库，未清理；本批次改动未提交 git，待最终统一提交。
 
 ---
 

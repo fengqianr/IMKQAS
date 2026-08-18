@@ -44,12 +44,14 @@ class AuthService {
     } catch (error: any) {
       console.error('登录失败:', error)
       return {
+        name: '',
+        phone: '',
         token: '',
         refreshToken: '',
         userId: 0,
         username: '',
         role: '',
-        expiresIn: 0,
+        expiresAt: undefined,
         message: error.message || '登录失败'
       }
     }

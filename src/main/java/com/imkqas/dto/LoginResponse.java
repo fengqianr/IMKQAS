@@ -21,6 +21,11 @@ public class LoginResponse {
     private String token;
 
     /**
+     * 刷新令牌（当前与 JWT 相同，后端以"旧令牌续签"方式刷新）
+     */
+    private String refreshToken;
+
+    /**
      * 用户ID
      */
     private Long userId;
@@ -29,6 +34,11 @@ public class LoginResponse {
      * 用户名
      */
     private String username;
+
+    /**
+     * 真实姓名（从身份信息 identity 解析）
+     */
+    private String name;
 
     /**
      * 用户角色
@@ -58,18 +68,20 @@ public class LoginResponse {
     /**
      * 成功登录响应
      * @param token JWT令牌
+     * @param refreshToken 刷新令牌
      * @param userId 用户ID
      * @param username 用户名
+     * @param name 真实姓名
      * @param role 用户角色
      * @param phone 手机号
      * @param healthProfile 健康档案
      * @param expiresAt 过期时间
      * @return 登录响应
      */
-    public static LoginResponse success(String token, Long userId, String username,
-                                       String role, String phone, String healthProfile,
-                                       Long expiresAt) {
-        return new LoginResponse(token, userId, username, role, phone, healthProfile,
+    public static LoginResponse success(String token, String refreshToken, Long userId, String username,
+                                        String name, String role, String phone, String healthProfile,
+                                        Long expiresAt) {
+        return new LoginResponse(token, refreshToken, userId, username, name, role, phone, healthProfile,
                 expiresAt, "登录成功");
     }
 
@@ -79,7 +91,7 @@ public class LoginResponse {
      * @return 登录响应
      */
     public static LoginResponse error(String message) {
-        return new LoginResponse(null, null, null, null, null, null,
+        return new LoginResponse(null, null, null, null, null, null, null, null,
                 null, message);
     }
 }

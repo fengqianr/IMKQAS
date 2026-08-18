@@ -4,7 +4,7 @@ import type { AnswerOption } from './interview'
 // QA问答请求类型
 export interface QaAskRequest {
   question: string
-  userId?: number
+  userId?: string | number
   conversationId?: string
   options?: QaOptions
 }
@@ -211,7 +211,7 @@ export interface DocumentProcessResponse {
 // 对话相关类型
 export interface Conversation {
   id: string
-  userId: number
+  userId: string | number
   title: string
   type: 'general' | 'diagnosis' | 'consultation'
   createdAt: string
@@ -233,7 +233,7 @@ export interface CreateConversationRequest {
   title?: string
   type?: 'general' | 'diagnosis' | 'consultation'
   /** 会话归属用户（后端 Conversation 实体直接收 body，传此字段即落库） */
-  userId?: number
+  userId?: string | number
 }
 
 export interface CreateMessageRequest {

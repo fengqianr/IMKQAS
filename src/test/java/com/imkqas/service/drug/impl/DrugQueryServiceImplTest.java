@@ -72,7 +72,6 @@ class DrugQueryServiceImplTest {
                 .hasInteractions(1)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .deleted(0)
                 .build();
 
         // 创建测试药品2: 青霉素
@@ -94,7 +93,6 @@ class DrugQueryServiceImplTest {
                 .hasInteractions(1)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .deleted(0)
                 .build();
 
         // 创建测试别名
@@ -105,7 +103,6 @@ class DrugQueryServiceImplTest {
                 .aliasName("拜阿司匹灵")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .deleted(0)
                 .build();
 
         // 创建测试相互作用
@@ -120,7 +117,6 @@ class DrugQueryServiceImplTest {
                 .recommendation("避免联合使用")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .deleted(0)
                 .build();
     }
 
@@ -230,24 +226,6 @@ class DrugQueryServiceImplTest {
         // 准备
         Long drugId = 999L;
         when(drugMapper.selectById(drugId)).thenReturn(null);
-
-        // 执行
-        Drug result = drugQueryService.getDrugById(drugId);
-
-        // 验证
-        assertNull(result);
-    }
-
-    @Test
-    void testGetDrugById_Deleted() {
-        // 准备
-        Long drugId = 1L;
-        Drug deletedDrug = Drug.builder()
-                .id(1L)
-                .genericName("阿司匹林")
-                .deleted(1)
-                .build();
-        when(drugMapper.selectById(drugId)).thenReturn(deletedDrug);
 
         // 执行
         Drug result = drugQueryService.getDrugById(drugId);
