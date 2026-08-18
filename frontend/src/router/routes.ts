@@ -1,6 +1,9 @@
 import type { RouteRecordRaw } from 'vue-router'
-// 仅近入口的小页面保持静态导入（登录/404），大页面一律路由级懒加载（() => import）
+// 静态导入原则：登录/404 为近入口小页面；QaView 是默认首页（/ 重定向到 /qa）且各角色通用，
+// 每次进入应用必经，懒加载只会多一次 chunk 请求延迟，故静态导入（约 147KB）。
+// 其余角色专属的大页面一律路由级懒加载（() => import），非该角色用户永不下载。
 import LoginView from '@/views/auth/LoginView.vue'
+import QaView from '@/views/chat/QaView.vue'
 import NotFoundView from '@/views/common/NotFoundView.vue'
 
 // 角色组常量（与后端 User.Role 枚举及 config/menus.ts 的归并一致）
@@ -34,7 +37,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/qa',
     name: 'qa',
-    component: () => import('@/views/chat/QaView.vue'),
+    component: QaView,
     meta: { title: '智能问答', requiresAuth: false, noLayout: true }
   },
   {
