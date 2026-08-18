@@ -7,14 +7,16 @@
     </button>
 
     <!-- 患者不存在 -->
-    <div v-if="!loading && !patient" class="empty-box">
-      <div class="empty-icon">
-        <span class="material-symbols-outlined">person_off</span>
-      </div>
-      <h3 class="empty-title">未找到该患者档案</h3>
-      <p class="empty-desc">患者可能已被删除，或链接无效。</p>
+    <EmptyState
+      v-if="!loading && !patient"
+      title="未找到该患者档案"
+      description="患者可能已被删除，或链接无效。"
+      icon="person_off"
+      variant="panel"
+      min-height="20rem"
+    >
       <button class="btn-outline" @click="goBack">返回检索</button>
-    </div>
+    </EmptyState>
 
     <template v-else>
       <!-- 患者 Hero 卡 -->
@@ -115,20 +117,11 @@
               </h2>
               <div class="hp-section">
                 <h3 class="hp-label">基本资料</h3>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="info-label">姓名</span>
-                    <span class="info-value">{{ healthProfile.name || '—' }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">性别</span>
-                    <span class="info-value">{{ genderText(healthProfile.gender) }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">年龄</span>
-                    <span class="info-value">{{ healthProfile.age != null ? healthProfile.age + ' 岁' : '—' }}</span>
-                  </div>
-                </div>
+                <InfoGrid>
+                  <InfoGridItem label="姓名" :value="healthProfile.name || '—'" />
+                  <InfoGridItem label="性别" :value="genderText(healthProfile.gender)" />
+                  <InfoGridItem label="年龄" :value="healthProfile.age != null ? healthProfile.age + ' 岁' : '—'" />
+                </InfoGrid>
               </div>
               <div v-for="group in healthGroups" :key="group.label" class="hp-section">
                 <h3 class="hp-label">{{ group.label }}</h3>
@@ -154,9 +147,9 @@
                     <span class="item-title">{{ qr.questionnaireTitle || '问卷记录' }}</span>
                   </div>
                   <div class="qr-meta">
-                    <span class="score-badge" :class="severityTone(qr.severity)">
+                    <StatusBadge :tone="severityTone(qr.severity)" border>
                       {{ qr.score != null ? qr.score + ' 分' : '—' }} · {{ qr.severity || '未知' }}
-                    </span>
+                    </StatusBadge>
                     <span v-if="qr.authoredDate">{{ formatDate(qr.authoredDate) }}</span>
                   </div>
                 </div>
@@ -213,6 +206,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fhirService, type PatientOverviewRecord } from '@/api/services/fhir.service'
 import type { HealthProfile } from '@/api/services/user.service'
+import StatusBadge, { type StatusTone } from '@/components/StatusBadge.vue'
+import InfoGrid from '@/components/InfoGrid.vue'
+import InfoGridItem from '@/components/InfoGridItem.vue'
+import EmptyState from '@/components/EmptyState.vue'
 import {
   type FhirPatient,
   type FhirCondition,
@@ -340,12 +337,11 @@ const healthGroups = computed(() => {
   ]
 })
 
-/** 问卷严重程度色系（重度红/中度橙/其余灰蓝） */
-const severityTone = (s?: string | null) => {
-  if (!s) return ''
-  if (s.includes('重度') || s.includes('严重')) return 'severity-high'
-  if (s.includes('中度')) return 'severity-mid'
-  return 'severity-low'
+/** 问卷严重程度语义色（重度→danger、中度→warning、低/正常→info） */
+const severityTone = (s?: string | null): StatusTone => {
+  if (s && (s.includes('重度') || s.includes('严重'))) return 'danger'
+  if (s && s.includes('中度')) return 'warning'
+  return 'info'
 }
 
 // ==================== 动作 ====================
@@ -681,29 +677,6 @@ onMounted(async () => {
   color: var(--theme-on-surface-variant);
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem 1.25rem;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.info-label {
-  font-size: 0.75rem;
-  color: var(--theme-on-surface-variant);
-}
-
-.info-value {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--theme-on-surface);
-}
-
 /* ===== 健康档案 ===== */
 .hp-section {
   padding: 0.875rem 0 0.25rem;
@@ -904,81 +877,7 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 
-/* 问卷评分徽标（按严重程度着色） */
-.score-badge {
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  background: var(--theme-surface-container);
-  border: 1px solid var(--theme-outline-variant);
-  color: var(--theme-on-surface-variant);
-}
-
-.score-badge.severity-high {
-  background: rgba(186, 26, 26, 0.1);
-  border-color: rgba(186, 26, 26, 0.3);
-  color: var(--theme-error);
-}
-
-.score-badge.severity-mid {
-  background: rgba(237, 108, 2, 0.1);
-  border-color: rgba(237, 108, 2, 0.3);
-  color: #9a3412;
-}
-
-.score-badge.severity-low {
-  background: var(--theme-primary-soft);
-  border-color: var(--theme-outline-variant);
-  color: var(--theme-primary);
-}
-
-/* ===== 空态（整页 / 内联） ===== */
-.empty-box {
-  min-height: 20rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  text-align: center;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-  padding: 2rem;
-}
-
-.empty-icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  background: var(--theme-surface-container);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-primary);
-  margin-bottom: 0.5rem;
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 2.25rem;
-}
-
-.empty-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--theme-on-surface);
-}
-
-.empty-desc {
-  font-size: 0.875rem;
-  color: var(--theme-outline);
-  max-width: 28rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
+/* ===== 内联空态（Tab 内容占位） ===== */
 .empty-inline {
   display: flex;
   align-items: center;

@@ -7,10 +7,7 @@
     </div>
 
     <!-- 加载态 -->
-    <div v-if="loading" class="state-box">
-      <span class="material-symbols-outlined state-spin">refresh</span>
-      <p>加载中...</p>
-    </div>
+    <LoadingState v-if="loading" full />
 
     <div v-else class="uc-grid">
       <!-- 左栏：个人资料卡 + 下次预约 -->
@@ -70,44 +67,28 @@
           <template v-if="!editing">
             <div class="info-block">
               <h4 class="info-group">基本资料</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <span class="info-label">姓名</span>
-                  <span class="info-value">{{ displayName || '—' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">性别</span>
-                  <span class="info-value">{{ genderText(form.gender) || '—' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">出生日期</span>
-                  <span class="info-value">{{ form.birthDate || '—' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">证件号码</span>
-                  <span class="info-value id-card-value">{{ maskIdNumber(form.idCard) }}</span>
-                </div>
-              </div>
+              <InfoGrid>
+                <InfoGridItem label="姓名" value-size="lg" :value="displayName" />
+                <InfoGridItem label="性别" value-size="lg" :value="genderText(form.gender)" />
+                <InfoGridItem label="出生日期" value-size="lg" :value="form.birthDate" />
+                <InfoGridItem label="证件号码" value-size="lg">
+                  <span class="id-card-value">{{ maskIdNumber(form.idCard) || '—' }}</span>
+                </InfoGridItem>
+              </InfoGrid>
             </div>
 
             <div class="info-block">
               <h4 class="info-group">联系方式</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <span class="info-label">手机号码</span>
-                  <span class="info-value">{{ form.phone || '—' }}</span>
-                </div>
-              </div>
+              <InfoGrid>
+                <InfoGridItem label="手机号码" value-size="lg" :value="form.phone" />
+              </InfoGrid>
             </div>
 
             <div class="info-block">
               <h4 class="info-group">地址信息</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <span class="info-label">家庭住址</span>
-                  <span class="info-value">{{ form.address || '—' }}</span>
-                </div>
-              </div>
+              <InfoGrid>
+                <InfoGridItem label="家庭住址" value-size="lg" :value="form.address" />
+              </InfoGrid>
             </div>
           </template>
 
@@ -198,6 +179,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.store'
+import InfoGrid from '@/components/InfoGrid.vue'
+import InfoGridItem from '@/components/InfoGridItem.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import { userService } from '@/api/services/user.service'
 import { apiErrorMessage } from '@/utils/error'
 import { maskIdNumber } from '@/utils/mask'
@@ -329,32 +313,6 @@ onMounted(loadIdentity)
   font-size: 0.9375rem;
   color: var(--theme-soft-stone);
   margin: 0;
-}
-
-/* ===== 加载态 ===== */
-.state-box {
-  min-height: 24rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: var(--theme-outline);
-  font-size: 0.875rem;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-}
-
-.state-spin {
-  font-size: 1.75rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ===== 主体栅格（左 4 / 右 8） ===== */
@@ -619,33 +577,6 @@ onMounted(loadIdentity)
   padding: 1.25rem 0 0.5rem;
   border-bottom: 1px solid rgba(193, 200, 195, 0.4);
   margin: 0 0 0.875rem;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.875rem 1.5rem;
-  padding-bottom: 1.25rem;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.info-label {
-  font-size: 0.75rem;
-  color: var(--theme-on-surface-variant);
-}
-
-.info-value {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--theme-on-surface);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .id-card-value {

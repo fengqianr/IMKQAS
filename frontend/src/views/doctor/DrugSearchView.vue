@@ -109,13 +109,13 @@
         </div>
 
         <!-- 空态 -->
-        <div v-else-if="!loading" class="empty-box">
-          <div class="empty-icon">
-            <span class="material-symbols-outlined">medication</span>
-          </div>
-          <h3 class="empty-title">未找到匹配的药品</h3>
-          <p class="empty-desc">请输入药品名称或选择药品分类进行检索。</p>
-        </div>
+        <EmptyState
+          v-else-if="!loading"
+          variant="panel"
+          icon="medication"
+          title="未找到匹配的药品"
+          description="请输入药品名称或选择药品分类进行检索。"
+        />
       </div>
 
       <!-- 相互作用分析面板（勾选 ≥2 个药品后出现） -->
@@ -274,6 +274,7 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { drugService } from '@/api/services/drug.service'
+import EmptyState from '@/components/EmptyState.vue'
 import {
   type Drug,
   type DrugInteraction,
@@ -1095,51 +1096,6 @@ onMounted(async () => {
 .panel-empty .material-symbols-outlined {
   font-size: 2rem;
   color: var(--theme-success);
-}
-
-/* ===== 空态 ===== */
-.empty-box {
-  min-height: 20rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  text-align: center;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-  padding: 2rem;
-}
-
-.empty-icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  background: var(--theme-surface-container);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-primary);
-  margin-bottom: 0.5rem;
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 2.25rem;
-}
-
-.empty-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--theme-on-surface);
-}
-
-.empty-desc {
-  font-size: 0.875rem;
-  color: var(--theme-outline);
-  max-width: 28rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
 }
 
 /* ===== 移动端浮动按钮 ===== */

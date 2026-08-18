@@ -101,23 +101,18 @@
             </thead>
             <tbody>
               <tr v-if="loading">
-                <td colspan="8" class="td-empty">
-                  <div class="empty-state">
-                    <span class="material-symbols-outlined text-3xl text-on-surface-variant animate-spin">refresh</span>
-                    <p>加载中...</p>
-                  </div>
+                <td colspan="8">
+                  <LoadingState text="加载中..." />
                 </td>
               </tr>
               <tr v-else-if="rules.length === 0">
-                <td colspan="8" class="td-empty">
-                  <div class="empty-state">
-                    <span class="material-symbols-outlined text-3xl text-on-surface-variant">clinical_notes</span>
-                    <p>暂无禁忌规则数据</p>
+                <td colspan="8">
+                  <EmptyState title="暂无禁忌规则数据" icon="clinical_notes">
                     <button class="btn-empty-create" @click="openCreateDialog">
                       <span class="material-symbols-outlined text-lg">add</span>
                       新增第一条规则
                     </button>
-                  </div>
+                  </EmptyState>
                 </td>
               </tr>
               <tr
@@ -159,38 +154,12 @@
         </div>
 
         <!-- 分页：固定在底部 -->
-        <footer class="table-footer">
-          <span class="footer-info">
-            显示 {{ (page - 1) * size + 1 }} 到 {{ Math.min(page * size, total) }} 条，共 {{ total }} 条规则
-          </span>
-          <div class="footer-pages">
-            <button
-              class="page-btn"
-              :disabled="page <= 1"
-              @click="page--; loadRules()"
-            >
-              <span class="material-symbols-outlined">chevron_left</span>
-            </button>
-            <template v-for="p in visiblePages" :key="p">
-              <span v-if="p === -1" class="page-ellipsis">...</span>
-              <button
-                v-else
-                class="page-num"
-                :class="p === page ? 'page-num-active' : ''"
-                @click="goToPage(p)"
-              >
-                {{ p }}
-              </button>
-            </template>
-            <button
-              class="page-btn"
-              :disabled="page >= totalPages"
-              @click="page++; loadRules()"
-            >
-              <span class="material-symbols-outlined">chevron_right</span>
-            </button>
-          </div>
-        </footer>
+        <Pager
+          v-model:current="page"
+          :total-pages="totalPages"
+          :info="`显示 ${(page - 1) * size + 1} 到 ${Math.min(page * size, total)} 条，共 ${total} 条规则`"
+          @change="loadRules"
+        />
       </div>
     </div>
 
@@ -284,6 +253,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { contraindicationService, type ContraindicationRule, type BatchImportResult } from '@/api/services/contraindication.service'
+import Pager from '@/components/Pager.vue'
+import LoadingState from '@/components/LoadingState.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const rules = ref<ContraindicationRule[]>([])
 const loading = ref(false)
@@ -306,30 +278,6 @@ const absolutePercent = computed(() => {
   if (Number(statsTotal.value) === 0) return '0.0'
   return ((statsAbsolute.value / statsTotal.value) * 100).toFixed(1)
 })
-
-// 可见页码
-const visiblePages = computed(() => {
-  const pages: number[] = []
-  const tp = totalPages.value
-  if (tp <= 7) {
-    for (let i = 1; i <= tp; i++) pages.push(i)
-  } else {
-    pages.push(1)
-    if (page.value > 3) pages.push(-1) // 省略号
-    const start = Math.max(2, page.value - 1)
-    const end = Math.min(tp - 1, page.value + 1)
-    for (let i = start; i <= end; i++) pages.push(i)
-    if (page.value < tp - 2) pages.push(-1)
-    pages.push(tp)
-  }
-  return pages
-})
-
-function goToPage(p: number) {
-  if (p < 0) return // 省略号
-  page.value = p
-  loadRules()
-}
 
 const dialogVisible = ref(false)
 const editingRule = ref<ContraindicationRule | null>(null)
@@ -556,7 +504,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  background-color: #f8f9fa;
+  background-color: var(--theme-surface);
 }
 
 /* ===== 主内容区域 ===== */
@@ -589,7 +537,7 @@ onMounted(() => {
 .stat-label {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #727783;
+  color: var(--theme-outline);
   margin-bottom: 0.25rem;
 }
 
@@ -600,9 +548,9 @@ onMounted(() => {
   letter-spacing: -0.025em;
 }
 
-.stat-value-primary { color: #00478d; }
-.stat-value-error { color: #dc2626; }
-.stat-value-tertiary { color: #4a5f83; }
+.stat-value-primary { color: var(--theme-primary); }
+.stat-value-error { color: var(--theme-error); }
+.stat-value-tertiary { color: var(--theme-on-surface-variant); }
 
 .stat-footer {
   margin-top: 0.75rem;
@@ -610,7 +558,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: #727783;
+  color: var(--theme-outline);
 }
 
 .stat-footer-trend {
@@ -631,7 +579,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.5rem;
-  background: linear-gradient(135deg, #00478d, #005eb8);
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-brand));
   color: #ffffff;
   font-weight: 600;
   font-size: 0.875rem;
@@ -713,7 +661,7 @@ onMounted(() => {
 .filter-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #727783;
+  color: var(--theme-outline);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-left: 0.25rem;
@@ -722,12 +670,12 @@ onMounted(() => {
 .filter-input,
 .filter-select {
   width: 100%;
-  background: #f8f9fa;
+  background: var(--theme-surface);
   border: none;
   border-radius: 0.5rem;
   font-size: 0.8125rem;
   padding: 0.5rem 0.75rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   outline: none;
   transition: box-shadow 150ms;
   font-family: inherit;
@@ -744,7 +692,7 @@ onMounted(() => {
 
 .btn-apply {
   padding: 0.5rem 1.5rem;
-  background: #00478d;
+  background: var(--theme-primary);
   color: #ffffff;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -756,14 +704,14 @@ onMounted(() => {
 }
 
 .btn-apply:hover {
-  background: #005eb8;
+  background: var(--theme-brand);
 }
 
 .btn-reset {
   padding: 0.5rem 0.75rem;
   background: none;
   border: none;
-  color: #727783;
+  color: var(--theme-outline);
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
@@ -772,7 +720,7 @@ onMounted(() => {
 }
 
 .btn-reset:hover {
-  color: #00478d;
+  color: var(--theme-primary);
 }
 
 /* ===== 表格容器：flex-1 填满剩余空间 ===== */
@@ -813,7 +761,7 @@ onMounted(() => {
   padding: 0.75rem 1.25rem;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #727783;
+  color: var(--theme-outline);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-align: left;
@@ -836,7 +784,7 @@ onMounted(() => {
 .rules-table td {
   padding: 0.875rem 1.25rem;
   font-size: 0.8125rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   vertical-align: middle;
 }
 
@@ -845,7 +793,7 @@ onMounted(() => {
 }
 
 .td-date {
-  color: #727783;
+  color: var(--theme-outline);
   white-space: nowrap;
 }
 
@@ -856,12 +804,12 @@ onMounted(() => {
 
 .drug-name {
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .drug-atc {
   font-size: 0.75rem;
-  color: #727783;
+  color: var(--theme-outline);
   margin-top: 0.125rem;
 }
 
@@ -893,12 +841,12 @@ onMounted(() => {
 
 .pill-danger {
   background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  color: var(--theme-error);
 }
 
 .pill-warning {
   background: rgba(74, 95, 131, 0.1);
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .pill-caution {
@@ -908,7 +856,7 @@ onMounted(() => {
 
 .pill-muted {
   background: #f1f5f9;
-  color: #727783;
+  color: var(--theme-outline);
 }
 
 .pill-success {
@@ -940,7 +888,7 @@ onMounted(() => {
 }
 
 .action-btn-edit {
-  color: #00478d;
+  color: var(--theme-primary);
 }
 
 .action-btn-edit:hover {
@@ -948,29 +896,14 @@ onMounted(() => {
 }
 
 .action-btn-delete {
-  color: #dc2626;
+  color: var(--theme-error);
 }
 
 .action-btn-delete:hover {
   background: rgba(220, 38, 38, 0.08);
 }
 
-/* ===== 空状态 ===== */
-.td-empty {
-  padding: 4rem 1rem !important;
-  text-align: center;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: #727783;
-  font-size: 0.875rem;
-}
-
+/* ===== 空状态操作按钮 ===== */
 .btn-empty-create {
   display: flex;
   align-items: center;
@@ -978,7 +911,7 @@ onMounted(() => {
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #00478d;
+  color: var(--theme-primary);
   background: none;
   border: none;
   border-radius: 9999px;
@@ -988,85 +921,6 @@ onMounted(() => {
 
 .btn-empty-create:hover {
   background: rgba(0, 71, 141, 0.06);
-}
-
-/* ===== 分页 ===== */
-.table-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1.25rem;
-  background: #f8f9fa;
-  border-top: 1px solid rgba(114, 119, 131, 0.08);
-  flex-shrink: 0;
-}
-
-.footer-info {
-  font-size: 0.8125rem;
-  color: #727783;
-  font-weight: 500;
-}
-
-.footer-pages {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.page-btn {
-  padding: 0.25rem;
-  color: #727783;
-  background: none;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  transition: background-color 150ms;
-  display: flex;
-  align-items: center;
-}
-
-.page-btn:hover:not(:disabled) {
-  background: #e2e8f0;
-}
-
-.page-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.page-num {
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border: none;
-  background: none;
-  color: #727783;
-  cursor: pointer;
-  transition: all 150ms;
-}
-
-.page-num:hover {
-  background: #e2e8f0;
-}
-
-.page-num-active {
-  background: #00478d;
-  color: #ffffff;
-  font-weight: 700;
-}
-
-.page-num-active:hover {
-  background: #005eb8;
-}
-
-.page-ellipsis {
-  padding: 0 0.25rem;
-  color: #727783;
 }
 
 /* ===== 背景装饰 ===== */
@@ -1122,7 +976,7 @@ onMounted(() => {
   font-family: 'Manrope', sans-serif;
   font-weight: 700;
   font-size: 1.125rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   margin-bottom: 1.5rem;
 }
 
@@ -1140,7 +994,7 @@ onMounted(() => {
 .form-label {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #727783;
+  color: var(--theme-outline);
   margin-bottom: 0.375rem;
 }
 
@@ -1153,11 +1007,11 @@ onMounted(() => {
 .form-textarea {
   width: 100%;
   padding: 0.625rem 0.875rem;
-  background: #f8f9fa;
+  background: var(--theme-surface);
   border: none;
   border-radius: 0.75rem;
   font-size: 0.8125rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   outline: none;
   transition: box-shadow 150ms;
   font-family: inherit;
@@ -1185,7 +1039,7 @@ onMounted(() => {
   padding: 0.625rem 1.25rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #727783;
+  color: var(--theme-outline);
   background: none;
   border: none;
   border-radius: 9999px;
@@ -1202,7 +1056,7 @@ onMounted(() => {
   font-size: 0.8125rem;
   font-weight: 600;
   color: #ffffff;
-  background: #00478d;
+  background: var(--theme-primary);
   border: none;
   border-radius: 9999px;
   cursor: pointer;
@@ -1238,7 +1092,7 @@ onMounted(() => {
 
 .import-hint {
   font-size: 0.8125rem;
-  color: #727783;
+  color: var(--theme-outline);
   margin-bottom: 1rem;
   line-height: 1.6;
 }

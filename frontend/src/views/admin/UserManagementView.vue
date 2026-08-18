@@ -55,13 +55,17 @@
             <tr v-for="user in pagedUsers" :key="user.id" class="result-row">
               <td>
                 <div class="user-cell">
-                  <span class="avatar" :class="avatarClass(user.role)">{{ initialOf(user.username, 'U') }}</span>
+                  <span
+                    class="avatar-initial"
+                    :class="user.role === 'ADMIN' ? 'tone-brand' : user.role === 'DOCTOR' ? 'tone-success' : 'tone-soft'"
+                    :title="user.username"
+                  >{{ user.username ? user.username.charAt(0) : '?' }}</span>
                   <span class="user-name">{{ user.username }}</span>
                 </div>
               </td>
               <td class="code-text">{{ maskPhone(user.phone) }}</td>
               <td>
-                <span class="role-badge" :class="roleBadgeClass(user.role)">{{ roleLabel(user.role) }}</span>
+                <StatusBadge :tone="user.role === 'ADMIN' ? 'info' : user.role === 'DOCTOR' ? 'success' : 'neutral'">{{ roleLabel(user.role) }}</StatusBadge>
               </td>
               <td class="time-text">{{ formatTime(user.createdAt) }}</td>
               <td class="text-right">
@@ -80,14 +84,14 @@
           </tbody>
         </table>
         <!-- 空态 -->
-        <div v-else-if="!loading" class="empty-box">
-          <div class="empty-icon">
-            <span class="material-symbols-outlined">search_off</span>
-          </div>
-          <h3 class="empty-title">暂无匹配的用户</h3>
-          <p class="empty-desc">请调整搜索条件，或尝试清除筛选。</p>
+        <EmptyState
+          v-else-if="!loading"
+          title="暂无匹配的用户"
+          description="请调整搜索条件，或尝试清除筛选。"
+          icon="search_off"
+        >
           <el-button class="empty-btn" @click="resetSearch">清除筛选</el-button>
-        </div>
+        </EmptyState>
       </div>
 
       <!-- 分页 -->
@@ -146,11 +150,12 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
+import EmptyState from '@/components/EmptyState.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { adminUserService, type UserItem, type UserUpsertRequest } from '@/api/services/admin-user.service'
 import { ROLE_LABELS } from '@/config/menus'
 import { apiErrorMessage } from '@/utils/error'
 import { maskPhone } from '@/utils/mask'
-import { initialOf } from '@/utils/format'
 
 /** 角色下拉选项（对齐后端 Role 枚举） */
 const ROLE_OPTIONS = [
@@ -329,20 +334,6 @@ const roleLabel = (role: string) => ROLE_LABELS[role] || role
 
 const formatTime = (t?: string) => (t ? dayjs(t).format('YYYY-MM-DD HH:mm') : '—')
 
-/** 头像配色（按角色区分） */
-const avatarClass = (role: string) => {
-  if (role === 'ADMIN') return 'avatar-admin'
-  if (role === 'DOCTOR') return 'avatar-doctor'
-  return 'avatar-default'
-}
-
-/** 角色徽标配色（管理员=品牌蓝、医生=成功绿、其余=中性灰） */
-const roleBadgeClass = (role: string) => {
-  if (role === 'ADMIN') return 'badge-admin'
-  if (role === 'DOCTOR') return 'badge-doctor'
-  return 'badge-default'
-}
-
 onMounted(handleSearch)
 </script>
 
@@ -361,21 +352,21 @@ onMounted(handleSearch)
   justify-content: space-between;
   gap: 1rem;
   padding: 0 0 1.5rem;
-  border-bottom: 1px solid #c2c6d4;
+  border-bottom: 1px solid var(--theme-outline-variant);
   margin-bottom: 1.5rem;
 }
 
 .page-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
 }
 
 .page-subtitle {
   font-size: 0.875rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .add-btn {
@@ -391,7 +382,7 @@ onMounted(handleSearch)
 /* ===== 搜索卡片 ===== */
 .search-card {
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
   padding: 1rem 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -417,13 +408,13 @@ onMounted(handleSearch)
 
 .input-prefix-icon {
   font-size: 1.125rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 /* ===== 表格卡片 ===== */
 .table-card {
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -447,9 +438,9 @@ onMounted(handleSearch)
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   background: #f2f4f6;
-  border-bottom: 1px solid #c2c6d4;
+  border-bottom: 1px solid var(--theme-outline-variant);
   text-align: left;
 }
 
@@ -483,73 +474,50 @@ onMounted(handleSearch)
   gap: 0.75rem;
 }
 
-.avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
+/* 首字符头像：2rem 圆形 + 角色语义底色（内联自 AvatarInitial，本页仅一处使用） */
+.avatar-initial {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 700;
-  flex-shrink: 0;
+  user-select: none;
 }
 
-.avatar-admin {
-  background: #005eb8;
+.tone-brand {
+  background: var(--theme-brand);
   color: #ffffff;
 }
 
-.avatar-doctor {
-  background: #2e7d32;
+.tone-success {
+  background: var(--theme-success);
   color: #ffffff;
 }
 
-.avatar-default {
-  background: #dbeafe;
-  color: #005eb8;
+.tone-soft {
+  background: rgba(0, 71, 141, 0.1);
+  color: var(--theme-primary);
 }
 
 .user-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .code-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8125rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .time-text {
   font-size: 0.8125rem;
-  color: #4a5f83;
-}
-
-/* 角色徽标 */
-.role-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.125rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.badge-admin {
-  background: rgba(0, 94, 184, 0.1);
-  color: #005eb8;
-}
-
-.badge-doctor {
-  background: rgba(46, 125, 50, 0.1);
-  color: #2e7d32;
-}
-
-.badge-default {
-  background: #f1f5f9;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 /* 操作列（行 hover 显示） */
@@ -572,7 +540,7 @@ onMounted(handleSearch)
   gap: 0.25rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #005eb8;
+  color: var(--theme-brand);
   background: none;
   border: none;
   cursor: pointer;
@@ -584,7 +552,7 @@ onMounted(handleSearch)
 }
 
 .action-btn.danger {
-  color: #d32f2f;
+  color: var(--theme-error);
 }
 
 .action-btn.danger:hover {
@@ -595,57 +563,18 @@ onMounted(handleSearch)
   font-size: 1rem;
 }
 
-/* ===== 空态 ===== */
-.empty-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.empty-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 9999px;
-  background: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 1.75rem;
-  color: #4a5f83;
-}
-
-.empty-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #191c1d;
-  margin-bottom: 0.5rem;
-}
-
-.empty-desc {
-  font-size: 0.8125rem;
-  color: #4a5f83;
-  margin-bottom: 1.25rem;
-}
-
 /* ===== 分页 ===== */
 .pagination-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.5rem;
-  border-top: 1px solid #c2c6d4;
+  border-top: 1px solid var(--theme-outline-variant);
 }
 
 .page-info {
   font-size: 0.8125rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .page-actions {
@@ -661,7 +590,7 @@ onMounted(handleSearch)
 .page-num {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   min-width: 1.5rem;
   text-align: center;
 }

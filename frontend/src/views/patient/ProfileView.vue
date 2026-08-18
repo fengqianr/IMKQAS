@@ -21,23 +21,21 @@
     </div>
 
     <!-- 加载态 -->
-    <div v-if="loading" class="state-box">
-      <span class="material-symbols-outlined state-spin">refresh</span>
-      <p>加载中...</p>
-    </div>
+    <LoadingState v-if="loading" full text="加载中..." />
 
     <!-- 空态 -->
-    <div v-else-if="!hasProfile" class="empty-box">
-      <div class="empty-icon">
-        <span class="material-symbols-outlined">medical_information</span>
-      </div>
-      <h3 class="empty-title">您还没有健康档案</h3>
-      <p class="empty-desc">创建健康档案有助于系统为您提供更个性化、准确的医疗建议和评估。</p>
+    <EmptyState
+      v-else-if="!hasProfile"
+      variant="panel"
+      icon="medical_information"
+      title="您还没有健康档案"
+      description="创建健康档案有助于系统为您提供更个性化、准确的医疗建议和评估。"
+    >
       <button class="btn-primary" @click="enterEdit">
         <span class="material-symbols-outlined">add</span>
         去创建
       </button>
-    </div>
+    </EmptyState>
 
     <!-- 视图态：设计稿 Bento 布局（左 8 / 右 4） -->
     <div v-else-if="!editMode" class="view-grid">
@@ -291,6 +289,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { userService, type HealthProfile, type IdentityInfo } from '@/api/services/user.service'
 import { apiErrorMessage } from '@/utils/error'
 import { genderText, calcAge } from '@/api/types/fhir'
+import EmptyState from '@/components/EmptyState.vue'
+import LoadingState from '@/components/LoadingState.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -532,76 +532,6 @@ onMounted(loadProfile)
   display: flex;
   gap: 0.75rem;
   flex-shrink: 0;
-}
-
-/* ===== 加载/空态容器 ===== */
-.state-box {
-  min-height: 24rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: var(--theme-outline);
-  font-size: 0.875rem;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-}
-
-.state-spin {
-  font-size: 1.75rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-box {
-  min-height: 24rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  text-align: center;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-  padding: 2rem;
-}
-
-.empty-icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  background: var(--theme-primary-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-primary);
-  margin-bottom: 0.5rem;
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 2.25rem;
-}
-
-.empty-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--theme-on-surface);
-}
-
-.empty-desc {
-  font-size: 0.875rem;
-  color: var(--theme-outline);
-  max-width: 28rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
 }
 
 /* ===== 主按钮 ===== */

@@ -7,10 +7,7 @@
     </div>
 
     <!-- 加载态 -->
-    <div v-if="loading" class="state-box">
-      <span class="material-symbols-outlined state-spin">refresh</span>
-      <p>加载中...</p>
-    </div>
+    <LoadingState v-if="loading" full text="加载中..." />
 
     <template v-else>
       <!-- Overview 概览 Bento -->
@@ -155,17 +152,18 @@
       </div>
 
       <!-- 空态 -->
-      <div v-else class="empty-box">
-        <div class="empty-icon">
-          <span class="material-symbols-outlined">assignment</span>
-        </div>
-        <h3 class="empty-title">还没有完成过健康问卷</h3>
-        <p class="empty-desc">您可以通过发起新的分析来开始您的首次健康问卷评估。</p>
+      <EmptyState
+        v-else
+        variant="panel"
+        icon="assignment"
+        title="还没有完成过健康问卷"
+        description="您可以通过发起新的分析来开始您的首次健康问卷评估。"
+      >
         <button class="btn-primary" @click="goQa">
           <span class="material-symbols-outlined">add</span>
           发起评估
         </button>
-      </div>
+      </EmptyState>
     </template>
 
     <!-- 分析报告弹窗 -->
@@ -217,6 +215,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { interviewService, type TrendPoint } from '@/api/services/interview.service'
 import type { AnalysisReport } from '@/api/types/interview'
 import { formatDate } from '@/utils/date'
+import EmptyState from '@/components/EmptyState.vue'
+import LoadingState from '@/components/LoadingState.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -470,76 +470,6 @@ onMounted(loadRecords)
   font-size: 0.875rem;
   color: var(--theme-soft-stone);
   margin: 0;
-}
-
-/* ===== 加载/空态容器 ===== */
-.state-box {
-  min-height: 24rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: var(--theme-outline);
-  font-size: 0.875rem;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-}
-
-.state-spin {
-  font-size: 1.75rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-box {
-  min-height: 24rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  text-align: center;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-  padding: 2rem;
-}
-
-.empty-icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  background: var(--theme-primary-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-primary);
-  margin-bottom: 0.5rem;
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 2.25rem;
-}
-
-.empty-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--theme-on-surface);
-}
-
-.empty-desc {
-  font-size: 0.875rem;
-  color: var(--theme-outline);
-  max-width: 28rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
 }
 
 /* ===== 主按钮 ===== */

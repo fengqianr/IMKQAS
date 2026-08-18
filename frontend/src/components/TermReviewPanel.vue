@@ -331,7 +331,7 @@ watch(
   flex: 1;
   padding: 12px 16px;
   border-radius: 8px;
-  background: #f8f9fa;
+  background: var(--theme-surface);
   border: 1px solid #e5e7eb;
   text-align: center;
 }
@@ -350,7 +350,7 @@ watch(
   color: #111827;
 }
 .stat-alert-text {
-  color: #dc2626 !important;
+  color: var(--theme-error) !important;
 }
 .filter-bar {
   display: flex;

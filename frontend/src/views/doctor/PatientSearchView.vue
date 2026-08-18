@@ -105,10 +105,7 @@
               <td class="code-text">{{ maskPhone(phoneOf(p)) }}</td>
               <td class="code-text">{{ maskIdNumber(identifierOf(p)?.value) }}</td>
               <td>
-                <span class="status-pill">
-                  <span class="status-dot" />
-                  已建档
-                </span>
+                <StatusBadge tone="info" size="sm" dot border text="已建档" />
               </td>
               <td>
                 <span class="detail-link">查看档案</span>
@@ -133,16 +130,16 @@
       </div>
 
       <!-- 空态 -->
-      <div v-if="!patients.length && !loading" class="empty-box">
-        <div class="empty-icon">
-          <span class="material-symbols-outlined">search_off</span>
-        </div>
-        <h3 class="empty-title">未找到匹配的患者档案</h3>
-        <p class="empty-desc">请检查您输入的{{ placeholderText }}是否准确，或尝试使用其他检索条件。</p>
-        <button class="btn-outline" @click="resetSearch">
-          清除搜索条件
-        </button>
-      </div>
+      <EmptyState
+        v-if="!patients.length && !loading"
+        variant="plain"
+        min-height="16rem"
+        icon="search_off"
+        title="未找到匹配的患者档案"
+        :description="`请检查您输入的${placeholderText}是否准确，或尝试使用其他检索条件。`"
+      >
+        <button class="btn-outline" @click="resetSearch">清除搜索条件</button>
+      </EmptyState>
     </section>
   </div>
 </template>
@@ -151,6 +148,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { fhirService } from '@/api/services/fhir.service'
+import StatusBadge from '@/components/StatusBadge.vue'
+import EmptyState from '@/components/EmptyState.vue'
 import {
   type FhirPatient,
   patientInitial,
@@ -647,28 +646,6 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
-/* 状态 pill：无真实状态字段 → 中性「已建档」 */
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.125rem 0.625rem;
-  border-radius: 9999px;
-  background: var(--theme-primary-soft);
-  color: var(--theme-primary);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  border: 1px solid var(--theme-outline-variant);
-  white-space: nowrap;
-}
-
-.status-dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 9999px;
-  background: var(--theme-secondary);
-}
-
 .detail-link {
   color: var(--theme-primary);
   font-size: 0.8125rem;
@@ -738,49 +715,6 @@ onMounted(async () => {
   justify-content: center;
   font-size: 0.8125rem;
   font-weight: 600;
-}
-
-/* ===== 空态 ===== */
-.empty-box {
-  flex: 1;
-  min-height: 16rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  text-align: center;
-  padding: 2rem;
-}
-
-.empty-icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  background: var(--theme-surface-container-low);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-primary);
-  margin-bottom: 0.5rem;
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 2.25rem;
-}
-
-.empty-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--theme-on-surface);
-}
-
-.empty-desc {
-  font-size: 0.875rem;
-  color: var(--theme-outline);
-  max-width: 28rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
 }
 
 .btn-outline {

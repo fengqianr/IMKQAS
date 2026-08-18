@@ -126,12 +126,15 @@
                     <span class="kb-cat-pill">{{ doc.category }}</span>
                   </td>
                   <td>
-                    <span class="kb-status" :class="'kb-status-' + doc.status">
-                      <span class="kb-status-dot"></span>
+                    <StatusBadge
+                      :tone="doc.status === 'completed' ? 'success' : doc.status === 'processing' ? 'warning' : 'neutral'"
+                      dot
+                      :pulse="doc.status === 'processing'"
+                    >
                       <template v-if="doc.status === 'completed'">已完成</template>
                       <template v-else-if="doc.status === 'processing'">处理中 ({{ doc.progress }}%)</template>
                       <template v-else>待处理</template>
-                    </span>
+                    </StatusBadge>
                   </td>
                   <td>
                     <el-dropdown trigger="click" @command="(cmd: string) => handleDocAction(cmd, doc)">
@@ -317,6 +320,7 @@ import type { Document as ApiDocument } from '@/api/types/document'
 import type { DocumentChunk } from '@/api/types/document-chunk'
 import ContraindicationRules from '@/views/clinical/ContraindicationRules.vue'
 import TermReview from '@/views/clinical/TermReview.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 
 // 类型定义
 interface Category {
@@ -900,7 +904,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  border: 2px dashed #c2c6d4;
+  border: 2px dashed var(--theme-outline-variant);
   border-radius: 0.5rem;
   background: #ffffff;
   cursor: pointer;
@@ -909,13 +913,13 @@ onUnmounted(() => {
 
 .kb-upload:hover,
 .kb-upload-active {
-  border-color: #00478d;
+  border-color: var(--theme-primary);
   background: #e5eeff;
 }
 
 .kb-upload-icon {
   font-size: 2.5rem;
-  color: #00478d;
+  color: var(--theme-primary);
   flex-shrink: 0;
 }
 
@@ -945,7 +949,7 @@ onUnmounted(() => {
   gap: 1.5rem;
   padding: 1rem 1.25rem;
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.5rem;
   overflow: hidden;
 }
@@ -954,7 +958,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0;
@@ -975,8 +979,8 @@ onUnmounted(() => {
   gap: 0.375rem;
   padding: 0.375rem 0.875rem;
   border-radius: 9999px;
-  border: 1px solid #c2c6d4;
-  background: #f8f9fa;
+  border: 1px solid var(--theme-outline-variant);
+  background: var(--theme-surface);
   font-size: 0.8125rem;
   color: #0b1c30;
   cursor: pointer;
@@ -986,13 +990,13 @@ onUnmounted(() => {
 
 .kb-category-item:hover {
   background: #f1f5f9;
-  border-color: #727783;
+  border-color: var(--theme-outline);
 }
 
 .kb-category-active {
   background: rgba(0, 71, 141, 0.10);
-  border-color: #00478d;
-  color: #00478d;
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
   font-weight: 600;
 }
 
@@ -1006,13 +1010,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  background: #e7e8e9;
+  background: var(--theme-surface-container);
   color: #424752;
 }
 
 .kb-category-active .kb-cat-count {
   background: rgba(0, 71, 141, 0.15);
-  color: #00478d;
+  color: var(--theme-primary);
 }
 
 /* ===== 底部行：文档列表 + 内容区（上下垂直堆叠，内容自然展开） ===== */
@@ -1031,7 +1035,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.5rem;
   overflow: hidden;
 }
@@ -1042,7 +1046,7 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #c2c6d4;
+  border-bottom: 1px solid var(--theme-outline-variant);
   flex-shrink: 0;
 }
 
@@ -1075,8 +1079,8 @@ onUnmounted(() => {
 }
 
 .kb-icon-btn:hover {
-  background: #e7e8e9;
-  color: #00478d;
+  background: var(--theme-surface-container);
+  color: var(--theme-primary);
 }
 
 .kb-icon-btn:disabled {
@@ -1085,7 +1089,7 @@ onUnmounted(() => {
 }
 
 .kb-icon-btn-bordered {
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
 }
 
 .kb-search {
@@ -1098,7 +1102,7 @@ onUnmounted(() => {
   top: 50%;
   transform: translateY(-50%);
   font-size: 1rem;
-  color: #727783;
+  color: var(--theme-outline);
   pointer-events: none;
 }
 
@@ -1106,8 +1110,8 @@ onUnmounted(() => {
   width: 16rem;
   padding: 0.5rem 0.75rem 0.5rem 2.25rem;
   border-radius: 0.5rem;
-  border: 1px solid #c2c6d4;
-  background: #f8f9fa;
+  border: 1px solid var(--theme-outline-variant);
+  background: var(--theme-surface);
   font-size: 0.875rem;
   color: #0b1c30;
   outline: none;
@@ -1115,8 +1119,8 @@ onUnmounted(() => {
 }
 
 .kb-search-input:focus {
-  border-color: #00478d;
-  box-shadow: 0 0 0 1px #00478d;
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 1px var(--theme-primary);
 }
 
 /* 表格 */
@@ -1141,8 +1145,8 @@ onUnmounted(() => {
   color: #424752;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #f3f4f5;
-  border-bottom: 1px solid #c2c6d4;
+  background: var(--theme-surface-container-low);
+  border-bottom: 1px solid var(--theme-outline-variant);
 }
 
 .kb-th-category,
@@ -1172,7 +1176,7 @@ onUnmounted(() => {
 
 .kb-row-selected {
   background: rgba(0, 71, 141, 0.06);
-  border-left-color: #00478d;
+  border-left-color: var(--theme-primary);
 }
 
 .kb-doc-name {
@@ -1214,7 +1218,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
-  background: #e7e8e9;
+  background: var(--theme-surface-container);
   color: #424752;
 }
 
@@ -1229,58 +1233,8 @@ onUnmounted(() => {
 }
 
 .kb-more-btn:hover {
-  color: #00478d;
+  color: var(--theme-primary);
   background: #f1f5f9;
-}
-
-/* 状态徽标 */
-.kb-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.kb-status-dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 9999px;
-}
-
-.kb-status-completed {
-  background: rgba(46, 125, 50, 0.12);
-  color: #2e7d32;
-}
-
-.kb-status-completed .kb-status-dot {
-  background: #2e7d32;
-}
-
-.kb-status-processing {
-  background: rgba(237, 108, 2, 0.12);
-  color: #ed6c02;
-}
-
-.kb-status-processing .kb-status-dot {
-  background: #ed6c02;
-  animation: kb-pulse 1.5s ease-in-out infinite;
-}
-
-.kb-status-pending {
-  background: #e7e8e9;
-  color: #424752;
-}
-
-.kb-status-pending .kb-status-dot {
-  background: #727783;
-}
-
-@keyframes kb-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
 }
 
 /* 表格空态 */
@@ -1300,13 +1254,13 @@ onUnmounted(() => {
 
 .kb-empty-icon {
   font-size: 2rem;
-  color: #727783;
+  color: var(--theme-outline);
   margin-bottom: 0.25rem;
 }
 
 .kb-empty-hint {
   font-size: 0.75rem;
-  color: #727783;
+  color: var(--theme-outline);
   margin: 0;
 }
 
@@ -1326,7 +1280,7 @@ onUnmounted(() => {
   gap: 1rem;
   padding: 1rem 1.25rem;
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.5rem;
   flex-shrink: 0;
 }
@@ -1361,7 +1315,7 @@ onUnmounted(() => {
 .kb-source,
 .kb-chunks {
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -1383,8 +1337,8 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.5rem 0.75rem;
-  background: #f3f4f5;
-  border-bottom: 1px solid #c2c6d4;
+  background: var(--theme-surface-container-low);
+  border-bottom: 1px solid var(--theme-outline-variant);
   font-size: 0.8125rem;
   color: #424752;
   flex-shrink: 0;
@@ -1410,7 +1364,7 @@ onUnmounted(() => {
 }
 
 .kb-mini-btn:hover {
-  color: #00478d;
+  color: var(--theme-primary);
 }
 
 .kb-mini-btn .material-symbols-outlined {
@@ -1425,7 +1379,7 @@ onUnmounted(() => {
 .kb-chunks-total {
   font-size: 0.75rem;
   padding: 0.125rem 0.5rem;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.25rem;
   color: #424752;
 }
@@ -1453,7 +1407,7 @@ onUnmounted(() => {
 
 .kb-source-icon {
   font-size: 1.75rem;
-  color: #727783;
+  color: var(--theme-outline);
   margin-bottom: 0.25rem;
 }
 
@@ -1465,7 +1419,7 @@ onUnmounted(() => {
   padding: 0.375rem 0.75rem;
   border-radius: 9999px;
   border: none;
-  background: #00478d;
+  background: var(--theme-primary);
   color: #ffffff;
   font-size: 0.75rem;
   cursor: pointer;
@@ -1502,7 +1456,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
   line-height: 1.6;
   color: #424752;
-  background: #f3f4f5;
+  background: var(--theme-surface-container-low);
   border-radius: 0.25rem;
   padding: 0.75rem;
   white-space: pre-wrap;
@@ -1536,8 +1490,8 @@ onUnmounted(() => {
 .kb-chunk-card {
   padding: 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid #c2c6d4;
-  background: #f8f9fa;
+  border: 1px solid var(--theme-outline-variant);
+  background: var(--theme-surface);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -1547,7 +1501,7 @@ onUnmounted(() => {
 }
 
 .kb-chunk-selected {
-  border-color: #00478d;
+  border-color: var(--theme-primary);
   background: rgba(0, 71, 141, 0.06);
 }
 
@@ -1563,7 +1517,7 @@ onUnmounted(() => {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: #00478d;
+  color: var(--theme-primary);
   text-transform: uppercase;
 }
 
@@ -1572,7 +1526,7 @@ onUnmounted(() => {
   color: #424752;
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  background: #e7e8e9;
+  background: var(--theme-surface-container);
 }
 
 .kb-chunk-content {
@@ -1594,7 +1548,7 @@ onUnmounted(() => {
   padding: 0.125rem 0.5rem;
   border-radius: 9999px;
   background: #d6e3ff;
-  color: #00478d;
+  color: var(--theme-primary);
 }
 
 /* 分块操作栏 */
@@ -1604,13 +1558,13 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem;
-  border-top: 1px solid #c2c6d4;
+  border-top: 1px solid var(--theme-outline-variant);
   flex-shrink: 0;
 }
 
 .kb-chunk-selected-info {
   font-size: 0.75rem;
-  color: #727783;
+  color: var(--theme-outline);
 }
 
 .kb-footer-actions {
@@ -1640,7 +1594,7 @@ onUnmounted(() => {
 
 .kb-action-primary {
   border: none;
-  background: #00478d;
+  background: var(--theme-primary);
   color: #ffffff;
 }
 
@@ -1651,7 +1605,7 @@ onUnmounted(() => {
 .kb-action-secondary {
   border: none;
   background: rgba(237, 108, 2, 0.12);
-  color: #ed6c02;
+  color: var(--theme-processing);
 }
 
 .kb-action-secondary:hover:not(:disabled) {

@@ -138,19 +138,13 @@
               </thead>
               <tbody>
                 <tr v-if="loading">
-                  <td colspan="9" class="table-empty">
-                    <div class="custom-flex custom-flex-col custom-items-center custom-gap-3">
-                      <span class="material-symbols-outlined text-3xl text-on-surface-variant" style="animation: spin 1.5s linear infinite;">refresh</span>
-                      <p class="text-sm text-on-surface-variant">加载中...</p>
-                    </div>
+                  <td colspan="9">
+                    <LoadingState />
                   </td>
                 </tr>
                 <tr v-else-if="displayTerms.length === 0">
-                  <td colspan="9" class="table-empty">
-                    <div class="custom-flex custom-flex-col custom-items-center custom-gap-3">
-                      <span class="material-symbols-outlined text-3xl text-on-surface-variant">text_snippet</span>
-                      <p class="text-sm text-on-surface-variant">暂无词条数据</p>
-                    </div>
+                  <td colspan="9">
+                    <EmptyState icon="text_snippet" title="暂无词条数据" />
                   </td>
                 </tr>
                 <tr
@@ -201,12 +195,13 @@
                         <span class="material-symbols-outlined text-lg">cancel</span>
                       </button>
                     </div>
-                    <span v-else :class="['status-badge', row.status === 'APPROVED' ? 'status-badge-approved' : 'status-badge-rejected']">
-                      <span class="material-symbols-outlined text-sm">
-                        {{ row.status === 'APPROVED' ? 'check' : 'block' }}
-                      </span>
+                    <StatusBadge
+                      v-else
+                      :tone="row.status === 'APPROVED' ? 'success' : 'danger'"
+                      :icon="row.status === 'APPROVED' ? 'check' : 'block'"
+                    >
                       {{ row.status === 'APPROVED' ? '已通过' : '已拒绝' }}
-                    </span>
+                    </StatusBadge>
                   </td>
                 </tr>
               </tbody>
@@ -214,25 +209,12 @@
           </div>
 
           <!-- 分页：匹配原型页码式分页 -->
-          <div class="pagination-bar">
-            <span>显示 {{ displayTerms.length }} 条，共 {{ total }} 条</span>
-            <div class="custom-flex custom-items-center custom-gap-2">
-              <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage--; loadData()">
-                <span class="material-symbols-outlined">chevron_left</span>
-              </button>
-              <button
-                v-for="p in totalPages"
-                :key="p"
-                :class="['page-num', p === currentPage ? 'page-num-active' : '']"
-                @click="currentPage = p; loadData()"
-              >
-                {{ p }}
-              </button>
-              <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage++; loadData()">
-                <span class="material-symbols-outlined">chevron_right</span>
-              </button>
-            </div>
-          </div>
+          <Pager
+            v-model:current="currentPage"
+            :total-pages="totalPages"
+            :info="`显示 ${displayTerms.length} 条，共 ${total} 条`"
+            @change="loadData"
+          />
         </section><!-- /table-card -->
       </div><!-- /term-review-main-inner -->
     </main>
@@ -268,6 +250,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminService } from '@/api/services/admin.service'
 import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
 import { apiErrorMessage } from '@/utils/error'
+import StatusBadge from '@/components/StatusBadge.vue'
+import Pager from '@/components/Pager.vue'
+import LoadingState from '@/components/LoadingState.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const terms = ref<UnmappedTermItem[]>([])
 const loading = ref(false)
@@ -503,7 +489,7 @@ onUnmounted(() => {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f8f9fa; /* surface / background */
+  background-color: var(--theme-surface); /* surface / background */
 }
 
 /* ===== 主内容区：占满布局内容区 ===== */
@@ -543,14 +529,14 @@ onUnmounted(() => {
   font-family: 'Manrope', sans-serif;
   font-size: 1.875rem;
   font-weight: 700;
-  color: #00478d;
+  color: var(--theme-primary);
 }
 
 .stat-card-value-neutral {
   font-family: 'Manrope', sans-serif;
   font-size: 1.875rem;
   font-weight: 700;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .stat-card-sub {
@@ -613,7 +599,7 @@ onUnmounted(() => {
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #727783;
+  color: var(--theme-outline);
   font-size: 1.25rem;
 }
 
@@ -622,7 +608,7 @@ onUnmounted(() => {
   padding-right: 1rem;
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
-  background-color: #f3f4f5;
+  background-color: var(--theme-surface-container-low);
   border: none;
   border-radius: 9999px;
   font-size: 0.875rem;
@@ -642,7 +628,7 @@ onUnmounted(() => {
 
 .filter-select {
   padding: 0.625rem 1rem;
-  background-color: #f3f4f5;
+  background-color: var(--theme-surface-container-low);
   border: none;
   border-radius: 9999px;
   font-size: 0.875rem;
@@ -724,7 +710,7 @@ text-align:center
 
 .term-table tbody tr.row-selected {
   background-color: rgba(243, 244, 245, 0.4);
-  border-left: 4px solid #00478d;
+  border-left: 4px solid var(--theme-primary);
 }
 
 .term-table tbody {
@@ -739,7 +725,7 @@ text-align:center
 .term-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #00478d;
+  color: var(--theme-primary);
 }
 
 .term-context {
@@ -787,7 +773,7 @@ text-align:center
 }
 
 .entity-badge-default {
-  background-color: #e7e8e9;
+  background-color: var(--theme-surface-container);
   color: #424752;
 }
 
@@ -801,14 +787,14 @@ text-align:center
 .confidence-bar-bg {
   width: 3rem;
   height: 0.375rem;
-  background-color: #e7e8e9;
+  background-color: var(--theme-surface-container);
   border-radius: 9999px;
   overflow: hidden;
 }
 
 .confidence-bar-fill {
   height: 100%;
-  background-color: #00478d;
+  background-color: var(--theme-primary);
   border-radius: 9999px;
 }
 
@@ -824,7 +810,7 @@ text-align:center
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00478d;
+  color: var(--theme-primary);
   border-radius: 0.25rem;
   border: none;
   background: none;
@@ -869,91 +855,9 @@ text-align:center
   box-shadow: 0 0 0 2px rgba(0, 71, 141, 0.2);
 }
 
-/* 状态标签 */
-.status-badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.status-badge-approved {
-  background-color: #f0fdf4;
-  color: #2e7d32;
-}
-
-.status-badge-rejected {
-  background-color: #fef2f2;
-  color: #dc2626;
-}
-
-/* ===== 分页 ===== */
-.pagination-bar {
-  padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  color: #424752;
-  border-top: 1px solid rgba(194, 198, 212, 0.1);
-}
-
-.page-btn {
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #424752;
-  transition: background-color 150ms;
-}
-
-.page-btn:hover {
-  background-color: #e7e8e9;
-}
-
-.page-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.page-num {
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.25rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 0.75rem;
-  color: #424752;
-  transition: background-color 150ms;
-}
-
-.page-num:hover {
-  background-color: #e7e8e9;
-}
-
-.page-num-active {
-  background-color: #00478d;
-  color: #ffffff;
-}
-
-.page-num-active:hover {
-  background-color: #00478d;
-}
-
 /* ===== 批量按钮 ===== */
 .btn-batch {
-  background-color: #00478d;
+  background-color: var(--theme-primary);
   color: #ffffff;
   padding: 0.5rem 1rem;
   border-radius: 9999px;
@@ -968,7 +872,7 @@ text-align:center
 }
 
 .btn-batch:hover {
-  background-color: #005eb8;
+  background-color: var(--theme-brand);
 }
 
 .btn-batch:active {
@@ -985,18 +889,6 @@ text-align:center
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ===== 加载旋转动画 ===== */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ===== 加载/空状态 ===== */
-.table-empty {
-  padding: 4rem 1.5rem;
-  text-align: center;
-}
-
 /* ===== 批量弹窗（保持原有） ===== */
 .modal-overlay {
   position: fixed;
@@ -1009,7 +901,7 @@ text-align:center
 }
 
 .modal-card {
-  background-color: #f8f9fa;
+  background-color: var(--theme-surface);
   border-radius: 1rem;
   padding: 2rem;
   width: 100%;
@@ -1020,7 +912,7 @@ text-align:center
 .modal-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: #f3f4f5;
+  background-color: var(--theme-surface-container-low);
   border: none;
   border-radius: 0.75rem;
   font-size: 0.875rem;
@@ -1040,14 +932,14 @@ text-align:center
 }
 
 .btn-cancel:hover {
-  background-color: #f3f4f5;
+  background-color: var(--theme-surface-container-low);
 }
 
 .btn-confirm {
   padding: 0.625rem 1.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  background-color: #00478d;
+  background-color: var(--theme-primary);
   color: #ffffff;
   border-radius: 9999px;
   border: none;

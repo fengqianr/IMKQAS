@@ -459,21 +459,21 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 1rem;
   padding: 0 0 1.5rem;
-  border-bottom: 1px solid #c2c6d4;
+  border-bottom: 1px solid var(--theme-outline-variant);
   margin-bottom: 1.5rem;
 }
 
 .page-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
 }
 
 .page-subtitle {
   font-size: 0.875rem;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .refresh-icon {
@@ -490,7 +490,7 @@ onBeforeUnmount(() => {
 
 .stat-card {
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
   padding: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -506,7 +506,7 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
 }
 
 .stat-icon {
@@ -516,29 +516,29 @@ onBeforeUnmount(() => {
 }
 
 .stat-icon.primary {
-  color: #005eb8;
+  color: var(--theme-brand);
   background: rgba(0, 94, 184, 0.08);
 }
 
 .stat-icon.danger {
-  color: #d32f2f;
+  color: var(--theme-error);
   background: rgba(211, 47, 47, 0.08);
 }
 
 .stat-icon.success {
-  color: #2e7d32;
+  color: var(--theme-success);
   background: rgba(46, 125, 50, 0.08);
 }
 
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   letter-spacing: -0.01em;
 }
 
 .stat-value.danger {
-  color: #d32f2f;
+  color: var(--theme-error);
 }
 
 /* ===== 主网格 ===== */
@@ -565,7 +565,7 @@ onBeforeUnmount(() => {
 .chart-card,
 .side-card {
   background: #ffffff;
-  border: 1px solid #c2c6d4;
+  border: 1px solid var(--theme-outline-variant);
   border-radius: 0.75rem;
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -574,7 +574,7 @@ onBeforeUnmount(() => {
 .chart-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #191c1d;
+  color: var(--theme-on-surface);
   padding-bottom: 0.75rem;
   margin-bottom: 1rem;
   border-bottom: 1px solid #e0e3e5;
@@ -595,7 +595,7 @@ onBeforeUnmount(() => {
 .metric-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #4a5f83;
+  color: var(--theme-on-surface-variant);
   text-align: center;
   margin-bottom: 0.75rem;
 }
@@ -621,7 +621,7 @@ onBeforeUnmount(() => {
 
 .ring-bar {
   fill: none;
-  stroke: #2e7d32;
+  stroke: var(--theme-success);
   stroke-width: 8;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.4s ease;
@@ -635,7 +635,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #2e7d32;
+  color: var(--theme-success);
 }
 
 .metric-list {
@@ -652,13 +652,13 @@ onBeforeUnmount(() => {
   border-radius: 0.375rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .metric-value {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8125rem;
-  color: #005eb8;
+  color: var(--theme-brand);
 }
 
 .metric-value.secondary {
@@ -683,7 +683,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #191c1d;
+  color: var(--theme-on-surface);
 }
 
 .dot {
@@ -693,11 +693,11 @@ onBeforeUnmount(() => {
 }
 
 .dot-on {
-  background: #2e7d32;
+  background: var(--theme-success);
 }
 
 .dot-off {
-  background: #d32f2f;
+  background: var(--theme-error);
 }
 
 .service-badge {
@@ -708,12 +708,12 @@ onBeforeUnmount(() => {
 }
 
 .badge-on {
-  color: #2e7d32;
+  color: var(--theme-success);
   background: rgba(46, 125, 50, 0.1);
 }
 
 .badge-off {
-  color: #d32f2f;
+  color: var(--theme-error);
   background: rgba(211, 47, 47, 0.1);
 }
 
@@ -729,7 +729,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #d32f2f;
+  color: var(--theme-error);
   margin-bottom: 0.5rem;
 }
 
@@ -755,7 +755,7 @@ onBeforeUnmount(() => {
 
 .alert-bar-fill {
   height: 100%;
-  background: #d32f2f;
+  background: var(--theme-error);
   border-radius: 9999px;
   transition: width 0.4s ease;
 }

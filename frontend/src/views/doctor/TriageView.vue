@@ -80,10 +80,7 @@
         </div>
 
         <!-- 加载态 -->
-        <div v-else-if="loading" class="loading-box">
-          <div class="loading-dot" />
-          <p>正在分析症状，请稍候…</p>
-        </div>
+        <LoadingState v-else-if="loading" type="ring" full text="正在分析症状，请稍候…" />
 
         <!-- 结果列表 -->
         <template v-else-if="results.length">
@@ -100,7 +97,7 @@
             <div class="result-head">
               <span class="result-index" :class="{ 'result-index-emergency': r.emergencyCheck?.emergency }">Case #{{ i + 1 }}</span>
               <p class="result-symptom">{{ r.symptoms }}</p>
-              <span class="source-badge">{{ sourceText(r.source) }}</span>
+              <StatusBadge tone="info" size="sm" :text="sourceText(r.source)" />
             </div>
             <div class="result-meta">
               <span v-if="r.confidence != null">置信度 {{ confidenceText(r.confidence) }}</span>
@@ -143,13 +140,13 @@
         </template>
 
         <!-- 空态引导 -->
-        <div v-else class="empty-box">
-          <div class="empty-icon">
-            <span class="material-symbols-outlined">Filter</span>
-          </div>
-          <h3 class="empty-title">待进行批量导诊</h3>
-          <p class="empty-desc">在左侧输入症状清单（最多 20 条），点击「批量导诊」获取科室推荐结果。</p>
-        </div>
+        <EmptyState
+          v-else
+          variant="panel"
+          icon="filter"
+          title="待进行批量导诊"
+          description="在左侧输入症状清单（最多 20 条），点击「批量导诊」获取科室推荐结果。"
+        />
       </section>
     </div>
   </div>
@@ -159,6 +156,9 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { triageService } from '@/api/services/triage.service'
+import StatusBadge from '@/components/StatusBadge.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import LoadingState from '@/components/LoadingState.vue'
 import {
   type DepartmentTriageResult,
   sourceText,
@@ -546,37 +546,6 @@ async function handleBatchTriage() {
   margin-top: 0.5rem;
 }
 
-/* 加载态 */
-.loading-box {
-  flex: 1;
-  min-height: 20rem;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: var(--theme-on-surface-variant);
-  font-size: 0.875rem;
-}
-
-.loading-dot {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 9999px;
-  border: 2px solid var(--theme-primary-container);
-  border-top-color: var(--theme-primary);
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* 结果汇总行 */
 .result-summary {
   display: flex;
@@ -668,16 +637,6 @@ async function handleBatchTriage() {
 
 .result-symptom::after {
   content: '”';
-}
-
-.source-badge {
-  flex-shrink: 0;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: var(--theme-primary);
-  background: var(--theme-primary-soft);
-  border-radius: 9999px;
-  padding: 0.25rem 0.625rem;
 }
 
 .result-meta {
@@ -849,53 +808,6 @@ async function handleBatchTriage() {
   color: var(--theme-primary);
   flex-shrink: 0;
   margin-top: 1px;
-}
-
-/* 空态 */
-.empty-box {
-  flex: 1;
-  min-height: 20rem;
-  background: var(--theme-surface-container-lowest);
-  border: 1px solid var(--theme-outline-variant);
-  border-radius: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  text-align: center;
-  padding: 2rem;
-}
-
-.empty-icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  background: var(--theme-surface-container);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-primary);
-  margin-bottom: 0.5rem;
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 2.25rem;
-}
-
-.empty-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--theme-on-surface);
-  margin: 0;
-}
-
-.empty-desc {
-  font-size: 0.875rem;
-  color: var(--theme-outline);
-  max-width: 28rem;
-  line-height: 1.6;
-  margin: 0;
 }
 
 .material-symbols-outlined {
