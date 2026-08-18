@@ -13,26 +13,6 @@
   border-radius: var(--radius-full) !important;
 }
 
-.el-card {
-  border: none !important;
-  border-radius: var(--radius-xl) !important;
-  background-color: var(--color-surface-container-lowest) !important;
-}
-
-.el-menu {
-  border: none !important;
-  background-color: transparent !important;
-}
-
-.el-menu-item {
-  border-radius: var(--radius-full) !important;
-}
-
-.el-menu-item.is-active {
-  background-color: var(--color-primary) !important;
-  color: white !important;
-}
-
 .el-input__wrapper {
   border-radius: var(--radius-full) !important;
   box-shadow: 0 0 0 1px var(--color-outline-variant) inset !important;

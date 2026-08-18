@@ -104,10 +104,10 @@
               size="small"
               style="width: 110px"
             />
-            <el-button type="success" size="small" @click="approveOne(row)">
+            <el-button type="success" size="small" @click="approveOne(row as UnmappedTermItem)">
               通过
             </el-button>
-            <el-button type="danger" size="small" :icon="'Close'" @click="rejectOne(row)" />
+            <el-button type="danger" size="small" :icon="'Close'" @click="rejectOne(row as UnmappedTermItem)" />
           </div>
           <el-tag v-else size="small" :type="row.status === 'APPROVED' ? 'success' : 'danger'">
             {{ row.status === 'APPROVED' ? '已通过' : '已拒绝' }}
