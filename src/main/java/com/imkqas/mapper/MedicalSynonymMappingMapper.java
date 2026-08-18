@@ -17,18 +17,18 @@ import java.util.List;
 @Mapper
 public interface MedicalSynonymMappingMapper extends BaseMapper<MedicalSynonymMapping> {
 
-    @Select("SELECT * FROM medical_synonym_mapping WHERE colloquial_term = #{term} AND status = 'APPROVED' AND deleted = 0 LIMIT 1")
+    @Select("SELECT * FROM medical_synonym_mapping WHERE colloquial_term = #{term} AND status = 'APPROVED' LIMIT 1")
     MedicalSynonymMapping findByColloquialTerm(@Param("term") String term);
 
-    @Select("SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED' AND deleted = 0")
+    @Select("SELECT * FROM medical_synonym_mapping WHERE status = 'APPROVED'")
     List<MedicalSynonymMapping> findAllApproved();
 
-    @Select("SELECT * FROM medical_synonym_mapping WHERE standard_term = #{standardTerm} AND deleted = 0")
+    @Select("SELECT * FROM medical_synonym_mapping WHERE standard_term = #{standardTerm}")
     List<MedicalSynonymMapping> findByStandardTerm(@Param("standardTerm") String standardTerm);
 
     @Delete("DELETE FROM medical_synonym_mapping WHERE standard_term = #{standardTerm}")
     int deleteByStandardTerm(@Param("standardTerm") String standardTerm);
 
-    @Select("SELECT COUNT(*) FROM medical_synonym_mapping WHERE colloquial_term = #{term} AND status = 'APPROVED' AND deleted = 0")
+    @Select("SELECT COUNT(*) FROM medical_synonym_mapping WHERE colloquial_term = #{term} AND status = 'APPROVED'")
     int existsByColloquialTerm(@Param("term") String term);
 }

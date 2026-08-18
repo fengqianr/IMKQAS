@@ -6,11 +6,18 @@ import io.milvus.param.ConnectParam;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.HasCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.index.CreateIndexParam;
+import io.milvus.grpc.DescribeIndexResponse;
 import io.milvus.grpc.GetVersionResponse;
+import io.milvus.grpc.IndexDescription;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.param.collection.CreateCollectionParam;
+import io.milvus.param.collection.FieldType;
+import io.milvus.param.collection.HasCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
+import io.milvus.param.index.CreateIndexParam;
+import io.milvus.param.index.DescribeIndexParam;
+import io.milvus.param.index.DropIndexParam;
 import io.milvus.param.RpcStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -111,6 +118,7 @@ public class MilvusConfig {
             R<Boolean> hasCollection = client.hasCollection(HasCollectionParam.newBuilder().withCollectionName(collectionName).build());
             if (hasCollection.getData() != null && hasCollection.getData()) {
                 log.info("Milvus集合已存在: {}", collectionName);
+                ensureIndexCorrect(client);
                 return;
             }
 
@@ -203,7 +211,7 @@ public class MilvusConfig {
                     .withCollectionName(collectionName)
                     .withFieldName("embedding")
                     .withIndexType(IndexType.IVF_FLAT)
-                    .withMetricType(MetricType.IP) // 内积相似度
+                    .withMetricType(MetricType.COSINE) // 余弦相似度
                     .withExtraParam("{\"nlist\":1024}")
                     .build();
 
@@ -218,6 +226,86 @@ public class MilvusConfig {
             log.error("创建Milvus索引失败", e);
             throw new RuntimeException("创建Milvus索引失败", e);
         }
+    }
+
+    /**
+     * 检查集合已存在时向量索引的度量类型是否与当前配置（COSINE）一致，
+     * 不一致则重建索引。保证检索与索引度量匹配，避免检索退化。
+     *
+     * @param client Milvus客户端
+     */
+    private void ensureIndexCorrect(MilvusClient client) {
+        try {
+            IndexDescription embeddingIndex = findEmbeddingIndex(client);
+            if (embeddingIndex == null) {
+                log.warn("未检测到向量索引，创建索引: fieldName=embedding");
+                createIndex(client);
+                return;
+            }
+
+            String currentMetric = extractMetricType(embeddingIndex);
+            if ("COSINE".equalsIgnoreCase(currentMetric)) {
+                log.info("向量索引度量正确: COSINE");
+                return;
+            }
+
+            log.warn("索引度量不匹配: 当前={}, 期望=COSINE，重建索引", currentMetric);
+            // Milvus 约束：drop 索引前必须先 release 集合
+            client.releaseCollection(ReleaseCollectionParam.newBuilder()
+                    .withCollectionName(collectionName).build());
+            client.dropIndex(DropIndexParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withIndexName(embeddingIndex.getIndexName())
+                    .build());
+            // 用 COSINE 度量重建索引，并重新加载集合
+            createIndex(client);
+            client.loadCollection(LoadCollectionParam.newBuilder()
+                    .withCollectionName(collectionName).build());
+        } catch (Exception e) {
+            log.error("检查/重建向量索引失败（不阻断启动，检索时由Milvus降级）", e);
+        }
+    }
+
+    /**
+     * 查找向量字段（embedding）的索引描述
+     *
+     * @param client Milvus客户端
+     * @return embedding 字段的索引描述，未找到时返回 null
+     */
+    private IndexDescription findEmbeddingIndex(MilvusClient client) {
+        DescribeIndexParam param = DescribeIndexParam.newBuilder()
+                .withCollectionName(collectionName)
+                .withIndexName("")
+                .build();
+        R<DescribeIndexResponse> response = client.describeIndex(param);
+        if (response == null || response.getStatus() != R.Status.Success.getCode()
+                || response.getData() == null) {
+            return null;
+        }
+        for (IndexDescription desc : response.getData().getIndexDescriptionsList()) {
+            if ("embedding".equals(desc.getFieldName())) {
+                return desc;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 从索引描述中提取度量类型
+     *
+     * @param desc 索引描述
+     * @return 度量类型字符串（如 "IP"/"COSINE"/"L2"），未找到时返回 null
+     */
+    private String extractMetricType(IndexDescription desc) {
+        if (desc == null) {
+            return null;
+        }
+        for (KeyValuePair kv : desc.getParamsList()) {
+            if ("metric_type".equals(kv.getKey())) {
+                return kv.getValue();
+            }
+        }
+        return null;
     }
 
     /**

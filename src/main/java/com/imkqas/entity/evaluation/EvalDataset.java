@@ -55,10 +55,6 @@ public class EvalDataset {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    @TableField("deleted")
-    private Integer deleted;
-
     /** 数据集状态常量 */
     public static final String STATUS_DRAFT = "DRAFT";
     public static final String STATUS_REVIEWED = "REVIEWED";

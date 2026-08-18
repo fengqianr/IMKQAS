@@ -129,10 +129,6 @@ public class EvalRun {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    @TableField("deleted")
-    private Integer deleted;
-
     /** 运行状态常量 */
     public static final String STATUS_RUNNING = "RUNNING";
     public static final String STATUS_COMPLETED = "COMPLETED";

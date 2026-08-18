@@ -201,7 +201,7 @@ public class MilvusService {
                     .withVectorFieldName("embedding")
                     .withVectors(searchVectors)
                     .withTopK(topK)
-                    .withMetricType(MetricType.IP) // 内积相似度
+                    .withMetricType(MetricType.COSINE) // 余弦相似度，必须与建索引度量一致
                     .withOutFields(outputFields)
                     .withConsistencyLevel(ConsistencyLevelEnum.STRONG);
 

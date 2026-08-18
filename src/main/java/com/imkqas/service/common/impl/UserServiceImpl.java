@@ -28,7 +28,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getPhone, phone);
-        queryWrapper.eq(User::getDeleted, 0); // 未删除的用户
         return getOne(queryWrapper);
     }
 
@@ -40,7 +39,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUsername, username);
-        queryWrapper.eq(User::getDeleted, 0); // 未删除的用户
         return getOne(queryWrapper);
     }
 
@@ -52,7 +50,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getPhone, phone);
-        queryWrapper.eq(User::getDeleted, 0); // 未删除的用户
         return count(queryWrapper) > 0;
     }
 
@@ -64,7 +61,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUsername, username);
-        queryWrapper.eq(User::getDeleted, 0); // 未删除的用户
         return count(queryWrapper) > 0;
     }
 
@@ -90,7 +86,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId, userId);
-        queryWrapper.eq(User::getDeleted, 0); // 未删除的用户
         return getOne(queryWrapper);
     }
 }

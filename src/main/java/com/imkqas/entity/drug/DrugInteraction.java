@@ -93,9 +93,6 @@ public class DrugInteraction {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    private Integer deleted;
-
     /**
      * 获取相互作用的严重程度描述
      * @return 严重程度描述

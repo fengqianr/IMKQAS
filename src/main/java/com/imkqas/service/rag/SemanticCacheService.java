@@ -29,8 +29,9 @@ public interface SemanticCacheService {
      * @param fragmentIds     排序后的知识片段ID列表
      * @param answer          生成的回答
      * @param sources         参考来源列表
+     * @param confidence      LLM 原生置信度（命中时沿用，避免门控误判）
      */
-    void put(String normalizedQuery, List<Long> fragmentIds, String answer, List<String> sources);
+    void put(String normalizedQuery, List<Long> fragmentIds, String answer, List<String> sources, double confidence);
 
     /**
      * 按标准化术语精确删除缓存（术语变更时使用）
@@ -78,18 +79,21 @@ public interface SemanticCacheService {
         private final List<String> sources;
         private final long timestamp;
         private final int version;
+        private final double confidence;
 
-        public CachedAnswer(String answer, List<String> sources, long timestamp, int version) {
+        public CachedAnswer(String answer, List<String> sources, long timestamp, int version, double confidence) {
             this.answer = answer;
             this.sources = sources;
             this.timestamp = timestamp;
             this.version = version;
+            this.confidence = confidence;
         }
 
         public String getAnswer() { return answer; }
         public List<String> getSources() { return sources; }
         public long getTimestamp() { return timestamp; }
         public int getVersion() { return version; }
+        public double getConfidence() { return confidence; }
     }
 
     /**

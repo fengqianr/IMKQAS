@@ -205,6 +205,10 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
             List<RetrievalResult> vectorResults = vectorFuture.get();
             List<RetrievalResult> keywordResults = keywordFuture.get();
 
+            // 打印两条链路各自的召回文档
+            logRetrievalResults("向量链路(Milvus)", vectorResults);
+            logRetrievalResults("关键词链路(Lucene)", keywordResults);
+
             // 3. 使用标准RRF融合算法
             List<RetrievalResult> fusedResults = rrfFusionService.fuseVectorAndKeyword(
                     vectorResults, keywordResults,
@@ -266,6 +270,10 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
 
             List<RetrievalResult> vectorResults = vectorFuture.get();
             List<RetrievalResult> keywordResults = keywordFuture.get();
+
+            // 打印两条链路各自的召回文档
+            logRetrievalResults("向量链路(Milvus)", vectorResults);
+            logRetrievalResults("关键词链路(Lucene)", keywordResults);
 
             // 3. 使用标准RRF融合算法
             List<RetrievalResult> fusedResults = rrfFusionService.fuseVectorAndKeyword(
@@ -391,7 +399,36 @@ public class MultiRetrievalServiceImpl implements MultiRetrievalService {
         }
     }
 
+    /**
+     * 打印单条检索链路召回的文档
+     *
+     * @param tag     链路标签（如"向量链路(Milvus)"）
+     * @param results 该链路召回的文档列表
+     */
+    private void logRetrievalResults(String tag, List<RetrievalResult> results) {
+        if (results == null || results.isEmpty()) {
+            log.info("=== {} 召回文档 (共0条) ===", tag);
+            return;
+        }
+        log.info("=== {} 召回文档 (共{}条) ===", tag, results.size());
+        for (int i = 0; i < results.size(); i++) {
+            RetrievalResult r = results.get(i);
+            String breadcrumb = r.getMetadataString("breadcrumb");
+            log.info("[{}][{}] docId={}, chunkId={}, score={}, breadcrumb={}, content={}",
+                    tag, i + 1,
+                    r.getDocumentId(),
+                    r.getChunkId(),
+                    r.getScore() != null ? String.format("%.4f", r.getScore()) : "N/A",
+                    breadcrumb != null ? breadcrumb : "N/A",
+                    truncate(r.getContent(), 120));
+        }
+    }
+
     private static String truncate(String s) {
-        return s != null && s.length() > 60 ? s.substring(0, 60) + "..." : s;
+        return truncate(s, 60);
+    }
+
+    private static String truncate(String s, int maxLen) {
+        return s != null && s.length() > maxLen ? s.substring(0, maxLen) + "..." : s;
     }
 }

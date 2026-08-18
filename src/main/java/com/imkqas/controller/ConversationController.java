@@ -140,6 +140,20 @@ public class ConversationController {
     }
 
     /**
+     * 从回收站彻底删除对话（物理删除）
+     * @param id 对话ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/{id}/permanent")
+    public ApiResponse<Void> deletePermanently(@PathVariable Long id) {
+        boolean deleted = service.deletePermanently(id);
+        if (deleted) {
+            return ApiResponse.success();
+        }
+        return ApiResponse.error("彻底删除失败，对话不存在或已被永久删除");
+    }
+
+    /**
      * 搜索对话会话
      * @param keyword 搜索关键词
      * @param userId 用户ID

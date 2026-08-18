@@ -11,5 +11,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @version 1.0
  */
 public interface DocumentService extends IService<Document> {
-    // 可以添加额外的业务方法声明
+
+    /**
+     * 级联删除文档：物理删除 MySQL 分块、Milvus 向量、MinIO 文件及文档记录本身
+     * @param id 文档ID
+     * @return 是否删除成功
+     */
+    boolean deleteWithCascade(Long id);
 }

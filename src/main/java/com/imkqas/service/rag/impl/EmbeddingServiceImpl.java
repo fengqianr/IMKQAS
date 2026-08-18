@@ -35,6 +35,9 @@ public class EmbeddingServiceImpl implements EmbeddingService {
     private final RedisService redisService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /** DashScope text-embedding-v3 单次请求允许的最大 batch 大小 */
+    private static final int MAX_EMBEDDING_BATCH_SIZE = 10;
+
     private OkHttpClient httpClient;
 
     /**
@@ -110,6 +113,10 @@ public class EmbeddingServiceImpl implements EmbeddingService {
         // 批量处理未命中缓存的文本
         if (!textsToProcess.isEmpty()) {
             List<List<Float>> processedEmbeddings = callBatchEmbeddingApi(textsToProcess);
+            if (processedEmbeddings == null) {
+                log.warn("批量嵌入失败，返回null");
+                return null;
+            }
 
             // 将结果填充到正确位置并缓存
             for (int i = 0; i < processedEmbeddings.size(); i++) {
@@ -197,8 +204,8 @@ public class EmbeddingServiceImpl implements EmbeddingService {
     private List<Float> callEmbeddingApi(String text) {
         List<List<Float>> results = callEmbeddingApiBatch(List.of(text));
         if (results == null || results.isEmpty()) {
-            log.warn("单文本嵌入API调用失败，返回模拟向量");
-            return generateMockEmbedding();
+            log.warn("单文本嵌入API调用失败，返回null");
+            return null;
         }
         return results.get(0);
     }
@@ -209,19 +216,33 @@ public class EmbeddingServiceImpl implements EmbeddingService {
     private List<List<Float>> callBatchEmbeddingApi(List<String> texts) {
         List<List<Float>> results = callEmbeddingApiBatch(texts);
         if (results == null) {
-            log.warn("批量嵌入API调用失败，返回模拟向量");
-            results = new ArrayList<>();
-            for (int i = 0; i < texts.size(); i++) {
-                results.add(generateMockEmbedding());
-            }
+            log.warn("批量嵌入API调用失败，返回null");
         }
         return results;
     }
 
     /**
-     * 批量调用远程嵌入API（核心实现）
+     * 批量调用远程嵌入API（核心实现，按 DashScope 单次 batch≤10 拆分）
      */
     private List<List<Float>> callEmbeddingApiBatch(List<String> texts) {
+        // DashScope text-embedding-v3 单次请求 batch 上限为 10，超过会返回 400 错误
+        List<List<Float>> allResults = new ArrayList<>();
+        for (int start = 0; start < texts.size(); start += MAX_EMBEDDING_BATCH_SIZE) {
+            int end = Math.min(start + MAX_EMBEDDING_BATCH_SIZE, texts.size());
+            List<List<Float>> subResults = callEmbeddingApiOnce(texts.subList(start, end));
+            if (subResults == null) {
+                log.warn("嵌入API子批次调用失败: start={}, size={}", start, end - start);
+                return null;
+            }
+            allResults.addAll(subResults);
+        }
+        return allResults;
+    }
+
+    /**
+     * 调用远程嵌入API（单次请求，单批文本，batch 不超过 10）
+     */
+    private List<List<Float>> callEmbeddingApiOnce(List<String> texts) {
         RagConfig.EmbeddingConfig config = ragConfig.getEmbedding();
         String apiEndpoint = config.getApiEndpoint();
         String apiKey = config.getApiKey();
@@ -235,7 +256,7 @@ public class EmbeddingServiceImpl implements EmbeddingService {
         }
 
         if (apiKey == null || apiKey.trim().isEmpty()) {
-            log.warn("嵌入API密钥未配置，使用模拟向量");
+            log.warn("嵌入API密钥未配置，返回null");
             return null;
         }
 
@@ -340,18 +361,5 @@ public class EmbeddingServiceImpl implements EmbeddingService {
             }
         }
         return floats;
-    }
-
-    /**
-     * 生成模拟嵌入向量（用于测试）
-     */
-    private List<Float> generateMockEmbedding() {
-        int dimension = getDimension();
-        List<Float> embedding = new ArrayList<>(dimension);
-        for (int i = 0; i < dimension; i++) {
-            // 生成随机但确定性的向量（用于测试）
-            embedding.add((float) Math.sin(i * 0.1));
-        }
-        return embedding;
     }
 }

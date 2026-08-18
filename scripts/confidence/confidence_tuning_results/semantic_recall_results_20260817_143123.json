@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "base_url": "http://localhost:8080",
+    "top_k": 10,
+    "pathways": [
+      "VECTOR",
+      "KEYWORD",
+      "HYBRID"
+    ],
+    "total_queries": 100,
+    "total_unique_docs": 1944,
+    "created": "20260817_135451"
+  },
+  "label_stats": {
+    "counts": {
+      "0": 1142,
+      "1": 445,
+      "2": 350
+    },
+    "percentages": {
+      "0": 58.95715023231802,
+      "1": 22.973670624677336,
+      "2": 18.069179143004646
+    },
+    "total": 1937
+  },
+  "pathways": {
+    "VECTOR": {
+      "recall5": 0.65,
+      "recall10": 0.69,
+      "ndcg5": 0.7831004439370033,
+      "ndcg10": 0.8460790525593544,
+      "missing": 7,
+      "total_judged": 1000
+    },
+    "KEYWORD": {
+      "recall5": 0.47,
+      "recall10": 0.55,
+      "ndcg5": 0.5969345823143819,
+      "ndcg10": 0.6600949794458555,
+      "missing": 1,
+      "total_judged": 1000
+    },
+    "HYBRID": {
+      "recall5": 0.67,
+      "recall10": 0.8,
+      "ndcg5": 0.6264268722374949,
+      "ndcg10": 0.7899557518619957,
+      "missing": 5,
+      "total_judged": 1000
+    }
+  }
+}

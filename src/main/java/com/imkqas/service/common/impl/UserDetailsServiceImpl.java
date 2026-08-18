@@ -40,7 +40,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // 构建查询条件
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
-        queryWrapper.eq("deleted", 0); // 未删除的用户
 
         // 查询用户
         User user = userMapper.selectOne(queryWrapper);
@@ -69,7 +68,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // 构建查询条件
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("phone", phone);
-        queryWrapper.eq("deleted", 0); // 未删除的用户
 
         // 查询用户
         User user = userMapper.selectOne(queryWrapper);

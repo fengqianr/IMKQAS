@@ -68,8 +68,11 @@ public class DocumentController {
      */
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        service.removeById(id);
-        return ApiResponse.success();
+        boolean deleted = service.deleteWithCascade(id);
+        if (deleted) {
+            return ApiResponse.success();
+        }
+        return ApiResponse.error("删除失败，文档不存在");
     }
 
     /**

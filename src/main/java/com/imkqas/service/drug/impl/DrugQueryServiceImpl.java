@@ -53,8 +53,7 @@ public class DrugQueryServiceImpl implements DrugQueryService {
 
         // 1. 直接匹配通用名
         LambdaQueryWrapper<Drug> drugQuery = Wrappers.lambdaQuery(Drug.class)
-                .like(Drug::getGenericName, drugName)
-                .eq(Drug::getDeleted, 0);
+                .like(Drug::getGenericName, drugName);
         List<Drug> directMatches = drugMapper.selectList(drugQuery);
         directMatches.forEach(drug -> {
             drugIds.add(drug.getId());
@@ -63,8 +62,7 @@ public class DrugQueryServiceImpl implements DrugQueryService {
 
         // 2. 匹配商品名
         drugQuery = Wrappers.lambdaQuery(Drug.class)
-                .like(Drug::getBrandName, drugName)
-                .eq(Drug::getDeleted, 0);
+                .like(Drug::getBrandName, drugName);
         List<Drug> brandMatches = drugMapper.selectList(drugQuery);
         brandMatches.forEach(drug -> {
             if (!drugIds.contains(drug.getId())) {
@@ -75,8 +73,7 @@ public class DrugQueryServiceImpl implements DrugQueryService {
 
         // 3. 通过别名表匹配
         LambdaQueryWrapper<DrugAlias> aliasQuery = Wrappers.lambdaQuery(DrugAlias.class)
-                .like(DrugAlias::getAliasName, drugName)
-                .eq(DrugAlias::getDeleted, 0);
+                .like(DrugAlias::getAliasName, drugName);
         List<DrugAlias> aliases = drugAliasMapper.selectList(aliasQuery);
         Set<Long> aliasDrugIds = new HashSet<>();
         aliases.forEach(alias -> aliasDrugIds.add(alias.getDrugId()));
@@ -89,7 +86,6 @@ public class DrugQueryServiceImpl implements DrugQueryService {
                 // 批量查询药品详情
                 List<Drug> aliasDrugs = drugMapper.selectBatchIds(aliasDrugIds);
                 aliasDrugs.stream()
-                        .filter(drug -> drug.getDeleted() == 0)
                         .forEach(drug -> {
                             drugIds.add(drug.getId());
                             drugMap.put(drug.getId(), drug);
@@ -119,7 +115,7 @@ public class DrugQueryServiceImpl implements DrugQueryService {
 
         log.debug("查询药品详情: {}", drugId);
         Drug drug = drugMapper.selectById(drugId);
-        if (drug == null || drug.getDeleted() == 1) {
+        if (drug == null) {
             log.warn("药品不存在或已删除: {}", drugId);
             return null;
         }
@@ -142,8 +138,7 @@ public class DrugQueryServiceImpl implements DrugQueryService {
 
         LambdaQueryWrapper<DrugInteraction> query = Wrappers.lambdaQuery(DrugInteraction.class)
                 .eq(DrugInteraction::getDrugAId, smallerId)
-                .eq(DrugInteraction::getDrugBId, largerId)
-                .eq(DrugInteraction::getDeleted, 0);
+                .eq(DrugInteraction::getDrugBId, largerId);
 
         DrugInteraction interaction = drugInteractionMapper.selectOne(query);
         if (interaction == null) {
@@ -205,7 +200,6 @@ public class DrugQueryServiceImpl implements DrugQueryService {
         log.debug("获取药品分类列表");
 
         LambdaQueryWrapper<Drug> query = Wrappers.lambdaQuery(Drug.class)
-                .eq(Drug::getDeleted, 0)
                 .isNotNull(Drug::getDrugClass);
 
         List<Drug> drugs = drugMapper.selectList(query);
@@ -224,8 +218,7 @@ public class DrugQueryServiceImpl implements DrugQueryService {
         log.debug("根据分类查询药品: {}", drugClass);
 
         LambdaQueryWrapper<Drug> query = Wrappers.lambdaQuery(Drug.class)
-                .eq(Drug::getDrugClass, drugClass)
-                .eq(Drug::getDeleted, 0);
+                .eq(Drug::getDrugClass, drugClass);
 
         return drugMapper.selectList(query);
     }

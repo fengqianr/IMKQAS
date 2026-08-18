@@ -2,7 +2,9 @@ package com.imkqas.mapper;
 
 import com.imkqas.entity.Message;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 消息Mapper接口
@@ -13,5 +15,10 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface MessageMapper extends BaseMapper<Message> {
-    // 如果需要复杂查询，可以在此定义方法，并对应 XML 文件
+
+    /**
+     * 物理删除指定对话下的所有消息（供对话彻底删除时清理）
+     */
+    @Delete("DELETE FROM messages WHERE conversation_id = #{conversationId}")
+    int physicalDeleteByConversationId(@Param("conversationId") Long conversationId);
 }

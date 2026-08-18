@@ -54,9 +54,6 @@ public class DocumentChunk {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    @TableLogic
-    private Integer deleted = 0;
-
     /**
      * 获取分块标识符
      * @return 分块标识符 (documentId-chunkIndex)
