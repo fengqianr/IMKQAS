@@ -746,7 +746,7 @@ text-align:center
   display: block;
   font-size: 0.75rem;
   color: #424752;
-  max-width: 10rem;
+  max-width: 14rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

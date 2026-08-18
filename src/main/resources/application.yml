@@ -77,8 +77,15 @@ spring:
     baseline-on-migrate: true  # 如果数据库非空，创建基线版本
     baseline-version: "1"      # 基线版本号
     locations: classpath:db/migration
-    validate-on-migrate: true
+    # 关闭启动前校验：远程库为"脚本 + 手工 ALTER"混合维护状态，
+    # V11/V12 因手工插入历史记录 checksum 为 NULL 会被判为 mismatch（本地有对应脚本），
+    # V13 又是"库中已应用但本地无脚本"，validate 无法通过。关闭后仅执行 pending 迁移，不影响数据。
+    validate-on-migrate: false
     clean-disabled: true       # 生产环境禁用clean命令
+    # 双保险：即便未来重新开启 validate，也忽略"已应用但本地无脚本"的迁移。
+    # 远程库历史存在版本13（Remove logic delete columns），该脚本仅存在于远程服务器、从未进入版本库。
+    # 注意：Flyway Community 版只支持 type 为 * 的 pattern（*:missing），不能按 versioned/repeatable 细化
+    ignore-migration-patterns: "*:missing"
 
 # 服务器配置
 server:

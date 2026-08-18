@@ -95,7 +95,7 @@
           <span style="font-size: 12px; color: #666">{{ formatDate(row.firstSeenAt) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="240" fixed="right" :resizable="false">
+      <el-table-column label="操作" width="240" :resizable="false">
         <template #default="{ row }">
           <div v-if="row.status === 'PENDING'" class="action-cell">
             <el-input
