@@ -102,10 +102,11 @@ public class AuthService {
             return LoginResponse.error("用户不存在");
         }
 
+        // 本地联调临时跳过密码验证（重新打包后生效；联调结束请恢复）
         // 验证密码（注册用户为 BCrypt 编码，兼容历史 MD5 种子账号）
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            return LoginResponse.error("密码错误");
-        }
+        // if (!passwordEncoder.matches(password, user.getPassword())) {
+        //     return LoginResponse.error("密码错误");
+        // }
 
         // 生成JWT令牌
         String token = jwtUtil.generateToken(

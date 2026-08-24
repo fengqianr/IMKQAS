@@ -35,6 +35,7 @@ export interface BatchImportResult {
 
 class ContraindicationService {
   /** 分页查询 */
+  // silent: 页面自动加载的读操作建议传 { silent: true }，由视图呈现错误态，避免与全局弹窗重复提示
   async list(
     params: {
       page?: number
@@ -43,7 +44,8 @@ class ContraindicationService {
       populationName?: string
       contraindicationType?: string
       isActive?: number
-    } = {}
+    } = {},
+    options?: { silent?: boolean }
   ): Promise<PaginationResponse<ContraindicationRule[]>> {
     const query = new URLSearchParams()
     query.append('page', (params.page || 1).toString())
@@ -53,84 +55,45 @@ class ContraindicationService {
     if (params.contraindicationType) query.append('contraindicationType', params.contraindicationType)
     if (params.isActive !== undefined) query.append('isActive', params.isActive.toString())
 
-    const response = await request.get<{
-      success: boolean
-      message: string
-      data: PaginationResponse<ContraindicationRule[]>
-    }>(`/admin/contraindications?${query}`)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '查询失败')
-    }
+    // 失败由拦截器统一弹窗/reject，成功直接返回业务数据
+    const response = await request.get<{ data: PaginationResponse<ContraindicationRule[]> }>(
+      `/admin/contraindications?${query}`,
+      { silent: options?.silent }
+    )
     return response.data.data
   }
 
   /** 新增规则 */
   async create(rule: ContraindicationRule): Promise<ContraindicationRule> {
-    const response = await request.post<{
-      success: boolean
-      message: string
-      data: ContraindicationRule
-    }>('/admin/contraindications', rule)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '新增失败')
-    }
+    const response = await request.post<{ data: ContraindicationRule }>('/admin/contraindications', rule)
     return response.data.data
   }
 
   /** 编辑规则 */
   async update(id: number, rule: ContraindicationRule): Promise<ContraindicationRule> {
-    const response = await request.put<{
-      success: boolean
-      message: string
-      data: ContraindicationRule
-    }>(`/admin/contraindications/${id}`, rule)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '更新失败')
-    }
+    const response = await request.put<{ data: ContraindicationRule }>(`/admin/contraindications/${id}`, rule)
     return response.data.data
   }
 
   /** 启用/禁用 */
   async toggle(id: number): Promise<void> {
-    const response = await request.put<{ success: boolean; message: string }>(
-      `/admin/contraindications/${id}/toggle`,
-      {}
-    )
-    if (!response.data.success) {
-      throw new Error(response.data.message || '操作失败')
-    }
+    await request.put(`/admin/contraindications/${id}/toggle`, {})
   }
 
   /** 删除 */
   async delete(id: number): Promise<void> {
-    const response = await request.delete<{ success: boolean; message: string }>(`/admin/contraindications/${id}`)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '删除失败')
-    }
+    await request.delete(`/admin/contraindications/${id}`)
   }
 
   /** 批量导入 */
   async batchImport(rules: ContraindicationRule[]): Promise<BatchImportResult> {
-    const response = await request.post<{
-      success: boolean
-      message: string
-      data: BatchImportResult
-    }>('/admin/contraindications/batch-import', rules)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '导入失败')
-    }
+    const response = await request.post<{ data: BatchImportResult }>('/admin/contraindications/batch-import', rules)
     return response.data.data
   }
 
   /** 刷新缓存 */
   async reloadCache(): Promise<void> {
-    const response = await request.post<{ success: boolean; message: string }>(
-      '/admin/contraindications/reload-cache',
-      {}
-    )
-    if (!response.data.success) {
-      throw new Error(response.data.message || '刷新缓存失败')
-    }
+    await request.post(`/admin/contraindications/reload-cache`, {})
   }
 }
 

@@ -30,6 +30,7 @@ export default defineConfig(async () => {
       port: 5173,
       proxy: {
         '/api': {
+          // 本地联调临时指向本地后端（清理冗余验证）；联调结束需改回远程 http://8.138.40.200:8080
           target: 'http://localhost:8080',
           changeOrigin: true
         }

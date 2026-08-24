@@ -30,110 +30,74 @@ export interface PatientOverview {
  */
 export const IDENTIFIER_SYSTEM = 'idcard'
 
+/**
+ * FHIR 患者查询服务
+ *
+ * 错误策略：所有读方法使用 silent:true 抑制全局错误弹窗，
+ * 请求失败时**抛出异常**交由调用方呈现错误态，从而区分
+ * "未找到患者/无记录"与"加载失败"——医生端误判会造成医疗风险。
+ */
 class FhirService {
   // 姓名模糊搜索（返回当页列表；后端不返回总条数 total）
   async searchByName(name: string, page = 0, size = 10): Promise<FhirPatient[]> {
-    try {
-      const response = await request.get('/his/fhir/Patient/search', { params: { name, page, size } })
-      return (response.data.data || []) as FhirPatient[]
-    } catch (error: any) {
-      console.error('患者姓名搜索失败:', error)
-      return []
-    }
+    const response = await request.get('/his/fhir/Patient/search', { params: { name, page, size }, silent: true })
+    return (response.data.data || []) as FhirPatient[]
   }
 
   // 手机号精确查询（返回单个患者，统一包装为数组）
   async findByPhone(phone: string): Promise<FhirPatient[]> {
-    try {
-      const response = await request.get('/his/fhir/Patient/by-phone', { params: { phone } })
-      const data = response.data.data
-      return data ? [data as FhirPatient] : []
-    } catch (error: any) {
-      console.error('手机号查询失败:', error)
-      return []
-    }
+    const response = await request.get('/his/fhir/Patient/by-phone', { params: { phone }, silent: true })
+    const data = response.data.data
+    return data ? [data as FhirPatient] : []
   }
 
   // 证件号查询（按约定 system 查询单个患者，统一包装为数组）
   async findByIdentifier(value: string): Promise<FhirPatient[]> {
-    try {
-      const response = await request.get('/his/fhir/Patient/by-identifier', {
-        params: { system: IDENTIFIER_SYSTEM, value }
-      })
-      const data = response.data.data
-      return data ? [data as FhirPatient] : []
-    } catch (error: any) {
-      console.error('证件号查询失败:', error)
-      return []
-    }
+    const response = await request.get('/his/fhir/Patient/by-identifier', {
+      params: { system: IDENTIFIER_SYSTEM, value },
+      silent: true
+    })
+    const data = response.data.data
+    return data ? [data as FhirPatient] : []
   }
 
   // 患者详情
   async getPatient(fhirId: string): Promise<FhirPatient | null> {
-    try {
-      const response = await request.get(`/his/fhir/Patient/${fhirId}`)
-      return (response.data.data as FhirPatient) || null
-    } catch (error: any) {
-      console.error('患者详情获取失败:', error)
-      return null
-    }
+    const response = await request.get(`/his/fhir/Patient/${fhirId}`, { silent: true })
+    return (response.data.data as FhirPatient) || null
   }
 
   // 患者档案概览（FHIR Patient + 健康档案 + 问卷记录，聚合一次返回）
   async getPatientOverview(fhirId: string): Promise<PatientOverview | null> {
-    try {
-      const response = await request.get(`/his/fhir/Patient/${fhirId}/overview`)
-      return (response.data.data as PatientOverview) || null
-    } catch (error: any) {
-      console.error('患者档案概览获取失败:', error)
-      return null
-    }
+    const response = await request.get(`/his/fhir/Patient/${fhirId}/overview`, { silent: true })
+    return (response.data.data as PatientOverview) || null
   }
 
   // 系统患者总数
   async countPatients(): Promise<number> {
-    try {
-      const response = await request.get('/his/fhir/Patient/count')
-      return Number(response.data.data ?? 0)
-    } catch (error: any) {
-      console.error('患者总数获取失败:', error)
-      return 0
-    }
+    const response = await request.get('/his/fhir/Patient/count', { silent: true })
+    return Number(response.data.data ?? 0)
   }
 
   // 患者病情记录
   async getConditions(patientFhirId: string, page = 1, size = 10): Promise<FhirCondition[]> {
-    try {
-      const response = await request.get('/his/fhir/Condition/by-patient', { params: { patientFhirId, page, size } })
-      return (response.data.data || []) as FhirCondition[]
-    } catch (error: any) {
-      console.error('病情记录获取失败:', error)
-      return []
-    }
+    const response = await request.get('/his/fhir/Condition/by-patient', { params: { patientFhirId, page, size }, silent: true })
+    return (response.data.data || []) as FhirCondition[]
   }
 
   // 患者检验与观察
   async getObservations(patientFhirId: string, page = 1, size = 10): Promise<FhirObservation[]> {
-    try {
-      const response = await request.get('/his/fhir/Observation/by-patient', { params: { patientFhirId, page, size } })
-      return (response.data.data || []) as FhirObservation[]
-    } catch (error: any) {
-      console.error('检验观察获取失败:', error)
-      return []
-    }
+    const response = await request.get('/his/fhir/Observation/by-patient', { params: { patientFhirId, page, size }, silent: true })
+    return (response.data.data || []) as FhirObservation[]
   }
 
   // 患者问卷回答记录
   async getQuestionnaireResponses(patientFhirId: string, page = 1, size = 10): Promise<FhirQuestionnaireResponse[]> {
-    try {
-      const response = await request.get('/his/fhir/QuestionnaireResponse/by-patient', {
-        params: { patientFhirId, page, size }
-      })
-      return (response.data.data || []) as FhirQuestionnaireResponse[]
-    } catch (error: any) {
-      console.error('问卷记录获取失败:', error)
-      return []
-    }
+    const response = await request.get('/his/fhir/QuestionnaireResponse/by-patient', {
+      params: { patientFhirId, page, size },
+      silent: true
+    })
+    return (response.data.data || []) as FhirQuestionnaireResponse[]
   }
 }
 

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_CONFIG, AUTH_CONFIG } from '../config'
+import { apiErrorMessage } from '@/utils/error'
 import type { LoginRequest, LoginResponse, RegisterRequest, ApiResponse } from '../types/auth'
 
 class AuthService {
@@ -40,7 +41,7 @@ class AuthService {
         username: '',
         role: '',
         expiresAt: undefined,
-        message: error.message || '登录失败'
+        message: apiErrorMessage(error, '登录失败')
       }
     }
   }
@@ -126,8 +127,8 @@ class AuthService {
       throw new Error(response.data.message || '注册失败')
     } catch (error: any) {
       console.error('注册失败:', error)
-      // axios 错误时优先取响应体中的业务提示（如 400 用户名重复）
-      const message = error?.response?.data?.message || error.message || '注册失败'
+      // axios 错误时优先取响应体中的业务提示（如 400 用户名重复），否则映射状态码为中文语句
+      const message = apiErrorMessage(error, '注册失败')
       throw new Error(message)
     }
   }

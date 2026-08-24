@@ -10,6 +10,7 @@
         <span class="material-symbols-outlined add-icon">person_add</span>
         新增用户
       </el-button>
+  
     </div>
 
     <!-- 搜索工具条 -->
@@ -35,6 +36,10 @@
             <el-option v-for="opt in ROLE_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </div>
+        <el-button type="primary" class="search" @click="handleSearch">
+        <span class="material-symbols-outlined ">search</span>
+        搜索
+      </el-button>
       </div>
     </div>
 
@@ -88,6 +93,15 @@
             </tr>
           </tbody>
         </table>
+        <!-- 加载失败态 -->
+        <EmptyState
+          v-else-if="!loading && loadError"
+          title="加载失败"
+          description="用户列表加载失败，请稍后重试。"
+          icon="error"
+        >
+          <el-button class="empty-btn" @click="handleSearch">重新加载</el-button>
+        </EmptyState>
         <!-- 空态 -->
         <EmptyState
           v-else-if="!loading"
@@ -125,7 +139,7 @@
         <el-form-item label="用户名" required>
           <el-input v-model="form.username" placeholder="请输入用户名" maxlength="30" />
         </el-form-item>
-        <el-form-item label="手机号">
+        <el-form-item label="手机号" required>
           <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" />
         </el-form-item>
         <el-form-item label="角色" required>
@@ -153,7 +167,6 @@ import EmptyState from '@/components/EmptyState.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import { adminUserService, type UserItem, type UserUpsertRequest } from '@/api/services/admin-user.service'
 import { ROLE_LABELS } from '@/config/menus'
-import { apiErrorMessage } from '@/utils/error'
 import { maskPhone } from '@/utils/mask'
 
 /** 角色下拉选项（对齐后端 Role 枚举） */
@@ -176,6 +189,8 @@ const keyword = ref('')
 const roleFilter = ref('all')
 const page = ref(1)
 const loading = ref(false)
+/** 列表加载失败状态（区分"加载失败"与"暂无数据"） */
+const loadError = ref(false)
 
 /** 前端角色过滤（后端 search 接口无角色参数，故全量加载后本地过滤） */
 const filteredUsers = computed(() => {
@@ -219,15 +234,19 @@ const fetchAllPages = async (
 const handleSearch = async () => {
   const kw = keyword.value.trim()
   loading.value = true
+  loadError.value = false
   try {
     if (kw) {
+      // searchUsers 不支持 silent 参数，保持原调用
       allUsers.value = await fetchAllPages((c, s) => adminUserService.searchUsers(kw, c, s))
     } else {
-      allUsers.value = await fetchAllPages((c, s) => adminUserService.listUsers(c, s))
+      // 列表加载传 silent，避免全局弹窗噪音，失败态由本页 loadError 呈现
+      allUsers.value = await fetchAllPages((c, s) => adminUserService.listUsers(c, s, { silent: true }))
     }
     page.value = 1
   } catch {
-    ElMessage.error('获取用户列表失败，请稍后重试')
+    loadError.value = true
+    console.error('获取用户列表失败')
   } finally {
     loading.value = false
   }
@@ -269,7 +288,11 @@ const save = async () => {
     ElMessage.warning('请输入用户名')
     return
   }
-  if (form.phone && !/^1\d{10}$/.test(form.phone)) {
+  if (!form.phone.trim()) {
+    ElMessage.warning('请输入手机号')
+    return
+  }
+  if (!/^1\d{10}$/.test(form.phone.trim())) {
     ElMessage.warning('手机号格式不正确')
     return
   }
@@ -284,7 +307,7 @@ const save = async () => {
 
   const payload: UserUpsertRequest = {
     username: form.username.trim(),
-    phone: form.phone,
+    phone: form.phone.trim(),
     role: form.role
   }
   if (form.password) {
@@ -303,7 +326,8 @@ const save = async () => {
     dialogVisible.value = false
     await handleSearch()
   } catch (error) {
-    ElMessage.error(apiErrorMessage(error, '保存失败，请稍后重试'))
+    console.error('保存用户失败:', error)
+    ElMessage.error('保存用户失败，请稍后重试')
   } finally {
     saving.value = false
   }
@@ -324,7 +348,8 @@ const handleDelete = async (user: UserItem) => {
     ElMessage.success('用户已删除')
     await handleSearch()
   } catch {
-    ElMessage.error('删除失败，请稍后重试')
+    console.error('删除用户失败')
+    ElMessage.error('删除用户失败，请稍后重试')
   }
 }
 

@@ -14,7 +14,7 @@ import type {
   RagStatsResponse
 } from '../types/qa'
 import { authService } from './auth.service'
-import { apiErrorMessage } from '@/utils/error'
+import { apiErrorMessage, httpStatusMessage } from '@/utils/error'
 
 class QaService {
   private sseController: AbortController | null = null
@@ -73,7 +73,8 @@ class QaService {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        // 状态码映射为中文语句，避免提示框直接展示 HTTP 状态码
+        throw new Error(httpStatusMessage(response.status) || '服务暂时不可用，请稍后重试')
       }
 
       const reader = response.body?.getReader()

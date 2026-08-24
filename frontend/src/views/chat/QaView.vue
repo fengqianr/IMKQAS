@@ -70,6 +70,14 @@
         </div>
 
         <nav class="custom-flex-1 qa-no-scrollbar custom-overflow-y-auto space-y-1">
+          <!-- 会话列表加载失败态（区分"加载失败"与"暂无会话"） -->
+          <div v-if="sessionsError" class="qa-sidebar-tip">
+            <span class="qa-sidebar-tip-text">会话加载失败</span>
+            <button class="qa-sidebar-retry" @click="loadConversations">重试</button>
+          </div>
+          <div v-else-if="!sessions.length && !loadingSessions" class="qa-sidebar-tip">
+            <span class="qa-sidebar-tip-text">暂无会话，点击「新建咨询」开始</span>
+          </div>
           <div
             v-for="session in sessions"
             :key="session.id"
@@ -81,12 +89,18 @@
               <span class="qa-session-title">{{ session.title }}</span>
               <span class="qa-session-date">{{ formatSessionDate(session.conversation?.updatedAt) }}</span>
             </div>
-            <span class="qa-session-count">{{ session.conversation?.messageCount ?? 0 }}</span>
+            <button class="qa-session-delete-btn" title="删除会话" @click.stop="deleteSession(session.id)">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
           </div>
         </nav>
 
         <div class="qa-sidebar-footer">
-          <div class="qa-sidebar-footer-item qa-clickable" @click="deleteActiveSession">
+          <div
+            v-if="!isGuest"
+            class="qa-sidebar-footer-item qa-clickable"
+            @click="openTrash"
+          >
             <span class="material-symbols-outlined text-lg">delete</span>
             回收站
           </div>
@@ -123,6 +137,11 @@
                 >本系统提供的信息仅供临床参考，不作为最终诊断及用药依据。请结合患者实际体征及相关检查结果，由执业医师进行最终决策。
               </p>
             </div>
+          </div>
+          <!-- 消息加载失败态（区别于"暂无消息"） -->
+          <div v-if="messagesError" class="qa-messages-error">
+            <span>消息加载失败</span>
+            <button class="qa-messages-retry" @click="activeSessionId && loadMessages(activeSessionId)">重新加载</button>
           </div>
           <!-- 聊天消息列表 -->
           <div class="qa-messages-container">
@@ -514,12 +533,34 @@
 
   <!-- 词条审核面板（管理员可见） -->
   <TermReviewPanel v-model="showReviewPanel" />
+
+  <!-- 回收站弹窗（仅登录用户，列出软删除的会话，支持恢复/彻底删除） -->
+  <el-dialog v-model="trashVisible" title="回收站" width="480px" :close-on-click-modal="false">
+    <div v-loading="loadingTrash" class="trash-dialog-body">
+      <template v-if="trashSessions.length">
+        <div v-for="conv in trashSessions" :key="conv.id" class="trash-item">
+          <div class="trash-item-body">
+            <span class="trash-item-title">{{ conv.title }}</span>
+            <span class="trash-item-date">{{ formatSessionDate(conv.updatedAt) }}</span>
+          </div>
+          <div class="trash-item-actions">
+            <button class="trash-action-btn" @click="restoreTrashItem(conv)">恢复</button>
+            <button class="trash-action-btn trash-action-danger" @click="purgeTrashItem(conv)">彻底删除</button>
+          </div>
+        </div>
+      </template>
+      <el-empty v-else-if="!loadingTrash && trashError" description="回收站加载失败" :image-size="72">
+        <el-button type="primary" size="small" @click="loadTrash">重新加载</el-button>
+      </el-empty>
+      <el-empty v-else-if="!loadingTrash" description="回收站为空" :image-size="72" />
+    </div>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ROLE_MENU_MAP, ROLE_TO_LAYOUT, isActive, type MenuItem } from '@/config/menus'
 import { qaService } from '@/api/services/qa.service'
 import { conversationService } from '@/api/services/conversation.service'
@@ -594,10 +635,21 @@ interface ManualFormItem {
 const sessions = ref<Session[]>([])
 const activeSessionId = ref<string | null>(null)
 const loadingSessions = ref(false)
+// 会话列表加载失败（区分"空列表"与"加载失败"）
+const sessionsError = ref(false)
+
+// 回收站（软删除的会话，仅登录用户可用）
+const trashVisible = ref(false)
+const trashSessions = ref<Conversation[]>([])
+const loadingTrash = ref(false)
+// 回收站加载失败
+const trashError = ref(false)
 
 // 消息数据
 const messages = ref<ChatMessage[]>([])
 const loadingMessages = ref(false)
+// 消息加载失败
+const messagesError = ref(false)
 
 // 输入文本
 const inputText = ref('')
@@ -700,7 +752,6 @@ const activeSessionTitle = computed(() => {
 const quickPrompts = computed<string[]>(() => {
   if (isGuest.value) return ['糖尿病的并发症有什么', '慢性支气管炎的症状有什么', '我呼吸困难该怎么办']
   const layout = ROLE_TO_LAYOUT[authStore.userRole]
-  // if (layout === 'doctor') return ['评估患者当前风险等级', '近期用药需要调整吗', '如何解读这条检查结果']
   if (layout === 'patient') return ['糖尿病的并发症有什么', '慢性支气管炎的症状有什么', '我呼吸困难该怎么办']
   return ['孕妇头痛,布洛芬和泰诺哪个安全', '急性胰腺炎有什么分型', '心力衰竭的具体表现']
 })
@@ -739,26 +790,96 @@ const isComposing = ref(false)
 // 防抖时间戳（防止同一毫秒内重复触发）
 let lastSendTime = 0
 
-// 删除当前活跃会话（游客模式本地删除；登录模式移入回收站）
-const deleteActiveSession = async () => {
-  if (!activeSessionId.value) return
+// 删除指定会话（游客模式本地删除不可恢复；登录模式移入回收站）
+const deleteSession = async (sessionId: string) => {
+  const target = sessions.value.find((s) => s.id === sessionId)
+  if (!target) return
+  // 删除确认：登录用户提示可恢复，游客提示不可恢复
+  try {
+    await ElMessageBox.confirm(
+      isGuest.value ? '确定删除该会话吗？此操作不可恢复。' : '删除后可在回收站中恢复，确定删除该会话吗？',
+      '删除会话',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+    )
+  } catch {
+    return // 用户取消删除
+  }
   try {
     if (isGuest.value) {
-      removeGuestSession(activeSessionId.value)
+      removeGuestSession(sessionId)
     } else {
-      await conversationService.deleteConversation(activeSessionId.value)
+      await conversationService.deleteConversation(sessionId)
     }
     // 从侧边栏移除
-    sessions.value = sessions.value.filter((s) => s.id !== activeSessionId.value)
-    // 切换到第一个剩余会话
-    if (sessions.value.length > 0) {
-      await switchSession(sessions.value[0].id)
-    } else {
-      activeSessionId.value = null
-      messages.value = []
+    sessions.value = sessions.value.filter((s) => s.id !== sessionId)
+    // 删除的是当前活跃会话时，切换到第一个剩余会话或清空
+    if (sessionId === activeSessionId.value) {
+      if (sessions.value.length > 0) {
+        await switchSession(sessions.value[0].id)
+      } else {
+        activeSessionId.value = null
+        messages.value = []
+      }
     }
+    ElMessage.success('会话已删除')
   } catch (error) {
     console.error('删除对话失败:', error)
+    ElMessage.error('删除会话失败，请稍后重试')
+  }
+}
+
+// 打开回收站并加载已删除会话列表
+const openTrash = async () => {
+  trashVisible.value = true
+  await loadTrash()
+}
+
+// 加载回收站会话列表
+const loadTrash = async () => {
+  if (isGuest.value) return
+  loadingTrash.value = true
+  try {
+    trashError.value = false
+    trashSessions.value = await conversationService.getDeletedConversations(authStore.userId)
+  } catch (error) {
+    console.error('获取回收站列表失败:', error)
+    trashError.value = true
+  } finally {
+    loadingTrash.value = false
+  }
+}
+
+// 从回收站恢复会话（恢复到主列表）
+const restoreTrashItem = async (conv: Conversation) => {
+  try {
+    await conversationService.restoreConversation(conv.id)
+    trashSessions.value = trashSessions.value.filter((c) => c.id !== conv.id)
+    ElMessage.success('会话已恢复')
+    await loadConversations()
+  } catch (error) {
+    console.error('恢复对话失败:', error)
+    ElMessage.error('恢复会话失败，请稍后重试')
+  }
+}
+
+// 从回收站彻底删除会话（物理删除，不可恢复）
+const purgeTrashItem = async (conv: Conversation) => {
+  try {
+    await ElMessageBox.confirm(`彻底删除会话「${conv.title}」后不可恢复，确定删除吗？`, '彻底删除', {
+      confirmButtonText: '彻底删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+  } catch {
+    return // 用户取消彻底删除
+  }
+  try {
+    await conversationService.deleteConversationPermanently(conv.id)
+    trashSessions.value = trashSessions.value.filter((c) => c.id !== conv.id)
+    ElMessage.success('会话已彻底删除')
+  } catch (error) {
+    console.error('彻底删除对话失败:', error)
+    ElMessage.error('彻底删除会话失败，数据仍保留，请稍后重试')
   }
 }
 
@@ -842,6 +963,7 @@ const getStatusLabel = (status: string): string => {
 const loadConversations = async () => {
   try {
     loadingSessions.value = true
+    sessionsError.value = false
     let conversations: Conversation[]
     if (isGuest.value) {
       conversations = listGuestSessions().map((s) => ({
@@ -871,6 +993,7 @@ const loadConversations = async () => {
   } catch (error) {
     console.error('加载会话列表失败:', error)
     sessions.value = []
+    sessionsError.value = true
   } finally {
     loadingSessions.value = false
     nextTick(() => scrollToBottom())
@@ -907,6 +1030,7 @@ const getSessionIcon = (title: string): string => {
 const loadMessages = async (sessionId: string) => {
   try {
     loadingMessages.value = true
+    messagesError.value = false
     // 游客模式：从本地会话读取消息（无访谈数据，跳过访谈历史加载）
     if (isGuest.value) {
       const localSession = getGuestSession(sessionId)
@@ -999,6 +1123,7 @@ const loadMessages = async (sessionId: string) => {
     console.error('加载消息失败:', error)
     messages.value = []
     retrievalSteps.value = []
+    messagesError.value = true
   } finally {
     loadingMessages.value = false
     nextTick(() => scrollToBottom())
@@ -1112,7 +1237,7 @@ const createNewSession = async () => {
     inputText.value = ''
   } catch (error) {
     console.error('创建新会话失败:', error)
-    // 本地创建模拟会话
+    // 本地降级创建模拟会话，并明确告知用户内容不会同步到服务器
     const newId = (sessions.value.length + 1).toString()
     sessions.value.unshift({
       id: newId,
@@ -1122,6 +1247,7 @@ const createNewSession = async () => {
     activeSessionId.value = newId
     messages.value = []
     inputText.value = ''
+    ElMessage.warning('创建会话失败，已使用本地会话，内容不会同步到服务器')
   }
 }
 
@@ -1141,7 +1267,10 @@ const persistAssistantMessage = (content: string, sourceReferences?: string) => 
         role: 'assistant',
         sourceReferences
       })
-      .catch((err) => console.error('保存AI消息失败:', err))
+      .catch((err) => {
+        console.error('保存AI消息失败:', err)
+        ElMessage.warning('AI 回复保存失败，刷新页面后可能丢失')
+      })
   }
 }
 
@@ -1217,7 +1346,10 @@ const sendMessage = async () => {
           content: content,
           role: 'user'
         })
-        .catch((err) => console.error('保存用户消息失败:', err))
+        .catch((err) => {
+          console.error('保存用户消息失败:', err)
+          ElMessage.warning('消息保存失败，可能无法在历史记录中查看')
+        })
     }
 
     // 首条消息时自动更新对话标题（游客模式本地更新）
@@ -1707,7 +1839,7 @@ const submitAllManualFormAnswers = async (message: ChatMessage) => {
     nextTick(() => scrollToBottom())
   } catch (error: any) {
     console.error('批量提交失败:', error)
-    ElMessage.error(apiErrorMessage(error, '提交失败，请重试'))
+    ElMessage.error('问卷提交失败，请稍后重试')
   } finally {
     manualFormSubmitting.value = { ...manualFormSubmitting.value, [message.id]: false }
   }
@@ -2560,6 +2692,63 @@ onUnmounted(() => {
   border-right: 1px solid var(--theme-outline-variant);
 }
 
+/* 侧边栏提示（加载失败 / 空会话） */
+.qa-sidebar-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  color: var(--theme-on-surface-variant);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.qa-sidebar-retry {
+  border: none;
+  background: var(--theme-primary);
+  color: #fff;
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.qa-sidebar-retry:hover {
+  background: var(--theme-primary-strong, #00386f);
+}
+
+/* 消息区加载失败态 */
+.qa-messages-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin: 1rem auto;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--theme-on-error-container);
+  background: var(--theme-error-container);
+  border-radius: 0.5rem;
+  max-width: 24rem;
+}
+
+.qa-messages-retry {
+  border: none;
+  background: var(--theme-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.3125rem 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+.qa-messages-retry:hover {
+  background: var(--theme-primary-strong, #00386f);
+}
+
 .qa-session-body {
   flex: 1;
   min-width: 0;
@@ -2573,18 +2762,105 @@ onUnmounted(() => {
   color: var(--theme-outline);
 }
 
-.qa-session-count {
+/* 会话项删除按钮（hover 时显示，避免误触） */
+.qa-session-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 7px;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
   border-radius: 9999px;
-  background: var(--theme-surface-container);
-  color: var(--theme-on-surface-variant);
+  background: transparent;
+  color: var(--theme-outline);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
-.qa-session-active .qa-session-count {
-  background: var(--theme-primary-fixed);
-  color: var(--theme-primary);
+.qa-session-item:hover .qa-session-delete-btn,
+.qa-session-delete-btn:focus-visible {
+  opacity: 1;
 }
+
+.qa-session-delete-btn:hover {
+  background: var(--theme-surface-container);
+  color: var(--theme-error);
+}
+
+/* 回收站弹窗 */
+.trash-dialog-body {
+  min-height: 120px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: background 0.15s ease;
+}
+
+.trash-item:hover {
+  background: var(--theme-surface-container);
+}
+
+.trash-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.trash-item-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--theme-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trash-item-date {
+  font-size: 0.6875rem;
+  color: var(--theme-outline);
+}
+
+.trash-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.trash-action-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: var(--theme-surface-container);
+  color: var(--theme-brand);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.trash-action-btn:hover {
+  background: var(--theme-surface-container-high);
+}
+
+.trash-action-danger {
+  color: var(--theme-error);
+}
+
+.trash-action-danger:hover {
+  background: var(--theme-error-container);
+}
+
 </style>

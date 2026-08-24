@@ -75,10 +75,8 @@ class UserService {
    * PUT /api/users/{userId}/health-profile
    */
   async updateHealthProfile(userId: string | number, profile: HealthProfile): Promise<void> {
-    const response = await request.put<HealthProfileActionResult>(`/users/${userId}/health-profile`, profile)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '保存失败')
-    }
+    // 失败由拦截器统一弹窗并 reject，无需重复检查 success
+    await request.put(`/users/${userId}/health-profile`, profile)
   }
 
   /**
@@ -86,30 +84,29 @@ class UserService {
    * DELETE /api/users/{userId}/health-profile
    */
   async deleteHealthProfile(userId: string | number): Promise<void> {
-    const response = await request.delete<HealthProfileActionResult>(`/users/${userId}/health-profile`)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '删除失败')
-    }
+    await request.delete(`/users/${userId}/health-profile`)
   }
 
   /**
    * 获取用户个人身份信息
    * GET /api/users/{userId}/identity
+   *
+   * silent：页面自动加载的读操作，失败交由调用方呈现错误态/降级，
+   * 避免与视图错误态（UserCenterView 的 identityError、ProfileView 的人口学回显降级）重复弹全局提示。
    */
   async getIdentity(userId: string | number): Promise<IdentityResult> {
-    const response = await request.get<IdentityResult>(`/users/${userId}/identity`)
+    const response = await request.get<IdentityResult>(`/users/${userId}/identity`, { silent: true })
     return response.data
   }
 
   /**
    * 保存用户个人身份信息（同步 fhir_patient_cache，医生端立即可检索）
    * PUT /api/users/{userId}/identity
+   *
+   * silent：写操作失败由调用方统一弹一次提示（UserCenterView.handleSave 已处理），避免双弹窗。
    */
   async updateIdentity(userId: string | number, identity: IdentityInfo): Promise<void> {
-    const response = await request.put<HealthProfileActionResult>(`/users/${userId}/identity`, identity)
-    if (!response.data.success) {
-      throw new Error(response.data.message || '保存失败')
-    }
+    await request.put(`/users/${userId}/identity`, identity, { silent: true })
   }
 }
 

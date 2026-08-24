@@ -44,6 +44,7 @@ import { User, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth.store'
+import { apiErrorMessage } from '@/utils/error'
 
 const router = useRouter()
 const route = useRoute()
@@ -85,7 +86,7 @@ const handleLogin = async () => {
       ElMessage.error(result.message || '登录失败')
     }
   } catch (error: any) {
-    ElMessage.error(error.message || '登录失败，请检查用户名和密码')
+    ElMessage.error(apiErrorMessage(error, '登录失败，请检查用户名和密码'))
   } finally {
     loginLoading.value = false
   }

@@ -57,10 +57,10 @@ class DashboardService {
   /** 分页拉全量用户并按角色聚合（后端无统计接口，前端全量计算） */
   async getUsersStats(): Promise<UserStats> {
     const size = 1000
-    const first = await adminUserService.listUsers(1, size)
+    const first = await adminUserService.listUsers(1, size, { silent: true })
     const users = [...first.data]
     for (let p = 2; p <= first.totalPages; p++) {
-      const page = await adminUserService.listUsers(p, size)
+      const page = await adminUserService.listUsers(p, size, { silent: true })
       users.push(...page.data)
     }
     const byRole = new Map<string, number>()
@@ -70,20 +70,20 @@ class DashboardService {
 
   /** 导诊统计（ResponseEntity<TriageStats>，裸 JSON） */
   async getTriageStats(): Promise<TriageStats> {
-    const response = await request.get<TriageStats>('/triage/stats')
+    const response = await request.get<TriageStats>('/triage/stats', { silent: true })
     return response.data
   }
 
   /** 问答服务健康检查（200 即在线） */
   async checkQaHealth(): Promise<boolean> {
-    const response = await request.get<string>('/qa/health')
+    const response = await request.get<string>('/qa/health', { silent: true })
     return response.status === 200
   }
 
   /** 分诊服务健康检查（非 2xx 视为离线） */
   async checkTriageHealth(): Promise<boolean> {
     try {
-      const response = await request.get<TriageHealthResponse>('/triage/health')
+      const response = await request.get<TriageHealthResponse>('/triage/health', { silent: true })
       return response.data.serviceAvailable
     } catch {
       return false

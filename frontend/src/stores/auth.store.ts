@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authService } from '@/api/services/auth.service'
+import { apiErrorMessage } from '@/utils/error'
 import type { LoginRequest, UserInfo } from '@/api/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -76,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (error: any) {
       console.error('登录失败:', error)
-      return { success: false, message: error.message || '登录失败' }
+      return { success: false, message: apiErrorMessage(error, '登录失败') }
     } finally {
       loading.value = false
     }
@@ -96,7 +97,7 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('登出失败:', error)
       // 即使API失败也清除本地状态
       clearAuth()
-      return { success: false, message: error.message || '登出失败' }
+      return { success: false, message: apiErrorMessage(error, '登出失败') }
     } finally {
       loading.value = false
     }

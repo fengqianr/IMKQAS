@@ -158,6 +158,7 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { triageService } from '@/api/services/triage.service'
+import { apiErrorMessage } from '@/utils/error'
 import StatusBadge from '@/components/StatusBadge.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import LoadingState from '@/components/LoadingState.vue'
@@ -227,7 +228,7 @@ async function handleBatchTriage() {
   try {
     results.value = await triageService.batchTriage({ symptomsList: list, includeEmergencyCheck: true })
   } catch (e: any) {
-    error.value = e?.message || '分诊服务暂不可用，请稍后重试'
+    error.value = apiErrorMessage(e, '分诊服务暂不可用，请稍后重试')
     results.value = []
   } finally {
     loading.value = false

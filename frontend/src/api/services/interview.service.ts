@@ -12,7 +12,7 @@ import type {
   InterviewSession,
   BatchSubmitResponse
 } from '../types/interview'
-import { apiErrorMessage } from '@/utils/error'
+import { apiErrorMessage, httpStatusMessage } from '@/utils/error'
 
 /** 评分趋势点（/his/interview/trend 返回） */
 export interface TrendPoint {
@@ -70,7 +70,14 @@ class InterviewService {
       if (!response.ok) {
         const errorBody = await response.text().catch(() => '')
         console.error('[InterviewService] startLlmInterview HTTP错误:', response.status, errorBody)
-        throw new Error(`HTTP ${response.status}: ${errorBody || response.statusText}`)
+        // 优先解析后端返回的业务错误信息，无则映射状态码为中文语句，避免展示 HTTP 状态码
+        let message = ''
+        try {
+          message = JSON.parse(errorBody)?.message || ''
+        } catch {
+          message = errorBody.trim()
+        }
+        throw new Error(message || httpStatusMessage(response.status) || '服务暂时不可用，请稍后重试')
       }
 
       await this.readSSEStream(response, onEvent, onError, onComplete)
@@ -105,7 +112,8 @@ class InterviewService {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+        // 状态码映射为中文语句，避免提示框直接展示 HTTP 状态码
+        throw new Error(httpStatusMessage(response.status) || '提交回答失败，请稍后重试')
       }
 
       await this.readSSEStream(response, onEvent, onError, onComplete)
@@ -125,7 +133,7 @@ class InterviewService {
   // 主动放弃访谈（彻底清理）
   async abandonInterview(sessionId: string): Promise<void> {
     try {
-      await request.post(`/his/interview/${sessionId}/abandon`, {})
+      await request.post(`/his/interview/${sessionId}/abandon`, {}, { silent: true })
     } catch (error: any) {
       console.error('放弃访谈失败:', error)
     }
@@ -139,7 +147,7 @@ class InterviewService {
   // 恢复中断的访谈
   async resumeInterview(sessionId: string): Promise<InterviewSession | null> {
     try {
-      const response = await request.post(`/his/interview/${sessionId}/resume`, {})
+      const response = await request.post(`/his/interview/${sessionId}/resume`, {}, { silent: true })
       return response.data.data as InterviewSession
     } catch (error: any) {
       console.error('恢复访谈失败:', error)
@@ -150,7 +158,7 @@ class InterviewService {
   // 心跳保活
   async heartbeat(sessionId: string): Promise<void> {
     try {
-      await request.post(`/his/interview/${sessionId}/heartbeat`, {})
+      await request.post(`/his/interview/${sessionId}/heartbeat`, {}, { silent: true })
     } catch {
       // 心跳失败不报错
     }
@@ -159,7 +167,7 @@ class InterviewService {
   // 获取问卷列表
   async getQuestionnaires(): Promise<QuestionnaireTemplate[]> {
     try {
-      const response = await request.get('/his/interview/questionnaires')
+      const response = await request.get('/his/interview/questionnaires', { silent: true })
       return response.data.data as QuestionnaireTemplate[]
     } catch (error: any) {
       console.error('获取问卷列表失败:', error)
@@ -170,7 +178,7 @@ class InterviewService {
   // 获取问卷详情
   async getQuestionnaire(id: string): Promise<QuestionnaireTemplate | null> {
     try {
-      const response = await request.get(`/his/interview/questionnaires/${id}`)
+      const response = await request.get(`/his/interview/questionnaires/${id}`, { silent: true })
       return response.data.data as QuestionnaireTemplate
     } catch (error: any) {
       console.error('获取问卷详情失败:', error)
@@ -181,7 +189,7 @@ class InterviewService {
   // 获取会话的访谈消息列表（用于重建历史问卷卡片）
   async getSessionMessages(sessionId: string): Promise<InterviewMessageItem[]> {
     try {
-      const response = await request.get(`/his/interview/${sessionId}/messages`)
+      const response = await request.get(`/his/interview/${sessionId}/messages`, { silent: true })
       return (response.data.data || []) as InterviewMessageItem[]
     } catch (error: any) {
       console.error('获取访谈消息失败:', error)
@@ -190,20 +198,16 @@ class InterviewService {
   }
 
   // 获取完整AI分析报告
+  // 错误策略：请求失败时上抛，交由调用方呈现"加载失败"错误态，避免与"暂无分析报告"混淆
   async getAnalysisReport(sessionId: string): Promise<AnalysisReport | null> {
-    try {
-      const response = await request.get(`/his/interview/${sessionId}/analysis`)
-      return response.data.data as AnalysisReport
-    } catch (error: any) {
-      console.error('获取分析报告失败:', error)
-      return null
-    }
+    const response = await request.get(`/his/interview/${sessionId}/analysis`, { silent: true })
+    return response.data.data as AnalysisReport
   }
 
   // 获取对话下的所有访谈记录
   async getInterviewsByConversation(conversationId: string): Promise<InterviewHistoryItem[]> {
     try {
-      const response = await request.get(`/his/interview/by-conversation/${conversationId}`)
+      const response = await request.get(`/his/interview/by-conversation/${conversationId}`, { silent: true })
       return (response.data.data || []) as InterviewHistoryItem[]
     } catch (error: any) {
       console.error('获取访谈记录失败:', error)
@@ -223,27 +227,19 @@ class InterviewService {
   }
 
   // 获取用户历史填写记录（评分趋势等）
+  // 错误策略：请求失败时上抛，交由调用方呈现"加载失败"错误态，避免与"暂无记录"混淆
   async getHistory(userId: string | number, questionnaireId?: string): Promise<any[]> {
-    try {
-      const params: any = { userId }
-      if (questionnaireId) params.questionnaireId = questionnaireId
-      const response = await request.get('/his/interview/history', { params })
-      return (response.data.data || []) as any[]
-    } catch (error: any) {
-      console.error('获取历史记录失败:', error)
-      return []
-    }
+    const params: any = { userId }
+    if (questionnaireId) params.questionnaireId = questionnaireId
+    const response = await request.get('/his/interview/history', { params, silent: true })
+    return (response.data.data || []) as any[]
   }
 
   // 获取评分趋势数据（用于图表展示）
+  // 错误策略：请求失败时上抛，交由调用方呈现"加载失败"错误态，避免与"暂无趋势"混淆
   async getTrend(userId: string | number, questionnaireId: string): Promise<TrendPoint[]> {
-    try {
-      const response = await request.get('/his/interview/trend', { params: { userId, questionnaireId } })
-      return (response.data.data || []) as TrendPoint[]
-    } catch (error: any) {
-      console.error('获取评分趋势失败:', error)
-      return []
-    }
+    const response = await request.get('/his/interview/trend', { params: { userId, questionnaireId }, silent: true })
+    return (response.data.data || []) as TrendPoint[]
   }
 
   // 通用的 SSE 流读取

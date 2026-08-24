@@ -6,9 +6,21 @@
       返回检索
     </button>
 
+    <!-- 加载失败态（区分「加载失败」与「未找到患者」，避免对医生造成误导） -->
+    <EmptyState
+      v-if="!loading && loadError"
+      title="患者档案加载失败"
+      description="网络异常或服务暂不可用，请稍后重试。"
+      icon="error"
+      variant="panel"
+      min-height="20rem"
+    >
+      <button class="btn-outline" @click="loadPatient">重试</button>
+    </EmptyState>
+
     <!-- 患者不存在 -->
     <EmptyState
-      v-if="!loading && !patient"
+      v-else-if="!loading && !patient"
       title="未找到该患者档案"
       description="患者可能已被删除，或链接无效。"
       icon="person_off"
@@ -241,6 +253,8 @@ const fhirId = computed(() => route.params.id as string)
 
 // 页面状态
 const loading = ref(true)
+/** 档案加载失败（区分「加载失败」与「未找到患者」） */
+const loadError = ref(false)
 const patient = ref<FhirPatient | null>(null)
 const conditions = ref<FhirCondition[]>([])
 const observations = ref<FhirObservation[]>([])
@@ -365,9 +379,10 @@ const handlePrint = () => {
   window.print()
 }
 
-// 初始化：并行加载患者档案概览（含健康档案与问卷记录）与病情/检验记录
-onMounted(async () => {
+// 并行加载患者档案概览（含健康档案与问卷记录）与病情/检验记录，供初始化与重试按钮复用
+const loadPatient = async () => {
   loading.value = true
+  loadError.value = false
   try {
     const id = fhirId.value
     const [overview, cs, obs] = await Promise.all([
@@ -381,10 +396,16 @@ onMounted(async () => {
     questionnaireRecords.value = overview?.questionnaireResponses ?? []
     conditions.value = cs
     observations.value = obs
+  } catch (error) {
+    console.error('患者档案加载失败:', error)
+    loadError.value = true
   } finally {
     loading.value = false
   }
-})
+}
+
+// 初始化：加载患者档案
+onMounted(loadPatient)
 </script>
 
 <style scoped>

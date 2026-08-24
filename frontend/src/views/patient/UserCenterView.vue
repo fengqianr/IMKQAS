@@ -9,6 +9,13 @@
     <!-- 加载态 -->
     <LoadingState v-if="loading" full />
 
+    <!-- 加载失败态 -->
+    <div v-else-if="identityError" class="uc-error">
+      <span class="material-symbols-outlined uc-error-icon">error_outline</span>
+      <p class="uc-error-text">身份信息加载失败</p>
+      <el-button type="primary" @click="loadIdentity">重试</el-button>
+    </div>
+
     <div v-else class="uc-grid">
       <!-- 左栏：个人资料卡 + 下次预约 -->
       <div class="uc-left">
@@ -60,7 +67,7 @@
         <section class="form-card">
           <div class="form-head">
             <h3 class="form-title">身份与联系信息</h3>
-            <p class="form-sub">保存后，医生端可通过姓名、证件号或手机号检索到您的身份信息</p>
+            <p class="form-sub">请仔细核对您的身份信息</p>
           </div>
 
           <!-- 展示态 -->
@@ -174,7 +181,6 @@ import InfoGrid from '@/components/InfoGrid.vue'
 import InfoGridItem from '@/components/InfoGridItem.vue'
 import LoadingState from '@/components/LoadingState.vue'
 import { userService } from '@/api/services/user.service'
-import { apiErrorMessage } from '@/utils/error'
 import { maskIdNumber } from '@/utils/mask'
 import { initialOf } from '@/utils/format'
 import { genderText, calcAge } from '@/api/types/fhir'
@@ -188,6 +194,7 @@ const fhirId = computed(() => (userId.value ? `pat-${userId.value}` : ''))
 const loading = ref(true)
 const saving = ref(false)
 const editing = ref(false)
+const identityError = ref(false) // 身份信息加载失败
 const formRef = ref<FormInstance>()
 
 // 表单数据
@@ -218,6 +225,7 @@ const ageText = computed(() => calcAge(form.birthDate))
 // 加载身份信息
 const loadIdentity = async () => {
   loading.value = true
+  identityError.value = false
   try {
     const res = await userService.getIdentity(userId.value)
     if (res.hasIdentity && res.identity) {
@@ -234,7 +242,8 @@ const loadIdentity = async () => {
       form.phone = authStore.user?.phone || ''
     }
   } catch (e: any) {
-    ElMessage.error('加载身份信息失败: ' + apiErrorMessage(e, '未知错误'))
+    console.error('加载身份信息失败:', e)
+    identityError.value = true
   } finally {
     loading.value = false
   }
@@ -265,10 +274,11 @@ const handleSave = async () => {
       idCard: form.idCard || undefined,
       address: form.address || undefined
     })
-    ElMessage.success('身份信息保存成功，已同步至医生端')
+    ElMessage.success('身份信息保存成功')
     editing.value = false
   } catch (e: any) {
-    ElMessage.error(apiErrorMessage(e, '保存失败，请稍后重试'))
+    console.error('保存身份信息失败:', e)
+    ElMessage.error('保存身份信息失败，请稍后重试')
   } finally {
     saving.value = false
   }
@@ -299,6 +309,31 @@ onMounted(loadIdentity)
 }
 
 .page-sub {
+  font-size: 0.9375rem;
+  color: var(--theme-soft-stone);
+  margin: 0;
+}
+
+/* ===== 加载失败态 ===== */
+.uc-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--theme-surface-container-lowest);
+  border: 1px solid rgba(193, 200, 195, 0.5);
+  border-radius: 0.75rem;
+}
+
+.uc-error-icon {
+  font-size: 2.5rem;
+  color: var(--theme-outline);
+}
+
+.uc-error-text {
   font-size: 0.9375rem;
   color: var(--theme-soft-stone);
   margin: 0;

@@ -97,6 +97,7 @@ import { User, Iphone, Lock, UserFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { authService } from '@/api/services/auth.service'
+import { apiErrorMessage } from '@/utils/error'
 import { ROLE_LABELS } from '@/config/menus'
 
 const router = useRouter()
@@ -206,7 +207,7 @@ const handleRegister = async () => {
     ElMessage.success('注册成功，请登录')
     router.push('/login')
   } catch (error: any) {
-    ElMessage.error(error.message || '注册失败，请稍后重试')
+    ElMessage.error(apiErrorMessage(error, '注册失败，请稍后重试'))
   } finally {
     registerLoading.value = false
   }
