@@ -63,6 +63,7 @@ TEST_COUNT = 500
 REDIS_CACHE_PREFIXES = [
     "intent:",                   # 意图分类缓存 (IntentRouterImpl)
     "sem:cache:",                # 语义缓存 (SemanticCacheServiceImpl)
+    "sem:index:",                # 语义缓存分组索引 (SemanticCacheServiceImpl)
     "sem:lock:",                 # 分布式锁（残留）
     "qa:result:",                # 查询结果缓存 (RedisService)
     "embedding:text-embedding-v3:",  # Embedding向量缓存
@@ -230,12 +231,17 @@ def ask_question(question: str, timeout: int = REQUEST_TIMEOUT) -> dict:
             processing_ms = -1
             code = body.get("code")
             is_ok = body.get("success") or code == 200 or str(code) == "00000"
+            data = {}
             if is_ok and body.get("data"):
                 data = body["data"]
                 answer = data.get("answer", "")
                 processing_ms = data.get("processingTime", -1)
-            # 估算缓存命中：服务端处理时间 < 阈值
-            cache_hit = 0 < processing_ms < CACHE_HIT_THRESHOLD_MS
+            # 缓存命中：优先读取服务端权威标记 retrievalPath.cacheHit，回退到处理时间阈值
+            rp = data.get("retrievalPath") or {}
+            if isinstance(rp, dict) and "cacheHit" in rp:
+                cache_hit = bool(rp["cacheHit"])
+            else:
+                cache_hit = 0 < processing_ms < CACHE_HIT_THRESHOLD_MS
             return {"success": True, "answer": answer, "latencyMs": elapsed,
                     "processingMs": processing_ms, "cacheHit": cache_hit}
         return {"success": False, "answer": "", "latencyMs": elapsed,
@@ -451,7 +457,7 @@ def gen_report(cold: dict, warm: dict):
     print(f"\n  {'指标':<16} {'冷启动':>10} {'热启动':>10}")
     print(f"  {'-' * 38}")
     print(f"  {'缓存命中率':<16} {cs['cacheHitRate']:>9.1f}%  {ws['cacheHitRate']:>9.1f}%")
-    print(f"\n  * 缓存命中率根据服务端 processingTime < {CACHE_HIT_THRESHOLD_MS}ms 估算")
+    print(f"\n  * 缓存命中率读取服务端权威标记 retrievalPath.cacheHit（回退 processingTime < {CACHE_HIT_THRESHOLD_MS}ms 估算）")
 
     # 延迟分布
     cold_dist = latency_distribution([r["latencyMs"] for r in cold["results"]])

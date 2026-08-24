@@ -93,8 +93,10 @@ public class ConversationController {
     @GetMapping
     public Page<Conversation> list(@RequestParam(defaultValue = "1") int current,
                                    @RequestParam(defaultValue = "10") int size) {
-        Page<Conversation> page = new Page<>(current, size);
-        return service.page(page);
+        QueryWrapper<Conversation> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("created_at");
+        wrapper.orderByDesc("id");
+        return service.page(new Page<>(current, size), wrapper);
     }
 
     /**

@@ -1,0 +1,476 @@
+{
+  "resourceType": "Questionnaire",
+  "extension": [ {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "惊恐发作"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "濒死感"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "失控"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "发疯"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "要死了"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "心脏病发作"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule",
+    "extension": [ {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/min-score",
+      "valueInteger": 0
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/max-score",
+      "valueInteger": 21
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 0
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 4
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "无焦虑"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "没有焦虑症状"
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 5
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 9
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "轻度焦虑"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "建议关注，可尝试放松训练"
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 10
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 14
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "中度焦虑"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "建议寻求心理咨询"
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 15
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 21
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "重度焦虑"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "强烈建议就医评估"
+      } ]
+    } ]
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules",
+    "extension": [ {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/rule-id",
+      "valueString": "generalized_anxiety_core"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/label",
+      "valueString": "广泛性焦虑核心症状"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/flag-type",
+      "valueString": "combo"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/link-id",
+        "valueString": "/q1"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/operator",
+        "valueString": "GTE"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/value",
+        "valueInteger": 2
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/link-id",
+        "valueString": "/q2"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/operator",
+        "valueString": "GTE"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/value",
+        "valueInteger": 2
+      } ]
+    } ]
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules",
+    "extension": [ {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/rule-id",
+      "valueString": "panic_tendency"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/label",
+      "valueString": "惊恐倾向"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/flag-type",
+      "valueString": "safety"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/link-id",
+        "valueString": "/q7"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/operator",
+        "valueString": "GTE"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/value",
+        "valueInteger": 2
+      } ]
+    } ]
+  } ],
+  "name": "GAD-7",
+  "title": "GAD-7 广泛性焦虑障碍量表",
+  "status": "active",
+  "publisher": "IMKQAS",
+  "description": "在过去2周内，以下情况困扰您的频率是？",
+  "code": [ {
+    "system": "http://imkqas.org/fhir/CodeSystem/questionnaire-category",
+    "code": "mental_health"
+  } ],
+  "item": [ {
+    "linkId": "/q1",
+    "text": "感到紧张、焦虑或烦躁",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6568-5",
+        "display": "完全没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6569-3",
+        "display": "有几天"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6570-1",
+        "display": "一半以上天数"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6571-9",
+        "display": "几乎每天"
+      }
+    } ]
+  }, {
+    "linkId": "/q2",
+    "text": "无法停止或控制担忧",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6568-5",
+        "display": "完全没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6569-3",
+        "display": "有几天"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6570-1",
+        "display": "一半以上天数"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6571-9",
+        "display": "几乎每天"
+      }
+    } ]
+  }, {
+    "linkId": "/q3",
+    "text": "对各种各样的事情担忧过多",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6568-5",
+        "display": "完全没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6569-3",
+        "display": "有几天"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6570-1",
+        "display": "一半以上天数"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6571-9",
+        "display": "几乎每天"
+      }
+    } ]
+  }, {
+    "linkId": "/q4",
+    "text": "很难放松下来",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6568-5",
+        "display": "完全没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6569-3",
+        "display": "有几天"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6570-1",
+        "display": "一半以上天数"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6571-9",
+        "display": "几乎每天"
+      }
+    } ]
+  }, {
+    "linkId": "/q5",
+    "text": "非常焦躁以至无法静坐",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6568-5",
+        "display": "完全没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6569-3",
+        "display": "有几天"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6570-1",
+        "display": "一半以上天数"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6571-9",
+        "display": "几乎每天"
+      }
+    } ]
+  }, {
+    "linkId": "/q6",
+    "text": "变得容易烦恼或急躁",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6568-5",
+        "display": "完全没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6569-3",
+        "display": "有几天"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6570-1",
+        "display": "一半以上天数"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6571-9",
+        "display": "几乎每天"
+      }
+    } ]
+  }, {
+    "linkId": "/q7",
+    "text": "感到害怕就像要发生可怕的事情",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6568-5",
+        "display": "完全没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6569-3",
+        "display": "有几天"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6570-1",
+        "display": "一半以上天数"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "LA6571-9",
+        "display": "几乎每天"
+      }
+    } ]
+  } ]
+}

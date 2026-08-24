@@ -14,7 +14,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     redirect: '/qa',
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/login',

@@ -70,4 +70,14 @@ public class HisConfigProperties {
      * 问卷会话超时时间（分钟）
      */
     private int interviewSessionTimeoutMinutes = 30;
+
+    /**
+     * 问卷注册表/模板每日同步 cron 表达式（默认每日凌晨 2 点）
+     */
+    private String syncCron = "0 0 2 * * ?";
+
+    /**
+     * 问卷模板缓存过期时间（秒），用于 Redis 二级缓存
+     */
+    private long questionnaireCacheTtlSeconds = 86400;
 }

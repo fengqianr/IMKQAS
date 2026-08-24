@@ -34,7 +34,6 @@ export interface QuestionnaireTemplate {
   description: string
   category: string
   codeSystem?: string
-  triggerKeywords: string[]
   items: QuestionItem[]
   scoringRule: ScoringRule
 }

@@ -1,10 +1,15 @@
 package com.imkqas.service.rag.impl;
 
+import com.imkqas.config.AgentProperties;
 import com.imkqas.config.RagConfig;
 import com.imkqas.dto.qa.RetrievalPathDto;
 import com.imkqas.dto.qa.RetrievalStepDto;
 import com.imkqas.entity.Document;
 import com.imkqas.service.*;
+import com.imkqas.service.agent.AgentExecutor;
+import com.imkqas.service.agent.AgentResult;
+import com.imkqas.service.agent.AgentToolStep;
+import com.imkqas.service.agent.QueryComplexityClassifier;
 import com.imkqas.service.document.DocumentService;
 import com.imkqas.service.his.*;
 import com.imkqas.service.rag.*;
@@ -45,6 +50,9 @@ public class QaServiceImpl implements QaService {
     private final InterviewEngine interviewEngine;
     private final ConversationStateManager conversationStateManager;
     private final ContraindicationDetectionService contraindicationDetectionService;
+    private final AgentExecutor agentExecutor;
+    private final AgentProperties agentProperties;
+    private final QueryComplexityClassifier complexityClassifier;
 
     public QaServiceImpl(MultiRetrievalService multiRetrievalService,
                          MultiFactorRerankService multiFactorRerankService,
@@ -59,7 +67,10 @@ public class QaServiceImpl implements QaService {
                          IntentRouter intentRouter,
                          InterviewEngine interviewEngine,
                          ConversationStateManager conversationStateManager,
-                         ContraindicationDetectionService contraindicationDetectionService) {
+                         ContraindicationDetectionService contraindicationDetectionService,
+                         AgentExecutor agentExecutor,
+                         AgentProperties agentProperties,
+                         QueryComplexityClassifier complexityClassifier) {
         this.multiRetrievalService = multiRetrievalService;
         this.multiFactorRerankService = multiFactorRerankService;
         this.qualityFilterService = qualityFilterService;
@@ -74,6 +85,9 @@ public class QaServiceImpl implements QaService {
         this.interviewEngine = interviewEngine;
         this.conversationStateManager = conversationStateManager;
         this.contraindicationDetectionService = contraindicationDetectionService;
+        this.agentExecutor = agentExecutor;
+        this.agentProperties = agentProperties;
+        this.complexityClassifier = complexityClassifier;
     }
 
     // 文档标题缓存（避免重复查询）
@@ -114,6 +128,23 @@ public class QaServiceImpl implements QaService {
                 return new QaResponse(query, answerText, Collections.emptyList(),
                         0.85, processingTime, "intent-router",
                         intent.name(), suggestion, 0.85);
+            }
+
+            // ═══ [1.5] 复杂度分流：COMPLEX → ReAct Agent（agent.enabled 开关控制） ═══
+            if (agentProperties.isEnabled()
+                    && complexityClassifier.classify(query) == QueryComplexityClassifier.Route.COMPLEX) {
+                AgentResult agentResult = agentExecutor.execute(query, userId, conversationId);
+                // 急症阻断或正常 Agent 结果直接返回；仅超时/异常（RAG_FALLBACK）回退原 RAG 链路
+                if (!agentResult.isFallback()) {
+                    PipelineTraceContext.finish();
+                    long processingTime = System.currentTimeMillis() - startTime;
+                    successfulQueries.incrementAndGet();
+                    log.info("[Agent路由] COMPLEX → ReAct Agent: query={}, route={}, toolsCalled={}, elapsed={}ms",
+                            truncate(query, 50), agentResult.route(), agentResult.toolsCalled(), agentResult.elapsedMs());
+                    return new QaResponse(query, agentResult.answer(), Collections.emptyList(),
+                            0.8, processingTime, "react-agent", intent.name(), null, 0.8);
+                }
+                log.warn("[Agent路由] Agent 超时/异常，降级到原 RAG 链路: query={}", truncate(query, 50));
             }
 
             // ═══ [2] 查询预处理：分词 + 实体识别 + 同义词扩展 ═══
@@ -197,11 +228,11 @@ public class QaServiceImpl implements QaService {
             double llmConfidence;
             String modelUsed = llmService.getModelInfo().getName();
             String normalizedQuery = processedQuery != null ? processedQuery : query;
-            List<Long> sortedFragmentIds = extractSortedFragmentIds(rerankedResults);
+            List<Long> fragmentSigIds = extractSortedFragmentIds(rerankedResults);
 
             long t10 = System.currentTimeMillis();
             boolean cacheHit = false;
-            SemanticCacheService.CachedAnswer cached = semanticCacheService.get(normalizedQuery, sortedFragmentIds);
+            SemanticCacheService.CachedAnswer cached = semanticCacheService.get(normalizedQuery, fragmentSigIds);
             if (cached != null) {
                 cacheHit = true;
                 PipelineTraceContext.recordStep("语义缓存(命中)", 10, System.currentTimeMillis() - t10);
@@ -213,7 +244,7 @@ public class QaServiceImpl implements QaService {
                 PipelineTraceContext.recordStep("语义缓存(未命中)", 10, System.currentTimeMillis() - t10);
                 boolean lockAcquired = semanticCacheService instanceof SemanticCacheServiceImpl
                         && ((SemanticCacheServiceImpl) semanticCacheService)
-                                .tryAcquireRebuildLock(normalizedQuery, sortedFragmentIds);
+                                .tryAcquireRebuildLock(normalizedQuery, fragmentSigIds);
 
                 if (lockAcquired) {
                     try {
@@ -229,17 +260,17 @@ public class QaServiceImpl implements QaService {
                         if (isRejectionAnswer(answer)) {
                             log.debug("跳过缓存写入（知识不足/拒答话术）: query={}", truncate(query, 50));
                         } else {
-                            semanticCacheService.put(normalizedQuery, sortedFragmentIds, answer, sources, llmConfidence);
+                            semanticCacheService.put(normalizedQuery, fragmentSigIds, answer, sources, llmConfidence, Collections.emptyList());
                             log.debug("语义缓存写入完成: query={}", truncate(query, 50));
                         }
                     } finally {
                         ((SemanticCacheServiceImpl) semanticCacheService)
-                                .releaseRebuildLock(normalizedQuery, sortedFragmentIds);
+                                .releaseRebuildLock(normalizedQuery, fragmentSigIds);
                     }
                 } else {
                     try { Thread.sleep(200); } catch (InterruptedException ignored) {}
                     SemanticCacheService.CachedAnswer retryCached =
-                            semanticCacheService.get(normalizedQuery, sortedFragmentIds);
+                            semanticCacheService.get(normalizedQuery, fragmentSigIds);
                     if (retryCached != null) {
                         cacheHit = true;
                         llmConfidence = retryCached.getConfidence();
@@ -388,6 +419,30 @@ public class QaServiceImpl implements QaService {
                         intent.name(), suggestion, retrievalPath, 0.85);
             }
 
+            // ═══ [1.5] 复杂度分流：COMPLEX → ReAct Agent（agent.enabled 开关控制） ═══
+            if (agentProperties.isEnabled()
+                    && complexityClassifier.classify(query) == QueryComplexityClassifier.Route.COMPLEX) {
+                AgentResult agentResult = agentExecutor.execute(query, userId, conversationId);
+                // 急症阻断或正常 Agent 结果直接返回；仅超时/异常（RAG_FALLBACK）回退原 RAG 链路
+                if (!agentResult.isFallback()) {
+                    long processingTime = System.currentTimeMillis() - startTime;
+                    successfulQueries.incrementAndGet();
+                    log.info("[Agent路由] COMPLEX → ReAct Agent: query={}, route={}, toolsCalled={}, sources={}, elapsed={}ms",
+                            truncate(query, 50), agentResult.route(), agentResult.toolsCalled(),
+                            agentResult.sources().size(), agentResult.elapsedMs());
+                    PipelineTraceContext.get().putMetadata("intentType", intent.name());
+                    PipelineTraceContext.finish();
+                    List<SourceCitation> agentCitations = buildAgentCitations(agentResult.sources());
+                    List<String> agentContext = buildAgentContext(agentResult.sources());
+                    RetrievalPathDto agentRetrievalPath = buildAgentRetrievalPath(agentResult);
+                    return new QaResponseWithSources(
+                            query, agentResult.answer(), agentContext,
+                            0.8, processingTime, "react-agent",
+                            agentCitations, intent.name(), null, agentRetrievalPath, 0.8);
+                }
+                log.warn("[Agent路由] Agent 超时/异常，降级到原 RAG 链路: query={}", truncate(query, 50));
+            }
+
             // ═══ 查询预处理 ═══
             long t2 = System.currentTimeMillis();
             String processedQuery = queryRewriteService.rewrite(query, userId, conversationId);
@@ -497,17 +552,73 @@ public class QaServiceImpl implements QaService {
 
             long t10 = System.currentTimeMillis();
             List<LlmService.ContextWithSource> contextWithSources = buildContextWithSources(rerankedResults);
-            LlmService.AnswerWithCitations answerWithCitations =
-                    llmService.generateAnswerWithCitations(query, contextWithSources);
-            double llmConfidence2 = answerWithCitations.getConfidence();
-            PipelineTraceContext.recordStep("LLM生成(含置信度)", 11, System.currentTimeMillis() - t10,
-                    contextWithSources.size(), 1,
-                    Map.of("上下文片段", contextWithSources.size(),
-                           "答案长度", answerWithCitations.getAnswer().length() + "字",
-                           "引用数", String.valueOf(answerWithCitations.getCitations().size()),
-                           "LLM置信度", String.format("%.2f", llmConfidence2)));
-            List<SourceCitation> citations = buildSourceCitations(
-                    rerankedResults, answerWithCitations.getCitations());
+
+            String normalizedQuery = processedQuery != null ? processedQuery : query;
+            List<Long> fragmentSigIds = extractTop1FragmentIds(retrievalResults);
+            String answer;
+            double llmConfidence2;
+            List<SourceCitation> citations;
+            boolean cacheHit = false;
+
+            SemanticCacheService.CachedAnswer cached = semanticCacheService.get(normalizedQuery, fragmentSigIds);
+            if (cached != null) {
+                cacheHit = true;
+                answer = cached.getAnswer();
+                llmConfidence2 = cached.getConfidence();
+                citations = cached.getCitations();
+                PipelineTraceContext.recordStep("语义缓存(命中)", 10, System.currentTimeMillis() - t10);
+                log.info("语义缓存命中(WithSources): query={}, version={}", truncate(query, 50), cached.getVersion());
+            } else {
+                PipelineTraceContext.recordStep("语义缓存(未命中)", 10, System.currentTimeMillis() - t10);
+                boolean lockAcquired = semanticCacheService instanceof SemanticCacheServiceImpl
+                        && ((SemanticCacheServiceImpl) semanticCacheService)
+                                .tryAcquireRebuildLock(normalizedQuery, fragmentSigIds);
+                if (lockAcquired) {
+                    try {
+                        long t11 = System.currentTimeMillis();
+                        LlmService.AnswerWithCitations awc =
+                                llmService.generateAnswerWithCitations(query, contextWithSources);
+                        answer = awc.getAnswer();
+                        llmConfidence2 = awc.getConfidence();
+                        citations = buildSourceCitations(rerankedResults, awc.getCitations());
+                        PipelineTraceContext.recordStep("LLM生成(含引用)", 11, System.currentTimeMillis() - t11,
+                                contextWithSources.size(), 1,
+                                Map.of("上下文片段", contextWithSources.size(),
+                                       "答案长度", answer.length() + "字",
+                                       "引用数", String.valueOf(citations.size()),
+                                       "LLM置信度", String.format("%.2f", llmConfidence2)));
+                        if (!isRejectionAnswer(answer)) {
+                            List<String> sources = contextWithSources.stream()
+                                    .map(LlmService.ContextWithSource::getContent).limit(3).collect(Collectors.toList());
+                            semanticCacheService.put(normalizedQuery, fragmentSigIds, answer, sources, llmConfidence2, citations);
+                        }
+                    } finally {
+                        ((SemanticCacheServiceImpl) semanticCacheService).releaseRebuildLock(normalizedQuery, fragmentSigIds);
+                    }
+                } else {
+                    try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+                    SemanticCacheService.CachedAnswer retryCached = semanticCacheService.get(normalizedQuery, fragmentSigIds);
+                    if (retryCached != null) {
+                        cacheHit = true;
+                        answer = retryCached.getAnswer();
+                        llmConfidence2 = retryCached.getConfidence();
+                        citations = retryCached.getCitations();
+                    } else {
+                        long t11 = System.currentTimeMillis();
+                        LlmService.AnswerWithCitations awc =
+                                llmService.generateAnswerWithCitations(query, contextWithSources);
+                        answer = awc.getAnswer();
+                        llmConfidence2 = awc.getConfidence();
+                        citations = buildSourceCitations(rerankedResults, awc.getCitations());
+                        PipelineTraceContext.recordStep("LLM生成(含引用)", 11, System.currentTimeMillis() - t11,
+                                contextWithSources.size(), 1,
+                                Map.of("上下文片段", contextWithSources.size(),
+                                       "答案长度", answer.length() + "字",
+                                       "引用数", String.valueOf(citations.size()),
+                                       "LLM置信度", String.format("%.2f", llmConfidence2)));
+                    }
+                }
+            }
 
             // ═══ [12] 安全兜底：LLM置信度门控 ═══
             long t12 = System.currentTimeMillis();
@@ -533,10 +644,10 @@ public class QaServiceImpl implements QaService {
                         Collections.emptyList(), lr.getIntentType(), lr.getQuestionnaireSuggestion(), retrievalPath, llmConfidence2);
             }
 
-            double finalConfidence2 = calculateConfidence(llmConfidence2, answerWithCitations.getAnswer());
+            double finalConfidence2 = calculateConfidence(llmConfidence2, answer);
             long t13 = System.currentTimeMillis();
-            String sanitizedAnswer = safetyGuardService.sanitizeAnswer(answerWithCitations.getAnswer(), llmConfidence2);
-            boolean wasSanitized = !sanitizedAnswer.equals(answerWithCitations.getAnswer());
+            String sanitizedAnswer = safetyGuardService.sanitizeAnswer(answer, llmConfidence2);
+            boolean wasSanitized = !sanitizedAnswer.equals(answer);
             PipelineTraceContext.recordStep("安全兜底③-答案净化", 13, System.currentTimeMillis() - t13,
                     1, 1, Map.of("结果", wasSanitized ? "已净化（移除风险内容）" : "无需净化",
                            "置信度", String.format("%.2f", llmConfidence2)));
@@ -572,7 +683,7 @@ public class QaServiceImpl implements QaService {
             // 收集管线追踪数据
             PipelineTraceContext.get().putMetadata("confidence", finalConfidence2);
             PipelineTraceContext.get().putMetadata("llmConfidence", llmConfidence2);
-            PipelineTraceContext.get().putMetadata("cacheHit", false);
+            PipelineTraceContext.get().putMetadata("cacheHit", cacheHit);
             PipelineTraceContext.get().putMetadata("intentType", intent.name());
             PipelineTraceContext.get().putMetadata("totalTimeMs", processingTime);
             PipelineTraceContext.PipelineTrace trace = PipelineTraceContext.finish();
@@ -580,7 +691,7 @@ public class QaServiceImpl implements QaService {
             RetrievalPathDto retrievalPath = RetrievalPathDto.builder()
                     .steps(stepDtos)
                     .totalDurationMs(trace.getTotalDurationMs())
-                    .cacheHit(false)
+                    .cacheHit(cacheHit)
                     .intentType(intent.name())
                     .build();
 
@@ -590,7 +701,7 @@ public class QaServiceImpl implements QaService {
                     citations, intent.name(), suggestion, retrievalPath, llmConfidence2);
 
             log.info("带来源问答完成: query={}, intent={}, sources={}, answerLength={}, llmConfidence={}, finalConfidence={}, time={}ms, traceSteps={}",
-                    query, intent, citations.size(), answerWithCitations.getAnswer().length(),
+                    query, intent, citations.size(), answer.length(),
                     llmConfidence2, finalConfidence2, processingTime, stepDtos.size());
 
             return response;
@@ -844,6 +955,86 @@ public class QaServiceImpl implements QaService {
     }
 
     /**
+     * 构建 Agent 检索来源引用（无 LLM 引用定位，positionInAnswer 置 0）
+     */
+    private List<SourceCitation> buildAgentCitations(List<MultiRetrievalService.RetrievalResult> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<SourceCitation> citations = new ArrayList<>();
+        for (MultiRetrievalService.RetrievalResult r : sources) {
+            if (r.getContent() == null || r.getContent().isBlank()) {
+                continue;
+            }
+            String snippet = r.getContent().length() > 200
+                    ? r.getContent().substring(0, 200) + "..."
+                    : r.getContent();
+            citations.add(new SourceCitation(
+                    String.valueOf(r.getDocumentId()),
+                    String.valueOf(r.getChunkId()),
+                    getDocumentTitle(r.getDocumentId()),
+                    snippet,
+                    r.getScore() != null ? r.getScore() : 0.0,
+                    0
+            ));
+        }
+        return citations;
+    }
+
+    /**
+     * 构建 Agent 检索上下文摘要（供 retrievedContext 字段）
+     */
+    private List<String> buildAgentContext(List<MultiRetrievalService.RetrievalResult> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return sources.stream()
+                .filter(r -> r.getContent() != null && !r.getContent().isBlank())
+                .limit(3)
+                .map(r -> r.getContent().length() > 300
+                        ? r.getContent().substring(0, 300) + "..."
+                        : r.getContent())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 构建 Agent 检索路径（将工具调用步骤可视化到前端「知识检索路径」）
+     */
+    private RetrievalPathDto buildAgentRetrievalPath(AgentResult agentResult) {
+        List<AgentToolStep> toolSteps = agentResult.steps();
+        if (toolSteps == null || toolSteps.isEmpty()) {
+            return RetrievalPathDto.builder()
+                    .steps(Collections.emptyList())
+                    .totalDurationMs(agentResult.elapsedMs())
+                    .cacheHit(false)
+                    .intentType("COMPLEX")
+                    .build();
+        }
+        List<RetrievalStepDto> steps = new ArrayList<>();
+        for (int i = 0; i < toolSteps.size(); i++) {
+            AgentToolStep ts = toolSteps.get(i);
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("参数", ts.params());
+            data.put("返回", ts.result());
+            steps.add(RetrievalStepDto.builder()
+                    .stepName("Agent工具调用: " + ts.toolName())
+                    .stepOrder(i + 1)
+                    .durationMs(ts.durationMs())
+                    .inputCount(1)
+                    .outputCount(1)
+                    .intermediateData(data)
+                    .status("SUCCESS")
+                    .build());
+        }
+        return RetrievalPathDto.builder()
+                .steps(steps)
+                .totalDurationMs(agentResult.elapsedMs())
+                .cacheHit(false)
+                .intentType("COMPLEX")
+                .build();
+    }
+
+    /**
      * 获取文档标题（带缓存）
      */
     private String getDocumentTitle(Long documentId) {
@@ -905,6 +1096,18 @@ public class QaServiceImpl implements QaService {
         }
         Collections.sort(ids);
         return ids;
+    }
+
+    /**
+     * 提取检索 top-1 知识片段ID（用于语义缓存签名）
+     * 向量检索 top-1 已证明稳定，作为缓存签名可使语义相似问法对齐到同一片段组
+     */
+    private List<Long> extractTop1FragmentIds(List<MultiRetrievalService.RetrievalResult> results) {
+        if (results == null || results.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Long chunkId = results.get(0).getChunkId();
+        return chunkId != null ? List.of(chunkId) : Collections.emptyList();
     }
 
     /**

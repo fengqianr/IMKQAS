@@ -539,7 +539,7 @@ import {
 import { syncGuestSessionsToAccount } from '@/utils/guest-sync'
 import { apiErrorMessage } from '@/utils/error'
 import { initialOf } from '@/utils/format'
-import type { Conversation, RetrievalStep } from '@/api/types/qa'
+import type { Conversation, RetrievalPath, RetrievalStep } from '@/api/types/qa'
 import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview'
 
 interface Session {
@@ -554,6 +554,7 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   sourceReferences?: string
+  retrievalPath?: string
   questionnaire?: QuestionnaireBlock
 }
 
@@ -797,6 +798,8 @@ const getStepResultItems = (step: RetrievalStep): { label: string; value: string
   // 展示中间数据中的关键结果
   if (step.intermediateData) {
     const displayKeys = [
+      '参数',
+      '返回',
       '结果',
       '命中片段',
       '示例来源',
@@ -936,7 +939,8 @@ const loadMessages = async (sessionId: string) => {
         id: msg.id.toString(),
         role: msg.role.toLowerCase() as 'user' | 'assistant',
         content,
-        sourceReferences: msg.sourceReferences
+        sourceReferences: msg.sourceReferences,
+        retrievalPath: msg.retrievalPath
       }
     })
 
@@ -973,9 +977,28 @@ const loadMessages = async (sessionId: string) => {
     }
 
     messages.value = historyMessages
+
+    // 还原最近一条含检索路径的AI消息的「知识检索路径」可视化
+    retrievalSteps.value = []
+    expandedSteps.value = false
+    for (let i = historyMessages.length - 1; i >= 0; i--) {
+      const m = historyMessages[i]
+      if (m.role === 'assistant' && m.retrievalPath) {
+        try {
+          const path = JSON.parse(m.retrievalPath) as RetrievalPath
+          if (path.steps && Array.isArray(path.steps)) {
+            retrievalSteps.value = path.steps
+          }
+        } catch (e) {
+          console.warn('解析历史检索路径失败:', e)
+        }
+        break
+      }
+    }
   } catch (error) {
     console.error('加载消息失败:', error)
     messages.value = []
+    retrievalSteps.value = []
   } finally {
     loadingMessages.value = false
     nextTick(() => scrollToBottom())
@@ -1077,7 +1100,7 @@ const createNewSession = async () => {
       userId: authStore.userId || undefined
     })
 
-    sessions.value.push({
+    sessions.value.unshift({
       id: newConversation.id.toString(),
       title: newConversation.title,
       icon: 'clinical_notes',
@@ -1091,7 +1114,7 @@ const createNewSession = async () => {
     console.error('创建新会话失败:', error)
     // 本地创建模拟会话
     const newId = (sessions.value.length + 1).toString()
-    sessions.value.push({
+    sessions.value.unshift({
       id: newId,
       title: `新咨询 ${newId}`,
       icon: 'clinical_notes'

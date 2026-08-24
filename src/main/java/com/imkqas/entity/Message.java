@@ -42,6 +42,9 @@ public class Message {
     @TableField("source_references")
     private String sourceReferences; // 引用的文档chunk IDs: [{"chunkId": 1, "documentId": 1, "page": 42}]
 
+    @TableField("retrieval_path")
+    private String retrievalPath; // 检索路径/Agent工具调用过程JSON（供历史重载还原「知识检索路径」可视化）
+
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt = LocalDateTime.now();
 
