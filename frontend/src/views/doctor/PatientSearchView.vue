@@ -122,9 +122,21 @@
         </div>
       </div>
 
+      <!-- 加载失败态（区分「加载失败」与「未找到」） -->
+      <EmptyState
+        v-if="searchError && !loading"
+        variant="plain"
+        min-height="16rem"
+        icon="error"
+        title="患者档案加载失败"
+        description="网络异常或服务暂不可用，请稍后重试。"
+      >
+        <button class="btn-outline" @click="handleSearch(true)">重试</button>
+      </EmptyState>
+
       <!-- 空态 -->
       <EmptyState
-        v-if="!patients.length && !loading"
+        v-else-if="!patients.length && !loading"
         variant="plain"
         min-height="16rem"
         icon="search_off"
@@ -164,6 +176,8 @@ const keyword = ref('')
 /** 患者列表、加载态、总数 */
 const patients = ref<FhirPatient[]>([])
 const loading = ref(false)
+/** 检索请求失败（区分「加载失败」与「未找到」） */
+const searchError = ref(false)
 const totalCount = ref(0)
 
 /** 当前页码（从 1 开始显示；后端 page+1 约定，请求时传 page-1） */
@@ -196,6 +210,7 @@ const identifierOf = (p: FhirPatient) => patientIdentifier(p)
 const handleSearch = async (resetPage = false) => {
   if (resetPage) page.value = 1
   loading.value = true
+  searchError.value = false
   try {
     const kw = keyword.value.trim()
     if (searchMode.value === 'name') {
@@ -205,6 +220,9 @@ const handleSearch = async (resetPage = false) => {
     } else {
       patients.value = await fhirService.findByIdentifier(kw)
     }
+  } catch (error) {
+    console.error('患者检索失败:', error)
+    searchError.value = true
   } finally {
     loading.value = false
   }
@@ -238,7 +256,12 @@ const goDetail = (fhirId?: string) => {
 
 // 初始化：加载患者总数 + 默认列出前 10 位患者
 onMounted(async () => {
-  totalCount.value = await fhirService.countPatients()
+  // 患者总数加载失败不阻塞检索，降级为 0 并记录日志
+  try {
+    totalCount.value = await fhirService.countPatients()
+  } catch (error) {
+    console.warn('患者总数加载失败:', error)
+  }
   handleSearch(false)
 })
 </script>

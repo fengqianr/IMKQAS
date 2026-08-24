@@ -48,12 +48,14 @@ export interface AdminStats {
 
 class AdminService {
   /** 分页获取待审核词条 */
+  // silent: 页面自动加载的读操作建议传 { silent: true }，由视图呈现错误态，避免与全局弹窗重复提示
   async getUnmappedTerms(
     params: {
       page?: number
       size?: number
       status?: string
-    } = {}
+    } = {},
+    options?: { silent?: boolean }
   ): Promise<PaginationResponse<UnmappedTermItem[]>> {
     const { page = 1, size = 20, status } = params
     const query = new URLSearchParams()
@@ -61,9 +63,8 @@ class AdminService {
     query.append('size', size.toString())
     if (status) query.append('status', status)
 
+    // 失败由拦截器统一弹窗/reject，成功直接返回业务数据
     const response = await request.get<{
-      success: boolean
-      message: string
       data: {
         data: UnmappedTermItem[]
         total: number
@@ -71,21 +72,16 @@ class AdminService {
         size: number
         totalPages: number
       }
-    }>(`/admin/unmapped-terms?${query.toString()}`)
-
-    if (response.data.success && response.data.data) {
-      return response.data.data
-    }
-    throw new Error(response.data.message || '获取词条列表失败')
+    }>(`/admin/unmapped-terms?${query.toString()}`, { silent: options?.silent })
+    return response.data.data
   }
 
   /** 获取统计数据 */
-  async getStats(): Promise<AdminStats> {
-    const response = await request.get<{ success: boolean; data: AdminStats }>('/admin/unmapped-terms/stats')
-    if (response.data.success && response.data.data) {
-      return response.data.data
-    }
-    throw new Error('获取统计数据失败')
+  async getStats(options?: { silent?: boolean }): Promise<AdminStats> {
+    const response = await request.get<{ data: AdminStats }>('/admin/unmapped-terms/stats', {
+      silent: options?.silent
+    })
+    return response.data.data
   }
 
   /** 单个审核通过 */
@@ -96,14 +92,9 @@ class AdminService {
   /** 批量审核通过 */
   async batchApprove(requests: ApproveRequest[]): Promise<{ total: number; success: number; failed: number }> {
     const response = await request.post<{
-      success: boolean
-      message: string
       data: { total: number; success: number; failed: number }
     }>('/admin/unmapped-terms/batch-approve', requests)
-    if (response.data.success && response.data.data) {
-      return response.data.data
-    }
-    throw new Error(response.data.message || '批量审核失败')
+    return response.data.data
   }
 
   /** 拒绝词条 */
@@ -113,11 +104,8 @@ class AdminService {
 
   /** 获取未映射率 */
   async getUnmappedRate(): Promise<AdminStats> {
-    const response = await request.get<{ success: boolean; data: AdminStats }>('/admin/stats/unmapped-rate')
-    if (response.data.success && response.data.data) {
-      return response.data.data
-    }
-    throw new Error('获取未映射率失败')
+    const response = await request.get<{ data: AdminStats }>('/admin/stats/unmapped-rate')
+    return response.data.data
   }
 }
 

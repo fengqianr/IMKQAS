@@ -14,7 +14,7 @@ import type { BatchTriageRequest, DepartmentTriageResult } from '../types/triage
 class TriageService {
   /** 批量症状分流：一次处理最多 20 条症状描述，返回对应科室推荐结果列表 */
   async batchTriage(req: BatchTriageRequest): Promise<DepartmentTriageResult[]> {
-    const response = await request.post('/triage/batch', req)
+    const response = await request.post('/triage/batch', req, { silent: true })
     return (response.data || []) as DepartmentTriageResult[]
   }
 }

@@ -376,7 +376,7 @@ const loadAll = async () => {
     dashboardService.getUsersStats(),
     documentService.getDocumentStats(),
     dashboardService.getTriageStats(),
-    adminService.getStats(),
+    adminService.getStats({ silent: true }),
     dashboardService.checkQaHealth(),
     dashboardService.checkTriageHealth()
   ])

@@ -38,6 +38,13 @@
         </div>
       </section>
 
+      <!-- 统计加载失败提示 -->
+      <p v-if="statsError" class="stats-error-hint">
+        <span class="material-symbols-outlined text-sm">error</span>
+        <span>统计数据加载失败</span>
+        <button class="stats-error-retry" @click="loadStats">重试</button>
+      </p>
+
       <!-- 筛选栏 -->
       <section class="filter-bar">
         <div class="filter-field filter-field-grow">
@@ -95,6 +102,16 @@
               <tr v-if="loading">
                 <td colspan="8">
                   <LoadingState text="加载中..." />
+                </td>
+              </tr>
+              <tr v-else-if="listError">
+                <td colspan="8">
+                  <EmptyState title="加载失败" icon="error" description="规则列表加载失败，请稍后重试。">
+                    <button class="btn-empty-create" @click="loadRules">
+                      <span class="material-symbols-outlined text-lg">refresh</span>
+                      重新加载
+                    </button>
+                  </EmptyState>
                 </td>
               </tr>
               <tr v-else-if="rules.length === 0">
@@ -260,6 +277,10 @@ import EmptyState from '@/components/EmptyState.vue'
 
 const rules = ref<ContraindicationRule[]>([])
 const loading = ref(false)
+/** 规则列表加载失败状态（区分"加载失败"与"暂无数据"） */
+const listError = ref(false)
+/** 统计卡片加载失败状态 */
+const statsError = ref(false)
 const page = ref(1)
 const size = ref(10)
 const total = ref(0)
@@ -315,35 +336,44 @@ function resetFilters() {
 }
 
 async function loadStats() {
+  statsError.value = false
   try {
+    // 页面自动加载：silent 抑制全局弹窗，由 statsError 局部呈现
     const [allResult, absoluteResult] = await Promise.all([
-      contraindicationService.list({ page: 1, size: 1 }),
-      contraindicationService.list({ page: 1, size: 1, contraindicationType: 'ABSOLUTE' })
+      contraindicationService.list({ page: 1, size: 1 }, { silent: true }),
+      contraindicationService.list({ page: 1, size: 1, contraindicationType: 'ABSOLUTE' }, { silent: true })
     ])
     statsTotal.value = allResult.total
     statsAbsolute.value = absoluteResult.total
   } catch {
+    statsError.value = true
     // 统计加载失败不影响主流程
   }
 }
 
 async function loadRules() {
   loading.value = true
+  listError.value = false
   try {
-    const result = await contraindicationService.list({
-      page: page.value,
-      size: size.value,
-      drugName: searchDrugName.value || undefined,
-      populationName: searchPopulation.value || undefined,
-      contraindicationType: searchType.value || undefined
-    })
+    // 页面自动加载：silent 抑制全局弹窗，由本页错误态呈现
+    const result = await contraindicationService.list(
+      {
+        page: page.value,
+        size: size.value,
+        drugName: searchDrugName.value || undefined,
+        populationName: searchPopulation.value || undefined,
+        contraindicationType: searchType.value || undefined
+      },
+      { silent: true }
+    )
     rules.value = result.data
     total.value = result.total
     totalPages.value = result.totalPages
     // 同步更新统计
     statsTotal.value = result.total
   } catch (e: any) {
-    ElMessage.error('加载禁忌规则失败: ' + (e.message || '未知错误'))
+    listError.value = true
+    console.error('加载禁忌规则失败:', e)
   } finally {
     loading.value = false
   }
@@ -390,7 +420,8 @@ async function handleSave() {
     await loadRules()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('保存失败: ' + (e.message || '未知错误'))
+    // 写操作失败已由拦截器统一弹窗（后端 message），此处只记录日志避免重复提示
+    console.error('保存禁忌规则失败:', e)
   }
 }
 
@@ -402,7 +433,8 @@ async function handleDelete(rule: ContraindicationRule) {
     await loadRules()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('删除失败: ' + (e.message || '未知错误'))
+    // 写操作失败已由拦截器统一弹窗，此处只记录日志避免重复提示
+    console.error('删除禁忌规则失败:', e)
   }
 }
 
@@ -446,7 +478,8 @@ async function handleBatchImport() {
     await loadRules()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('导入失败: ' + (e.message || '未知错误'))
+    // 写操作失败已由拦截器统一弹窗，此处只记录日志避免重复提示
+    console.error('导入禁忌规则失败:', e)
   }
 }
 
@@ -941,6 +974,29 @@ onMounted(() => {
 
 .btn-empty-create:hover {
   background: rgba(0, 71, 141, 0.06);
+}
+
+/* ===== 统计加载失败提示 ===== */
+.stats-error-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--theme-error);
+}
+.stats-error-retry {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--theme-primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.stats-error-retry:hover {
+  opacity: 0.8;
 }
 
 /* ===== 背景装饰 ===== */

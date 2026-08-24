@@ -27,6 +27,12 @@
       </div>
     </div>
 
+    <!-- 统计加载失败提示 -->
+    <div v-if="statsError" class="stats-error-hint">
+      <span style="color: var(--theme-error); font-size: 12px">统计数据加载失败</span>
+      <el-button size="small" text type="primary" @click="loadStats">重试</el-button>
+    </div>
+
     <!-- 筛选栏 -->
     <div class="filter-bar">
       <el-select v-model="filterStatus" placeholder="状态筛选" style="width: 140px" @change="loadData">
@@ -107,6 +113,13 @@
           </el-tag>
         </template>
       </el-table-column>
+      <!-- 加载失败 / 空数据 -->
+      <template #empty>
+        <EmptyState v-if="listError" icon="error" title="加载失败" description="词条列表加载失败，请稍后重试。">
+          <el-button size="small" type="primary" @click="loadData">重新加载</el-button>
+        </EmptyState>
+        <EmptyState v-else icon="text_snippet" title="暂无词条数据" />
+      </template>
     </el-table>
 
     <!-- 分页 -->
@@ -138,9 +151,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import EmptyState from '@/components/EmptyState.vue'
 import { adminService } from '@/api/services/admin.service'
 import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
-import { apiErrorMessage } from '@/utils/error'
 
 // ========== Props & Emits ==========
 const props = defineProps<{ modelValue: boolean }>()
@@ -156,6 +169,10 @@ const terms = ref<UnmappedTermItem[]>([])
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
+/** 词条列表加载失败状态（区分"加载失败"与"暂无数据"） */
+const listError = ref(false)
+/** 统计卡片加载失败状态 */
+const statsError = ref(false)
 const filterStatus = ref('PENDING')
 const searchKeyword = ref('')
 const selectedRows = ref<UnmappedTermItem[]>([])
@@ -190,25 +207,34 @@ const displayTerms = computed(() => {
 
 // ========== 方法 ==========
 async function loadData() {
+  listError.value = false
   try {
-    const res = await adminService.getUnmappedTerms({
-      page: currentPage.value,
-      size: pageSize.value,
-      status: filterStatus.value === 'ALL' ? undefined : filterStatus.value
-    })
+    // 页面自动加载：silent 抑制全局弹窗，由本页错误态呈现
+    const res = await adminService.getUnmappedTerms(
+      {
+        page: currentPage.value,
+        size: pageSize.value,
+        status: filterStatus.value === 'ALL' ? undefined : filterStatus.value
+      },
+      { silent: true }
+    )
     terms.value = res.data || []
     total.value = res.total
     currentPage.value = res.page
   } catch (e: any) {
-    ElMessage.error('加载词条列表失败: ' + apiErrorMessage(e, '未知错误'))
+    listError.value = true
+    console.error('加载词条列表失败:', e)
   }
 }
 
 async function loadStats() {
+  statsError.value = false
   try {
-    stats.value = await adminService.getStats()
-  } catch {
-    // 静默失败
+    // 传 silent 避免全局弹窗噪音，失败由 statsError 局部呈现
+    stats.value = await adminService.getStats({ silent: true })
+  } catch (e) {
+    statsError.value = true
+    console.error('加载统计数据失败:', e)
   }
 }
 
@@ -225,7 +251,8 @@ async function approveOne(row: UnmappedTermItem) {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('标注失败: ' + apiErrorMessage(e, '未知错误'))
+    console.error('标注失败:', e)
+    ElMessage.error('标注失败，请稍后重试')
   }
 }
 
@@ -243,8 +270,11 @@ async function rejectOne(row: UnmappedTermItem) {
     ElMessage.info(`已拒绝: ${row.term}`)
     await loadData()
     await loadStats()
-  } catch {
-    // 用户取消
+  } catch (e: any) {
+    // 用户取消对话框不提示；其余为接口异常
+    if (e === 'cancel' || e === 'close') return
+    console.error('拒绝词条失败:', e)
+    ElMessage.error('拒绝失败，请稍后重试')
   }
 }
 
@@ -273,7 +303,8 @@ async function doBatchApprove() {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('批量标注失败: ' + apiErrorMessage(e, '未知错误'))
+    console.error('批量标注失败:', e)
+    ElMessage.error('批量标注失败，请稍后重试')
   } finally {
     batchSubmitting.value = false
   }
@@ -366,5 +397,11 @@ watch(
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+.stats-error-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 </style>

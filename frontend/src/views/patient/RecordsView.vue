@@ -146,10 +146,27 @@
                 <span class="trend-date">{{ formatShortDate(point.date) }}</span>
               </div>
             </div>
+            <div v-else-if="trendErrors[recordKey(record)]" class="trend-empty">
+              趋势加载失败，<button class="trend-retry" @click="loadTrend(record)">点击重试</button>
+            </div>
             <div v-else class="trend-empty">暂无趋势数据</div>
           </div>
         </div>
       </div>
+
+      <!-- 加载失败态（区分「加载失败」与「暂无记录」） -->
+      <EmptyState
+        v-else-if="historyError"
+        variant="panel"
+        icon="error"
+        title="问卷记录加载失败"
+        description="网络异常或服务暂不可用，请稍后重试。"
+      >
+        <button class="btn-primary" @click="loadRecords">
+          <span class="material-symbols-outlined">refresh</span>
+          重试
+        </button>
+      </EmptyState>
 
       <!-- 空态 -->
       <EmptyState
@@ -203,6 +220,9 @@
         </div>
         <p class="report-disclaimer">{{ report.disclaimer }}</p>
       </div>
+      <div v-else-if="reportError" class="report-empty">
+        报告加载失败，<button class="report-retry" @click="retryReport">点击重试</button>
+      </div>
       <div v-else class="report-empty">暂无分析报告</div>
     </el-dialog>
   </div>
@@ -236,15 +256,23 @@ interface HistoryRecord {
 
 // ===== 页面状态 =====
 const loading = ref(true)
+/** 历史记录加载失败（区分「加载失败」与「暂无记录」） */
+const historyError = ref(false)
 const records = ref<HistoryRecord[]>([])
 const typeFilter = ref('')
 const sortAsc = ref(false) // 默认按时间降序
 const expandedKey = ref('')
 const trends = reactive<Record<string, TrendPoint[]>>({})
+/** 趋势加载失败标记（按记录 key 区分「加载失败」与「暂无趋势」） */
+const trendErrors = reactive<Record<string, boolean>>({})
 
 // ===== 报告弹窗状态 =====
 const reportVisible = ref(false)
 const reportLoading = ref(false)
+/** 分析报告加载失败（区分「加载失败」与「暂无报告」） */
+const reportError = ref(false)
+/** 当前请求报告的记录（供弹窗内重试使用） */
+const reportRecord = ref<HistoryRecord | null>(null)
 const report = ref<AnalysisReport | null>(null)
 
 // ===== Overview 概览（真实数据） =====
@@ -276,6 +304,7 @@ const followUpCount = computed(() => {
 // ===== 数据加载 =====
 const loadRecords = async () => {
   loading.value = true
+  historyError.value = false
   try {
     const list = await interviewService.getHistory(userId.value)
     records.value = list || []
@@ -283,6 +312,9 @@ const loadRecords = async () => {
     if (records.value.length) {
       expand(records.value[0])
     }
+  } catch (error) {
+    console.error('历史记录加载失败:', error)
+    historyError.value = true
   } finally {
     loading.value = false
   }
@@ -335,8 +367,14 @@ const loadTrend = async (r: HistoryRecord) => {
   if (!r.questionnaireId || !userId.value) return
   const key = recordKey(r)
   if (trends[key]) return
-  const data = await interviewService.getTrend(userId.value, r.questionnaireId)
-  trends[key] = data
+  trendErrors[key] = false
+  try {
+    const data = await interviewService.getTrend(userId.value, r.questionnaireId)
+    trends[key] = data
+  } catch (error) {
+    console.error('评分趋势加载失败:', error)
+    trendErrors[key] = true
+  }
 }
 
 /** 近3次趋势点 */
@@ -417,15 +455,25 @@ const riskIcon = (severity?: string): string => {
 // ===== 分析报告 =====
 const showReport = async (r: HistoryRecord) => {
   if (!r.sessionId) return
+  reportRecord.value = r
   if (!isExpanded(r)) expand(r)
   reportVisible.value = true
   reportLoading.value = true
   report.value = null
+  reportError.value = false
   try {
     report.value = await interviewService.getAnalysisReport(r.sessionId)
+  } catch (error) {
+    console.error('分析报告加载失败:', error)
+    reportError.value = true
   } finally {
     reportLoading.value = false
   }
+}
+
+/** 报告弹窗内重试加载 */
+const retryReport = () => {
+  if (reportRecord.value) showReport(reportRecord.value)
 }
 
 // ===== 工具函数 =====
@@ -959,6 +1007,23 @@ onMounted(loadRecords)
   color: var(--theme-outline);
 }
 
+/* 趋势加载失败内重试按钮 */
+.trend-retry {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: var(--theme-primary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.trend-retry:hover {
+  color: var(--theme-primary-strong);
+}
+
 /* ===== 风险色板（语义色，跨主题一致） ===== */
 /* 图标背景 */
 .icon-high {
@@ -1020,6 +1085,23 @@ onMounted(loadRecords)
   padding: 2rem;
   color: var(--theme-outline);
   font-size: 0.875rem;
+}
+
+/* 报告加载失败内重试按钮 */
+.report-dialog .report-retry {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: var(--theme-primary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.report-dialog .report-retry:hover {
+  color: var(--theme-primary-strong);
 }
 
 .report-dialog .report-loading .material-symbols-outlined {

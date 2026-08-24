@@ -65,6 +65,13 @@
           </div>
         </section>
 
+        <!-- 统计加载失败提示 -->
+        <div v-if="statsError" class="stats-error-hint">
+          <span class="material-symbols-outlined text-sm">error</span>
+          <span class="text-xs text-on-surface-variant">统计数据加载失败</span>
+          <button class="stats-error-retry" @click="loadStats">重试</button>
+        </div>
+
         <!-- 主内容：词条审核表格 -->
         <section class="table-card">
           <!-- 表格头部栏 -->
@@ -137,6 +144,13 @@
                 <tr v-if="loading">
                   <td colspan="9">
                     <LoadingState />
+                  </td>
+                </tr>
+                <tr v-else-if="listError">
+                  <td colspan="9">
+                    <EmptyState icon="error" title="加载失败" description="词条列表加载失败，请稍后重试。">
+                      <button class="btn-batch" @click="loadData">重新加载</button>
+                    </EmptyState>
                   </td>
                 </tr>
                 <tr v-else-if="displayTerms.length === 0">
@@ -238,7 +252,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminService } from '@/api/services/admin.service'
 import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
-import { apiErrorMessage } from '@/utils/error'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Pager from '@/components/Pager.vue'
 import LoadingState from '@/components/LoadingState.vue'
@@ -246,6 +259,10 @@ import EmptyState from '@/components/EmptyState.vue'
 
 const terms = ref<UnmappedTermItem[]>([])
 const loading = ref(false)
+/** 词条列表加载失败状态（区分"加载失败"与"暂无数据"） */
+const listError = ref(false)
+/** 统计卡片加载失败状态 */
+const statsError = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
@@ -297,27 +314,36 @@ function debouncedFilter() {
 
 async function loadData() {
   loading.value = true
+  listError.value = false
   try {
-    const res = await adminService.getUnmappedTerms({
-      page: currentPage.value,
-      size: pageSize.value,
-      status: filterStatus.value === 'ALL' ? undefined : filterStatus.value
-    })
+    // 页面自动加载：silent 抑制全局弹窗，由本页错误态呈现
+    const res = await adminService.getUnmappedTerms(
+      {
+        page: currentPage.value,
+        size: pageSize.value,
+        status: filterStatus.value === 'ALL' ? undefined : filterStatus.value
+      },
+      { silent: true }
+    )
     terms.value = res.data || []
     total.value = res.total
     currentPage.value = res.page
   } catch (e: any) {
-    ElMessage.error('加载词条列表失败: ' + apiErrorMessage(e, '未知错误'))
+    listError.value = true
+    console.error('加载词条列表失败:', e)
   } finally {
     loading.value = false
   }
 }
 
 async function loadStats() {
+  statsError.value = false
   try {
-    stats.value = await adminService.getStats()
-  } catch {
-    // 静默失败
+    // 传 silent 避免全局弹窗噪音，失败由 statsError 局部呈现
+    stats.value = await adminService.getStats({ silent: true })
+  } catch (e) {
+    statsError.value = true
+    console.error('加载统计数据失败:', e)
   }
 }
 
@@ -351,7 +377,8 @@ async function approveOne(row: UnmappedTermItem) {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('标注失败: ' + apiErrorMessage(e, '未知错误'))
+    console.error('标注失败:', e)
+    ElMessage.error('标注失败，请稍后重试')
   }
 }
 
@@ -369,8 +396,11 @@ async function rejectOne(row: UnmappedTermItem) {
     ElMessage.info(`已拒绝: ${row.term}`)
     await loadData()
     await loadStats()
-  } catch {
-    // 用户取消
+  } catch (e: any) {
+    // 用户取消对话框不提示；其余为接口异常
+    if (e === 'cancel' || e === 'close') return
+    console.error('拒绝词条失败:', e)
+    ElMessage.error('拒绝失败，请稍后重试')
   }
 }
 
@@ -399,7 +429,8 @@ async function doBatchApprove() {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('批量标注失败: ' + apiErrorMessage(e, '未知错误'))
+    console.error('批量标注失败:', e)
+    ElMessage.error('批量标注失败，请稍后重试')
   } finally {
     batchSubmitting.value = false
   }
@@ -948,6 +979,28 @@ onUnmounted(() => {
 .btn-confirm:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ===== 统计加载失败提示 ===== */
+.stats-error-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--theme-error);
+  margin-bottom: 0.75rem;
+}
+.stats-error-retry {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--theme-primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.stats-error-retry:hover {
+  opacity: 0.8;
 }
 
 /* ===== 响应式 ===== */

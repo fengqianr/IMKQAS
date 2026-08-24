@@ -135,11 +135,14 @@ Caffeine 缓存 → 关键词/句式规则 → 正则匹配 → Redis 缓存 →
 |------|------|------|
 | 框架 | Vue 3 + TypeScript | 3.4 / 5.4 |
 | 构建 | Vite | 5.x |
-| UI 组件 | Element Plus | 2.4 |
+| UI 组件 | Element Plus（按需自动引入） | 2.4 |
 | 状态管理 | Pinia | 2.1 |
-| HTTP | Axios（JWT 拦截器 + 401 自动刷新） | - |
+| 路由 | Vue Router（角色守卫 + 懒加载） | 4.x |
+| HTTP | Axios（JWT 拦截器 + 统一错误处理） | - |
+| 流式问答 | SSE（fetch + ReadableStream 手写解析） | - |
 | 样式 | Tailwind CSS（Material Design 3 扩展色板） | - |
-| 图表 | ECharts | 5.4 |
+| 图表 | ECharts（按需注册） | 5.4 |
+| 工程化 | ESLint + Prettier + vue-tsc 类型检查 | - |
 
 ## 项目结构
 
@@ -178,10 +181,16 @@ IMKQAS/
 │   └── db/migration/                # Flyway 迁移脚本 V1~V10
 ├── frontend/                        # Vue 3 前端
 │   └── src/
-│       ├── api/services/            # 8 个业务 API Service
-│       ├── views/                   # 9 个页面
-│       ├── router/                  # 路由 + 认证守卫
-│       └── stores/                  # Pinia 状态
+│       ├── api/                     # Axios 实例 + 拦截器 + 类型定义
+│       │   ├── services/            # 14 个业务 API Service
+│       │   └── types/               # 8 个 TS 类型模块
+│       ├── components/              # 7 个公共组件（Pager/StatusBadge/EmptyState 等）
+│       ├── composables/             # 组合式函数（useAuthActions）
+│       ├── utils/                   # 工具函数（游客会话/格式化/错误处理等）
+│       ├── config/                  # 角色菜单配置
+│       ├── router/                  # 路由 + 认证守卫 + 懒加载
+│       ├── stores/                  # Pinia 状态（认证）
+│       └── views/                   # 22 个页面（admin/auth/chat/clinical/doctor/patient 等）
 ├── scripts/                         # Python 评估测试脚本及结果
 └── docs/                            # 设计文档（后端/前端）
 ```
@@ -222,19 +231,37 @@ mvn package -DskipTests
 cd frontend
 npm install
 npm run dev          # 开发服务器
-npm run build        # 生产构建
+npm run build        # 生产构建（含类型检查）
 npm run type-check   # 类型检查
+npm run lint         # ESLint 代码检查
+npm run format       # Prettier 格式化
 ```
 
-主要页面路由：
+主要页面路由（按角色开放）：
 
-| 路由 | 页面 |
-|------|------|
-| `/dashboard` | 仪表板 |
-| `/qa` | 智能问答 |
-| `/knowledge` | 知识库管理 |
-| `/contraindication-rules` | 药物-人群禁忌规则管理 |
-| `/term-review` | 同义词词条审核 |
+| 路由 | 页面 | 角色 |
+|------|------|------|
+| `/qa` | 智能问答 | 游客 / 全部 |
+| `/login` `/register` `/forgot-password` | 登录 / 注册 / 忘记密码 | 游客 |
+| `/profile` | 我的健康档案 | 全部登录用户 |
+| `/user` | 个人中心 | 患者侧 |
+| `/records` | 问卷记录 | 患者侧 |
+| `/patients` `/patients/:id` | 患者检索 / 详情 | 医生 |
+| `/drugs` | 药物查询 | 医生 |
+| `/triage` | 批量导诊 | 医生 |
+| `/contraindication-rules` | 禁忌规则 | 医生 / 管理员 |
+| `/knowledge` | 知识库管理 | 管理员 |
+| `/term-review` | 词条审核 | 管理员 |
+| `/dashboard` | 系统统计 | 管理员 |
+| `/users` | 用户管理 | 管理员 |
+
+前端功能亮点：
+
+- **SSE 流式问答**：基于 fetch + ReadableStream 手写解析，支持中断、重连与多事件渲染（文本 / 引用 / 检索链路 / 问卷 / 安全警报）
+- **游客问答模式**：会话本地持久化，登录后一键同步到账号
+- **三类角色 RBAC**：路由守卫 + 角色差异化菜单，未授权页面自动拦截
+- **检索链路可视化**：RAG 管线步骤级耗时、输入输出展示
+- **性能优化**：Element Plus 按需引入 + 路由懒加载 + manualChunks 分包，主包体积下降 52%
 
 ### 测试
 

@@ -23,6 +23,20 @@
     <!-- 加载态 -->
     <LoadingState v-if="loading" full text="加载中..." />
 
+    <!-- 加载失败态：与"无档案"空态区分开，避免失败被误显示为空数据 -->
+    <EmptyState
+      v-else-if="profileError"
+      variant="panel"
+      icon="error"
+      title="健康档案加载失败"
+      description="请检查网络连接后重试"
+    >
+      <button class="btn-primary" @click="loadProfile">
+        <span class="material-symbols-outlined">refresh</span>
+        重试
+      </button>
+    </EmptyState>
+
     <!-- 空态 -->
     <EmptyState
       v-else-if="!hasProfile"
@@ -281,7 +295,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { userService, type HealthProfile, type IdentityInfo } from '@/api/services/user.service'
-import { apiErrorMessage } from '@/utils/error'
 import { genderText, calcAge } from '@/api/types/fhir'
 import EmptyState from '@/components/EmptyState.vue'
 import LoadingState from '@/components/LoadingState.vue'
@@ -294,6 +307,7 @@ const userId = computed(() => authStore.userId)
 const loading = ref(true)
 const saving = ref(false)
 const hasProfile = ref(false)
+const profileError = ref(false) // 健康档案加载失败
 /** 视图态（设计稿 Bento 概览） / 编辑态（医疗史表单）切换 */
 const editMode = ref(false)
 
@@ -385,6 +399,7 @@ const cancelEditMode = () => {
 // 加载健康档案（并行加载身份信息用于人口学字段回显）
 const loadProfile = async () => {
   loading.value = true
+  profileError.value = false
   try {
     const [identityResult, profileResult] = await Promise.all([
       userService.getIdentity(userId.value).catch(() => null),
@@ -408,8 +423,9 @@ const loadProfile = async () => {
       hasProfile.value = false
     }
   } catch (e: any) {
-    ElMessage.error('加载健康档案失败: ' + apiErrorMessage(e, '未知错误'))
-    hasProfile.value = false
+    console.error('加载健康档案失败:', e)
+    // 加载失败与"无档案"空态区分开，交由 profileError 错误态展示
+    profileError.value = true
   } finally {
     loading.value = false
   }
@@ -442,7 +458,8 @@ const handleSave = async () => {
     ElMessage.success('健康档案保存成功')
     editMode.value = false
   } catch (e: any) {
-    ElMessage.error('保存失败: ' + apiErrorMessage(e, '未知错误'))
+    console.error('保存健康档案失败:', e)
+    ElMessage.error('保存健康档案失败，请稍后重试')
   } finally {
     saving.value = false
   }
@@ -471,7 +488,8 @@ const handleDelete = async () => {
     })
   } catch (e: any) {
     if (e === 'cancel' || e === 'close') return
-    ElMessage.error('删除失败: ' + apiErrorMessage(e, '未知错误'))
+    console.error('删除健康档案失败:', e)
+    ElMessage.error('删除健康档案失败，请稍后重试')
   }
 }
 

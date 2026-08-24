@@ -105,6 +105,16 @@
           </div>
         </div>
 
+        <!-- 检索失败态 -->
+        <EmptyState
+          v-else-if="!loading && searchError"
+          variant="panel"
+          icon="cloud_off"
+          title="药品检索失败"
+          description="请检查网络连接后重试。"
+        >
+          <button class="retry-btn" @click="handleSearch">重新加载</button>
+        </EmptyState>
         <!-- 空态 -->
         <EmptyState
           v-else-if="!loading"
@@ -161,6 +171,11 @@
                 <span>{{ it.recommendation || '—' }}</span>
               </div>
             </div>
+          </div>
+          <div v-else-if="interactionsError" class="panel-error">
+            <span class="material-symbols-outlined">cloud_off</span>
+            <p>相互作用检查失败，无法确认是否存在风险</p>
+            <button class="retry-btn" @click="retryInteractions">重新检查</button>
           </div>
           <div v-else class="panel-empty">
             <span class="material-symbols-outlined">verified_user</span>
@@ -284,6 +299,8 @@ const selectedClass = ref('')
 const classes = ref<string[]>([])
 const drugs = ref<Drug[]>([])
 const loading = ref(false)
+// 搜索失败态（区分"未找到匹配药品"与"检索失败"）
+const searchError = ref(false)
 
 /** 相互作用检查状态 */
 const selected = ref<string[]>([])
@@ -291,6 +308,8 @@ const selected = ref<string[]>([])
 const selectedDrugs = ref<Record<string, Drug>>({})
 const interactions = ref<DrugInteraction[]>([])
 const checking = ref(false)
+// 相互作用检查失败态（医疗安全：失败不得显示为"无相互作用"）
+const interactionsError = ref(false)
 
 /** 详情弹窗状态 */
 const detailVisible = ref(false)
@@ -356,6 +375,7 @@ const handleSearch = async () => {
     return
   }
   loading.value = true
+  searchError.value = false
   // 保留"当前用药方案"勾选，允许跨搜索累积药品以比较相互作用
   try {
     if (kw) {
@@ -363,6 +383,10 @@ const handleSearch = async () => {
     } else {
       drugs.value = await drugService.getDrugsByClass(selectedClass.value)
     }
+  } catch (e) {
+    console.error('药品检索失败:', e)
+    drugs.value = []
+    searchError.value = true
   } finally {
     loading.value = false
   }
@@ -393,23 +417,32 @@ const clearSelected = () => {
   interactions.value = []
 }
 
+/** 批量检查相互作用：勾选变化时自动触发，也可由面板按钮手动重试 */
+const runInteractionCheck = async (ids: string[]) => {
+  if (ids.length < 2) {
+    interactions.value = []
+    interactionsError.value = false
+    return
+  }
+  checking.value = true
+  interactionsError.value = false
+  try {
+    interactions.value = await drugService.checkBatch([...ids])
+  } catch (e) {
+    console.error('药物相互作用检查失败:', e)
+    interactions.value = []
+    // 医疗安全：检查失败绝不能显示为"未发现相互作用"
+    interactionsError.value = true
+  } finally {
+    checking.value = false
+  }
+}
+
 /** 勾选 ≥2 个药品后自动批量检查相互作用 */
-watch(
-  selected,
-  async (ids) => {
-    if (ids.length < 2) {
-      interactions.value = []
-      return
-    }
-    checking.value = true
-    try {
-      interactions.value = await drugService.checkBatch([...ids])
-    } finally {
-      checking.value = false
-    }
-  },
-  { deep: true }
-)
+watch(selected, (ids) => runInteractionCheck(ids), { deep: true })
+
+/** 手动重试相互作用检查 */
+const retryInteractions = () => runInteractionCheck(selected.value)
 
 /** 打开药品详情（搜索返回完整 Drug 对象，直接复用） */
 const openDetail = (d: Drug) => {
@@ -425,7 +458,12 @@ const scrollToPanel = async () => {
 
 // 初始化：加载分类列表（初始展示空态引导搜索）
 onMounted(async () => {
-  classes.value = await drugService.getClasses()
+  try {
+    classes.value = await drugService.getClasses()
+  } catch (e) {
+    // 分类加载失败不阻塞页面：按名称搜索仍可用，静默降级
+    console.warn('药品分类加载失败:', e)
+  }
 })
 </script>
 
@@ -1089,6 +1127,37 @@ onMounted(async () => {
 .panel-empty .material-symbols-outlined {
   font-size: 2rem;
   color: var(--theme-success);
+}
+
+/* 相互作用检查失败态（医疗安全：不得显示为"无相互作用"） */
+.panel-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 0;
+  font-size: 0.8125rem;
+  color: var(--theme-on-error-container);
+}
+
+.panel-error .material-symbols-outlined {
+  font-size: 2rem;
+  color: var(--theme-error);
+}
+
+.retry-btn {
+  margin-top: 0.25rem;
+  padding: 0.375rem 0.875rem;
+  border: none;
+  border-radius: 9999px;
+  background: var(--theme-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.retry-btn:hover {
+  background: var(--theme-primary-strong, #00386f);
 }
 
 /* ===== 移动端浮动按钮 ===== */

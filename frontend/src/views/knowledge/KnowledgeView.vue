@@ -88,6 +88,20 @@
                     </div>
                   </td>
                 </tr>
+                <!-- 加载失败态 -->
+                <tr v-else-if="docsError">
+                  <td colspan="4" class="kb-empty-cell">
+                    <div class="kb-empty">
+                      <span class="material-symbols-outlined kb-empty-icon">error_outline</span>
+                      <p>文档列表加载失败</p>
+                      <p class="kb-empty-hint">请检查网络连接后重试</p>
+                      <button class="kb-retry-btn" @click="fetchDocuments">
+                        <span class="material-symbols-outlined kb-retry-icon">refresh</span>
+                        重试
+                      </button>
+                    </div>
+                  </td>
+                </tr>
                 <!-- 空状态 -->
                 <tr v-else-if="filteredDocuments.length === 0">
                   <td colspan="4" class="kb-empty-cell">
@@ -238,6 +252,15 @@
                 <span class="material-symbols-outlined kb-source-icon">refresh</span>
                 <p>加载分块数据中...</p>
               </div>
+              <!-- 加载失败态 -->
+              <div v-else-if="chunksError" class="kb-chunks-state">
+                <span class="material-symbols-outlined kb-source-icon">error_outline</span>
+                <p>分块加载失败</p>
+                <button class="kb-retry-btn" @click="selectedDoc && fetchDocumentChunks(selectedDoc.id)">
+                  <span class="material-symbols-outlined kb-retry-icon">refresh</span>
+                  重试
+                </button>
+              </div>
               <!-- 空状态 -->
               <div v-else-if="displayChunks.length === 0" class="kb-chunks-state">
                 <span class="material-symbols-outlined kb-source-icon">hub</span>
@@ -307,7 +330,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { apiErrorMessage } from '@/utils/error'
 import { downloadBlob } from '@/utils/format'
 import { documentService } from '@/api/services/document.service'
 import { documentChunkService } from '@/api/services/document-chunk.service'
@@ -359,6 +381,8 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 const loading = ref(false)
 const loadingChunks = ref(false)
+const docsError = ref(false) // 文档列表加载失败
+const chunksError = ref(false) // 分块加载失败
 const rawDocuments = ref<ApiDocument[]>([]) // 原始API文档数据
 const documentChunks = ref<UiChunk[]>([]) // 文档分块数据
 const displayChunks = ref<DisplayChunk[]>([]) // 用于显示的分块数据（转换后）
@@ -497,6 +521,7 @@ const canOperateChunk = computed(() => {
 const selectCategory = (name: string) => {
   selectedCategory.value = name
   selectedDoc.value = null
+  chunksError.value = false
 }
 
 const selectDocument = async (doc: UiDocument) => {
@@ -523,6 +548,7 @@ const backToList = () => {
   }
   previewText.value = ''
   previewError.value = false
+  chunksError.value = false
 }
 
 // 缩放（视觉占位）
@@ -549,23 +575,20 @@ const downloadDocument = async () => {
 // 获取文档分块数据
 const fetchDocumentChunks = async (documentId: string) => {
   loadingChunks.value = true
+  chunksError.value = false
   try {
-    const response = await documentChunkService.getChunksByDocument(documentId, 1, 100)
-    if (response.success && response.data) {
-      documentChunks.value = response.data.data
-      // 转换为显示格式
-      displayChunks.value = convertToDisplayChunks(response.data.data)
+    const page = await documentChunkService.getChunksByDocument(documentId, 1, 100)
+    documentChunks.value = page.data
+    // 转换为显示格式
+    displayChunks.value = convertToDisplayChunks(page.data)
 
-      // 如果没有分块数据，显示提示
-      if (documentChunks.value.length === 0) {
-        ElMessage.info('该文档暂无分块数据')
-      }
-    } else {
-      ElMessage.error(apiErrorMessage(response, '获取文档分块失败'))
+    // 如果没有分块数据，显示提示
+    if (documentChunks.value.length === 0) {
+      ElMessage.info('该文档暂无分块数据')
     }
   } catch (error) {
     console.error('获取文档分块失败:', error)
-    ElMessage.error('获取文档分块失败')
+    chunksError.value = true
   } finally {
     loadingChunks.value = false
   }
@@ -704,22 +727,18 @@ const uploadFiles = async (files: FileList) => {
 
     try {
       ElMessage.info(`文件 ${file.name} 上传中...`)
-      const response = await documentService.uploadDocument({
+      await documentService.uploadDocument({
         file,
         title: file.name,
         category: selectedCategory.value.split(' ')[0] // 使用当前选中的分类
       })
 
-      if (response.success) {
-        ElMessage.success(`文件 ${file.name} 上传成功，处理中...`)
-        // 刷新文档列表
-        fetchDocuments()
-      } else {
-        ElMessage.error(`上传失败: ${apiErrorMessage(response)}`)
-      }
+      ElMessage.success(`文件 ${file.name} 上传成功，处理中...`)
+      // 刷新文档列表
+      fetchDocuments()
     } catch (error) {
+      // 上传失败已由拦截器统一弹窗（后端 message），此处只记录日志避免重复提示
       console.error('上传文件失败:', error)
-      ElMessage.error(`文件 ${file.name} 上传失败`)
     }
   }
 }
@@ -737,21 +756,19 @@ const handleDocAction = (command: string, doc: UiDocument) => {
         type: 'warning'
       })
         .then(async () => {
-          const response = await documentService.deleteDocument(doc.id)
-          if (response.success) {
-            ElMessage.success('删除成功')
-            // 刷新文档列表
-            fetchDocuments()
-            // 如果删除的是当前选中的文档，清空选中
-            if (selectedDoc.value?.id === doc.id) {
-              selectedDoc.value = null
-            }
-          } else {
-            ElMessage.error(`删除失败: ${apiErrorMessage(response)}`)
+          await documentService.deleteDocument(doc.id)
+          ElMessage.success('删除成功')
+          // 刷新文档列表
+          fetchDocuments()
+          // 如果删除的是当前选中的文档，清空选中
+          if (selectedDoc.value?.id === doc.id) {
+            selectedDoc.value = null
           }
         })
-        .catch(() => {
-          // 用户取消删除
+        .catch((err: any) => {
+          // 用户取消删除时静默；其他错误已由拦截器统一弹窗，此处只记录日志避免重复提示
+          if (err === 'cancel' || err === 'close') return
+          console.error('删除文档失败:', err)
         })
       break
     case 'reprocess':
@@ -767,54 +784,50 @@ const handleDocAction = (command: string, doc: UiDocument) => {
       )
         .then(async () => {
           ElMessage.info(`文档 ${doc.name} 重新处理中...`)
-          const response = await documentService.reprocessDocument(doc.id)
-          if (response.success) {
-            ElMessage.success('文档重新处理请求已提交，处理中...')
-            // 轮询文档状态直到处理完成
-            const maxAttempts = 60 // 最多等待5分钟
-            let attempts = 0
-            const pollInterval = setInterval(async () => {
-              attempts++
-              try {
-                // 刷新文档列表获取最新状态
-                const listResponse = await documentService.getDocuments(1, 100)
-                if (listResponse.success && listResponse.data) {
-                  rawDocuments.value = listResponse.data.data
-                  updateCategoriesFromDocuments()
-                  // 查找当前文档的最新状态
-                  const updatedDoc = listResponse.data.data.find((d: ApiDocument) => d.id === doc.id)
-                  if (updatedDoc) {
-                    if (updatedDoc.status === 'COMPLETED') {
-                      clearInterval(pollInterval)
-                      ElMessage.success('文档处理完成')
-                      // 如果当前选中的是这个文档，刷新其分块数据
-                      if (selectedDoc.value?.id === doc.id) {
-                        fetchDocumentChunks(doc.id)
-                      }
-                    } else if (updatedDoc.status === 'FAILED') {
-                      clearInterval(pollInterval)
-                      ElMessage.error('文档处理失败，请重试')
-                      if (selectedDoc.value?.id === doc.id) {
-                        fetchDocumentChunks(doc.id)
-                      }
-                    }
-                    // PROCESSING / UPLOADED 状态继续等待
+          await documentService.reprocessDocument(doc.id)
+          ElMessage.success('文档重新处理请求已提交，处理中...')
+          // 轮询文档状态直到处理完成
+          const maxAttempts = 60 // 最多等待5分钟
+          let attempts = 0
+          const pollInterval = setInterval(async () => {
+            attempts++
+            try {
+              // 刷新文档列表获取最新状态（轮询为后台副作用，silent 避免失败弹窗刷屏）
+              const page = await documentService.getDocuments(1, 100, { silent: true })
+              rawDocuments.value = page.data
+              updateCategoriesFromDocuments()
+              // 查找当前文档的最新状态
+              const updatedDoc = page.data.find((d: ApiDocument) => d.id === doc.id)
+              if (updatedDoc) {
+                if (updatedDoc.status === 'COMPLETED') {
+                  clearInterval(pollInterval)
+                  ElMessage.success('文档处理完成')
+                  // 如果当前选中的是这个文档，刷新其分块数据
+                  if (selectedDoc.value?.id === doc.id) {
+                    fetchDocumentChunks(doc.id)
+                  }
+                } else if (updatedDoc.status === 'FAILED') {
+                  clearInterval(pollInterval)
+                  ElMessage.error('文档处理失败，请重试')
+                  if (selectedDoc.value?.id === doc.id) {
+                    fetchDocumentChunks(doc.id)
                   }
                 }
-              } catch (e) {
-                console.error('轮询文档状态失败:', e)
+                // PROCESSING / UPLOADED 状态继续等待
               }
-              if (attempts >= maxAttempts) {
-                clearInterval(pollInterval)
-                ElMessage.warning('文档处理超时，请刷新页面查看状态')
-              }
-            }, 5000) // 每5秒轮询一次
-          } else {
-            ElMessage.error(`重新处理失败: ${apiErrorMessage(response)}`)
-          }
+            } catch (e) {
+              console.error('轮询文档状态失败:', e)
+            }
+            if (attempts >= maxAttempts) {
+              clearInterval(pollInterval)
+              ElMessage.warning('文档处理超时，请刷新页面查看状态')
+            }
+          }, 5000) // 每5秒轮询一次
         })
-        .catch(() => {
-          // 用户取消
+        .catch((err: any) => {
+          // 用户取消时静默；其他错误已由拦截器统一弹窗，此处只记录日志避免重复提示
+          if (err === 'cancel' || err === 'close') return
+          console.error('重新处理文档失败:', err)
         })
       break
   }
@@ -823,18 +836,16 @@ const handleDocAction = (command: string, doc: UiDocument) => {
 // 获取文档列表
 const fetchDocuments = async () => {
   loading.value = true
+  docsError.value = false
   try {
-    const response = await documentService.getDocuments(1, 100)
-    if (response.success && response.data) {
-      rawDocuments.value = response.data.data
-      // 更新分类数据
-      updateCategoriesFromDocuments()
-    } else {
-      ElMessage.error(apiErrorMessage(response, '获取文档列表失败'))
-    }
+    // 页面自动加载：silent 抑制全局弹窗，由 docsError 呈现加载失败态
+    const page = await documentService.getDocuments(1, 100, { silent: true })
+    rawDocuments.value = page.data
+    // 更新分类数据
+    updateCategoriesFromDocuments()
   } catch (error) {
     console.error('获取文档列表失败:', error)
-    ElMessage.error('获取文档列表失败')
+    docsError.value = true
   } finally {
     loading.value = false
   }
