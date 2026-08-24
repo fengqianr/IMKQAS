@@ -698,11 +698,11 @@ const activeSessionTitle = computed(() => {
 
 // 快捷引导提问：按角色分组，点击即填入输入框并发送
 const quickPrompts = computed<string[]>(() => {
-  if (isGuest.value) return ['这个系统能做什么', '如何开始一次咨询', '如何注册登录账号']
+  if (isGuest.value) return ['糖尿病的并发症有什么', '慢性支气管炎的症状有什么', '我呼吸困难该怎么办']
   const layout = ROLE_TO_LAYOUT[authStore.userRole]
-  if (layout === 'doctor') return ['评估患者当前风险等级', '近期用药需要调整吗', '如何解读这条检查结果']
-  if (layout === 'patient') return ['我的健康档案包含什么', '如何完成健康问卷', '评估报告在哪里查看']
-  return ['知识库有多少篇文档', '词条审核流程是什么', '查看系统使用统计']
+  // if (layout === 'doctor') return ['评估患者当前风险等级', '近期用药需要调整吗', '如何解读这条检查结果']
+  if (layout === 'patient') return ['糖尿病的并发症有什么', '慢性支气管炎的症状有什么', '我呼吸困难该怎么办']
+  return ['孕妇头痛,布洛芬和泰诺哪个安全', '急性胰腺炎有什么分型', '心力衰竭的具体表现']
 })
 
 // 点击快捷提问：复用输入框发送流程（无活跃会话时自动创建首个会话）
