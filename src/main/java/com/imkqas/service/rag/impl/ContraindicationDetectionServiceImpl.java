@@ -138,6 +138,16 @@ public class ContraindicationDetectionServiceImpl implements ContraindicationDet
     }
 
     @Override
+    public ContraindicationMatch checkContraindication(String drug, String population) {
+        if (drug == null || drug.isBlank() || population == null || population.isBlank()) {
+            return null;
+        }
+        String stdDrug = standardizeTerm(drug);
+        String stdPopulation = standardizeTerm(population);
+        return matchRule(stdDrug, stdPopulation);
+    }
+
+    @Override
     public String buildSafetyNote(String query) {
         if (query == null || query.trim().isEmpty()) return null;
 
@@ -196,6 +206,19 @@ public class ContraindicationDetectionServiceImpl implements ContraindicationDet
     }
 
     // ========== 私有方法 ==========
+
+    /** 将单个术语标准化为标准医学名称，失败则回退原始文本 */
+    private String standardizeTerm(String term) {
+        try {
+            SynonymExpansionService.TermMapping mapping = synonymExpansionService.lookupTerm(term);
+            if (mapping != null && mapping.getStandardTerm() != null && !mapping.getStandardTerm().isBlank()) {
+                return mapping.getStandardTerm();
+            }
+        } catch (Exception e) {
+            log.warn("术语标准化失败，使用原始文本: term={}", term, e);
+        }
+        return term;
+    }
 
     /** 查规则缓存：<药物通用名, 人群标准名> → 禁忌规则 */
     private ContraindicationMatch matchRule(String genericName, String population) {

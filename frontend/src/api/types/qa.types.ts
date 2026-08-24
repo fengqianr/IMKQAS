@@ -225,6 +225,7 @@ export interface Message {
   role: 'user' | 'assistant'
   content: string
   sourceReferences?: string
+  retrievalPath?: string
   createdAt: string
   updatedAt: string
 }
@@ -239,6 +240,7 @@ export interface CreateMessageRequest {
   content: string
   role: 'user' | 'assistant'
   sourceReferences?: string
+  retrievalPath?: string
 }
 
 // API响应包装器

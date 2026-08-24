@@ -110,6 +110,23 @@ logging:
 # 应用自定义配置
 # Modified for login fix
 imkqas:
+  # ReAct Agent 配置
+  agent:
+    # 是否启用 Agent 链路（二期接入生产路由时使用）
+    enabled: true
+    # 模型名称（需支持 function calling）
+    model: qwen-plus
+    # 百炼 OpenAI 兼容 chat 端点
+    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    # 温度参数
+    temperature: 0.1
+    # 最大 token 数
+    max-tokens: 2000
+    # searchKnowledge 工具返回的检索条数
+    top-k: 5
+    # Agent 整体超时时间（秒）
+    timeout-seconds: 15
+
   # RAG配置
   rag:
     # 重排序模型配置
@@ -365,6 +382,8 @@ imkqas:
       version-check-interval: 3600
       # 知识库当前版本（可通过 /api/admin/cache/version/increment 递增）
       knowledge-version: 1
+      # 语义相似度命中阈值（余弦相似度，0~1），默认 0.9；仅覆盖"近乎相同表述"，命中率低可下调至 0.8~0.85
+      similarity-threshold: 0.9
 
     # ─── 多因子重排序配置 ───
     multi-factor-rerank:

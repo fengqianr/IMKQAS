@@ -119,7 +119,9 @@
       "mcp__playwright__browser_click",
       "mcp__filesystem__write_file",
       "Bash(mvn -q compile)",
-      "Bash(javap -verbose -classpath ~/.m2/repository/io/milvus/milvus-sdk-java/2.3.6/milvus-sdk-java-2.3.6.jar 'io.milvus.param.Constant')"
+      "Bash(javap -verbose -classpath ~/.m2/repository/io/milvus/milvus-sdk-java/2.3.6/milvus-sdk-java-2.3.6.jar 'io.milvus.param.Constant')",
+      "Read(//tmp/**)",
+      "Bash(javap -p -c core/dev/langchain4j/service/DefaultAiServices.class)"
     ]
   }
 }

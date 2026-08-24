@@ -87,10 +87,8 @@ public class SecurityConfig {
                                 // 禁忌规则管理端点（所有用户可访问）
                                 "/api/admin/contraindications/**"
                         ).permitAll()
-                        // 管理员端点（仅ADMIN角色可访问）
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // 需要认证的端点
-                        .anyRequest().authenticated())
+                        // 所有端点均可匿名访问（无需登录）
+                        .anyRequest().permitAll())
                 // 添加JWT认证过滤器
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -30,8 +30,10 @@ public interface SemanticCacheService {
      * @param answer          生成的回答
      * @param sources         参考来源列表
      * @param confidence      LLM 原生置信度（命中时沿用，避免门控误判）
+     * @param citations       参考文献引用列表（命中时沿用，避免丢失引用）
      */
-    void put(String normalizedQuery, List<Long> fragmentIds, String answer, List<String> sources, double confidence);
+    void put(String normalizedQuery, List<Long> fragmentIds, String answer,
+             List<String> sources, double confidence, List<QaService.SourceCitation> citations);
 
     /**
      * 按标准化术语精确删除缓存（术语变更时使用）
@@ -77,13 +79,16 @@ public interface SemanticCacheService {
     class CachedAnswer {
         private final String answer;
         private final List<String> sources;
+        private final List<QaService.SourceCitation> citations;
         private final long timestamp;
         private final int version;
         private final double confidence;
 
-        public CachedAnswer(String answer, List<String> sources, long timestamp, int version, double confidence) {
+        public CachedAnswer(String answer, List<String> sources, List<QaService.SourceCitation> citations,
+                            long timestamp, int version, double confidence) {
             this.answer = answer;
             this.sources = sources;
+            this.citations = citations;
             this.timestamp = timestamp;
             this.version = version;
             this.confidence = confidence;
@@ -91,6 +96,7 @@ public interface SemanticCacheService {
 
         public String getAnswer() { return answer; }
         public List<String> getSources() { return sources; }
+        public List<QaService.SourceCitation> getCitations() { return citations; }
         public long getTimestamp() { return timestamp; }
         public int getVersion() { return version; }
         public double getConfidence() { return confidence; }

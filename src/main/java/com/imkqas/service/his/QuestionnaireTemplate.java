@@ -28,9 +28,6 @@ public class QuestionnaireTemplate {
     /** 问卷描述 */
     private String description;
 
-    /** 触发关键词（用于匹配用户输入） */
-    private List<String> triggerKeywords;
-
     /** 分类：mental_health/diabetes/sleep/pain/general */
     private String category;
 

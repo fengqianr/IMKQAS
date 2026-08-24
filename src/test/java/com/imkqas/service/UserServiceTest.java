@@ -45,7 +45,6 @@ class UserServiceTest {
                 .phone("13800000000")
                 .role(User.Role.PATIENT)
                 .healthProfile("{\"age\": 30, \"gender\": \"male\"}")
-                .deleted(0)
                 .build();
 
         // 设置baseMapper，使MyBatis Plus的Service能够使用mock的mapper

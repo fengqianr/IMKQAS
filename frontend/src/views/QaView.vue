@@ -454,7 +454,7 @@ import { interviewService } from '@/api/services/interview.service'
 import { authService } from '@/api/services/auth.service'
 import { useAuthStore } from '@/stores/auth.store'
 import TermReviewPanel from '@/components/TermReviewPanel.vue'
-import type { Conversation, RetrievalStep } from '@/api/types/qa.types'
+import type { Conversation, RetrievalPath, RetrievalStep } from '@/api/types/qa.types'
 import type { AnswerOption, InterviewMessageItem, AnalysisReport } from '@/api/types/interview.types'
 
 interface Session {
@@ -469,6 +469,7 @@ interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   sourceReferences?: string
+  retrievalPath?: string
   questionnaire?: QuestionnaireBlock
 }
 
@@ -730,7 +731,7 @@ const getStepResultItems = (step: RetrievalStep): { label: string; value: string
   if (step.outputCount > 0) items.push({ label: '输出', value: String(step.outputCount) })
   // 展示中间数据中的关键结果
   if (step.intermediateData) {
-    const displayKeys = ['结果', '命中片段', '示例来源', '通过', '丢弃', '通过率',
+    const displayKeys = ['参数', '返回', '结果', '命中片段', '示例来源', '通过', '丢弃', '通过率',
                          '最高分', '最高置信度', '已改写', '候选数', '上下文片段',
                          '答案长度', '引用数', '置信度', 'intentType']
     for (const key of displayKeys) {
@@ -818,7 +819,8 @@ const loadMessages = async (sessionId: string) => {
         id: msg.id.toString(),
         role: msg.role.toLowerCase() as 'user' | 'assistant',
         content,
-        sourceReferences: msg.sourceReferences
+        sourceReferences: msg.sourceReferences,
+        retrievalPath: msg.retrievalPath
       }
     })
 
@@ -854,9 +856,28 @@ const loadMessages = async (sessionId: string) => {
     }
 
     messages.value = historyMessages
+
+    // 还原最近一条含检索路径的AI消息的「知识检索路径」可视化
+    retrievalSteps.value = []
+    expandedSteps.value = false
+    for (let i = historyMessages.length - 1; i >= 0; i--) {
+      const m = historyMessages[i]
+      if (m.role === 'assistant' && m.retrievalPath) {
+        try {
+          const path = JSON.parse(m.retrievalPath) as RetrievalPath
+          if (path.steps && Array.isArray(path.steps)) {
+            retrievalSteps.value = path.steps
+          }
+        } catch (e) {
+          console.warn('解析历史检索路径失败:', e)
+        }
+        break
+      }
+    }
   } catch (error) {
     console.error('加载消息失败:', error)
     messages.value = []
+    retrievalSteps.value = []
   } finally {
     loadingMessages.value = false
   }
@@ -947,7 +968,7 @@ const createNewSession = async () => {
       type: 'general'
     })
 
-    sessions.value.push({
+    sessions.value.unshift({
       id: newConversation.id.toString(),
       title: newConversation.title,
       icon: 'clinical_notes',
@@ -961,7 +982,7 @@ const createNewSession = async () => {
     console.error('创建新会话失败:', error)
     // 本地创建模拟会话
     const newId = (sessions.value.length + 1).toString()
-    sessions.value.push({
+    sessions.value.unshift({
       id: newId,
       title: `新咨询 ${newId}`,
       icon: 'clinical_notes'
@@ -1020,6 +1041,7 @@ const sendMessage = async () => {
   let streamingContent = ''
   let pendingSources: any[] = []
   let pendingSuggestion: any = null
+  let pendingRetrievalPath: RetrievalPath | null = null
 
   try {
     // 保存用户消息到后端
@@ -1058,6 +1080,7 @@ const sendMessage = async () => {
           pendingSources = chunk.sources
         } else if (chunk.type === 'retrievalPath' && chunk.retrievalPath) {
           retrievalSteps.value = chunk.retrievalPath.steps
+          pendingRetrievalPath = chunk.retrievalPath
           expandedSteps.value = false
         } else if (chunk.type === 'done') {
           console.log('[DATA_COLLECTION] SSE done事件收到:', {
@@ -1130,13 +1153,15 @@ const sendMessage = async () => {
             conversationId: activeSessionId.value!,
             content: streamingContent,
             role: 'assistant',
-            sourceReferences: JSON.stringify(sourceRefs)
+            sourceReferences: JSON.stringify(sourceRefs),
+            retrievalPath: pendingRetrievalPath ? JSON.stringify(pendingRetrievalPath) : undefined
           }).catch(err => console.error('保存AI消息失败:', err))
         } else {
           conversationService.createMessage({
             conversationId: activeSessionId.value!,
             content: streamingContent,
-            role: 'assistant'
+            role: 'assistant',
+            retrievalPath: pendingRetrievalPath ? JSON.stringify(pendingRetrievalPath) : undefined
           }).catch(err => console.error('保存AI消息失败:', err))
         }
       }

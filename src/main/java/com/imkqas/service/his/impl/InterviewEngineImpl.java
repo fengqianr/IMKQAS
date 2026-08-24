@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 public class InterviewEngineImpl implements InterviewEngine {
 
     private final QuestionnaireRepository questionnaireRepository;
+    private final QuestionnaireMatchingService matchingService;
     private final ConversationStateManagerImpl stateManager;
     private final FhirQuestionnaireResponseCacheMapper qrMapper;
     private final FhirConverter converter;
@@ -50,19 +51,31 @@ public class InterviewEngineImpl implements InterviewEngine {
 
     @Override
     public InterviewSuggestion suggestQuestionnaire(String userInput) {
-        List<QuestionnaireTemplate> matches = questionnaireRepository.matchByKeywords(userInput);
+        List<QuestionnaireMatchResult> matches = matchingService.match(userInput);
 
         if (matches.isEmpty()) {
             return InterviewSuggestion.noMatch();
         }
 
-        QuestionnaireTemplate best = matches.get(0);
+        QuestionnaireMatchResult best = matches.get(0);
+        QuestionnaireTemplate template = best.getTemplate();
+        double confidence = computeConfidence(best.getHitCount());
         String suggestionText = String.format(
                 "根据您的描述，我推荐您填写「%s」（%s，共%d题，约需%d分钟）。是否需要现在填写？",
-                best.getTitle(), best.getDescription(),
-                best.getItems().size(), best.getItems().size());
+                template.getTitle(), template.getDescription(),
+                template.getItems().size(), template.getItems().size());
 
-        return InterviewSuggestion.of(best, suggestionText, 0.85);
+        return InterviewSuggestion.of(template, suggestionText, confidence);
+    }
+
+    /**
+     * 根据关键词命中数动态计算置信度：命中越多置信度越高，上限 0.95。
+     */
+    private double computeConfidence(int hitCount) {
+        if (hitCount <= 0) {
+            return 0.0;
+        }
+        return Math.min(0.95, 0.6 + 0.1 * hitCount);
     }
 
     @Override

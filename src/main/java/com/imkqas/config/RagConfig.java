@@ -562,6 +562,8 @@ public class RagConfig {
         private int versionCheckInterval = 3600; // 1小时
         /** 知识库当前版本（可通过API递增） */
         private int knowledgeVersion = 1;
+        /** 语义相似度命中阈值（余弦相似度，0~1），默认 0.9 */
+        private double similarityThreshold = 0.9;
     }
 
     /** 语义缓存链配置 */

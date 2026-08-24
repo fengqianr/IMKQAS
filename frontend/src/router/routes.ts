@@ -8,7 +8,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     redirect: '/qa',
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/login',
@@ -44,13 +44,13 @@ export const routes: RouteRecordRaw[] = [
     path: '/contraindication-rules',
     name: 'contraindication-rules',
     component: () => import('@/views/ContraindicationRules.vue'),
-    meta: { title: '禁忌规则', requiresAuth: true, noLayout: true }
+    meta: { title: '禁忌规则', requiresAuth: false, noLayout: true }
   },
   {
     path: '/term-review',
     name: 'term-review',
     component: () => import('@/views/TermReview.vue'),
-    meta: { title: '词条审核', requiresAuth: true, noLayout: true }
+    meta: { title: '词条审核', requiresAuth: false, noLayout: true }
   },
   {
     path: '/:pathMatch(.*)*',

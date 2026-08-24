@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS `messages` (
     `role` ENUM('USER', 'ASSISTANT') NOT NULL COMMENT '消息角色',
     `content` TEXT NOT NULL COMMENT '消息内容',
     `source_references` JSON COMMENT 'Source references JSON',
+    `retrieval_path` JSON COMMENT '检索路径/Agent工具调用过程JSON',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted` TINYINT DEFAULT 0 COMMENT '逻辑删除标记: 0-未删除, 1-已删除',

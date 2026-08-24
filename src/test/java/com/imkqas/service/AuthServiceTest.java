@@ -58,7 +58,6 @@ class AuthServiceTest {
                 .phone("13800000000")
                 .role(User.Role.PATIENT)
                 .healthProfile("{\"age\": 30, \"gender\": \"male\"}")
-                .deleted(0)
                 .build();
 
         // 创建登录请求

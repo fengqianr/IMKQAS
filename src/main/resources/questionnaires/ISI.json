@@ -1,0 +1,531 @@
+{
+  "resourceType": "Questionnaire",
+  "extension": [ {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "彻夜不眠"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "连续几天没睡"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "安眠药过量"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "想不开"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/safety-keywords",
+    "valueString": "崩溃"
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule",
+    "extension": [ {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/min-score",
+      "valueInteger": 0
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/max-score",
+      "valueInteger": 28
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 0
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 7
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "无失眠"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "无临床显著失眠"
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 8
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 14
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "轻度失眠"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "亚临床失眠"
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 15
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 21
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "中度失眠"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "临床失眠（中度）"
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/min-score",
+        "valueInteger": 22
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/max-score",
+        "valueInteger": 28
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/severity",
+        "valueString": "重度失眠"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/scoring-rule/score-range/interpretation",
+        "valueString": "临床失眠（重度）"
+      } ]
+    } ]
+  }, {
+    "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules",
+    "extension": [ {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/rule-id",
+      "valueString": "insomnia_triad"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/label",
+      "valueString": "入睡-维持-早醒三联征"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/flag-type",
+      "valueString": "combo"
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/link-id",
+        "valueString": "/q1"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/operator",
+        "valueString": "GTE"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/value",
+        "valueInteger": 2
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/link-id",
+        "valueString": "/q2"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/operator",
+        "valueString": "GTE"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/value",
+        "valueInteger": 2
+      } ]
+    }, {
+      "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition",
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/link-id",
+        "valueString": "/q3"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/operator",
+        "valueString": "GTE"
+      }, {
+        "url": "http://imkqas.org/fhir/StructureDefinition/combo-rules/condition/value",
+        "valueInteger": 2
+      } ]
+    } ]
+  } ],
+  "name": "ISI",
+  "title": "ISI 失眠严重指数量表",
+  "status": "active",
+  "publisher": "IMKQAS",
+  "description": "请评估过去2周内您的睡眠情况：",
+  "code": [ {
+    "system": "http://imkqas.org/fhir/CodeSystem/questionnaire-category",
+    "code": "sleep"
+  } ],
+  "item": [ {
+    "linkId": "/q1",
+    "text": "入睡困难的程度",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-0",
+        "display": "无"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-1",
+        "display": "轻度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-2",
+        "display": "中度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-3",
+        "display": "重度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 4
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-4",
+        "display": "极重度"
+      }
+    } ]
+  }, {
+    "linkId": "/q2",
+    "text": "维持睡眠困难的程度",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-0",
+        "display": "无"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-1",
+        "display": "轻度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-2",
+        "display": "中度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-3",
+        "display": "重度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 4
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-4",
+        "display": "极重度"
+      }
+    } ]
+  }, {
+    "linkId": "/q3",
+    "text": "早醒的程度",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-0",
+        "display": "无"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-1",
+        "display": "轻度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-2",
+        "display": "中度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-3",
+        "display": "重度"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 4
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-4",
+        "display": "极重度"
+      }
+    } ]
+  }, {
+    "linkId": "/q4",
+    "text": "对当前睡眠模式的满意程度",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-0",
+        "display": "非常满意"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-1",
+        "display": "满意"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-2",
+        "display": "一般"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-3",
+        "display": "不满意"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 4
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-4",
+        "display": "非常不满意"
+      }
+    } ]
+  }, {
+    "linkId": "/q5",
+    "text": "睡眠问题对日间功能的影响程度",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-0",
+        "display": "无影响"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-1",
+        "display": "轻度影响"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-2",
+        "display": "中度影响"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-3",
+        "display": "重度影响"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 4
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-4",
+        "display": "极重度影响"
+      }
+    } ]
+  }, {
+    "linkId": "/q6",
+    "text": "他人是否注意到您的睡眠问题对生活质量的影响",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-0",
+        "display": "没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-1",
+        "display": "轻微"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-2",
+        "display": "有些"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-3",
+        "display": "明显"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 4
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-4",
+        "display": "非常明显"
+      }
+    } ]
+  }, {
+    "linkId": "/q7",
+    "text": "对当前睡眠问题的担忧/苦恼程度",
+    "type": "choice",
+    "answerOption": [ {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 0
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-0",
+        "display": "没有"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 1
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-1",
+        "display": "轻微"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 2
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-2",
+        "display": "有些"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 3
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-3",
+        "display": "明显"
+      }
+    }, {
+      "extension": [ {
+        "url": "http://imkqas.org/fhir/StructureDefinition/option-score",
+        "valueInteger": 4
+      } ],
+      "valueCoding": {
+        "system": "http://imkqas.org/fhir/CodeSystem/ISI",
+        "code": "ISI-4",
+        "display": "非常明显"
+      }
+    } ]
+  } ]
+}

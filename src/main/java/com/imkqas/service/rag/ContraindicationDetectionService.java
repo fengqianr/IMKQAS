@@ -30,6 +30,16 @@ public interface ContraindicationDetectionService {
     List<ContraindicationMatch> detectChunk(String chunkContent);
 
     /**
+     * 查询某药物在特定人群中的禁忌信息（供 Agent 工具调用）
+     * 内部完成药物名与人群名的同义标准化后匹配规则表
+     *
+     * @param drug 药物名（口语或通用名，如"布洛芬"）
+     * @param population 人群（如"孕妇"、"儿童"、"老人"）
+     * @return 匹配的禁忌规则，无匹配返回 null
+     */
+    ContraindicationMatch checkContraindication(String drug, String population);
+
+    /**
      * 根据查询文本生成兜底安全提示
      * 当查询涉及药物+人群但规则表未覆盖时，返回提示文本
      *
