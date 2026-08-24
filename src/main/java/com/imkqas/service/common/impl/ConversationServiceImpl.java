@@ -24,15 +24,9 @@ public class ConversationServiceImpl extends ServiceImpl<ConversationMapper, Con
 
     @Override
     public java.util.List<Conversation> listDeleted(Long userId) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Conversation> wrapper =
-                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-        // 跳过逻辑删除过滤，查询已删除记录
-        wrapper.eq("deleted", 1);
-        if (userId != null) {
-            wrapper.eq("user_id", userId);
-        }
-        wrapper.orderByDesc("updated_at");
-        return baseMapper.selectList(wrapper);
+        // 使用原生 SQL 绕过 MyBatis Plus 逻辑删除自动过滤（selectList 会追加 deleted=0，
+        // 与手动条件 deleted=1 冲突导致永远查不到），查询回收站中已删除的记录
+        return baseMapper.selectDeleted(userId);
     }
 
     @Override
