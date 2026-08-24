@@ -1,0 +1,14 @@
+allowBuilds:
+  '@parcel/watcher': set this to true or false
+  esbuild: set this to true or false
+  vue-demi: set this to true or false
+# pnpm 工作区配置
+# 仅当需要多包工作区时在此声明 packages；单包项目保持空即可。
+# onlyBuiltDependencies：显式批准以下依赖执行 postinstall 构建脚本。
+#   - esbuild：Vite 依赖，postinstall 校验平台二进制
+#   - @parcel/watcher：文件监听原生模块
+#   - vue-demi：运行时切换 Vue 2/3 的指针文件
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
+  - vue-demi

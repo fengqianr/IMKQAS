@@ -98,16 +98,13 @@ public class FhirConverter {
 
     /**
      * 本地缓存实体 -> HAPI FHIR Patient
+     *
+     * <p>优先从数据库字段重建，保证返回与最新字段一致；resource_json 仅在字段缺失时兜底。
+     * 个人中心/健康档案同步会直接更新 given_name、birth_date、identifier_value 等列，
+     * 而 resource_json 是历史序列化副本。若以 resource_json 优先，接口会返回陈旧数据
+     * （例如姓名已改为「李健康」但接口仍返回旧「李明」），故以字段为准。</p>
      */
     public Patient toFhirPatient(FhirPatientCache cache) {
-        if (cache.getResourceJson() != null && !cache.getResourceJson().isEmpty()) {
-            try {
-                return jsonParser.parseResource(Patient.class, cache.getResourceJson());
-            } catch (Exception e) {
-                log.warn("从resourceJson解析Patient失败，从字段重建: {}", e.getMessage());
-            }
-        }
-
         Patient patient = new Patient();
         patient.setId(cache.getFhirId());
 
@@ -146,6 +143,16 @@ public class FhirConverter {
 
         if (cache.getAddressText() != null) {
             patient.addAddress().setText(cache.getAddressText());
+        }
+
+        // resource_json 兜底：字段重建无核心内容且 JSON 可用时使用（如 HIS 同步资源字段不完整）
+        if (!patient.hasName() && !patient.hasGender()
+                && cache.getResourceJson() != null && !cache.getResourceJson().isEmpty()) {
+            try {
+                return jsonParser.parseResource(Patient.class, cache.getResourceJson());
+            } catch (Exception e) {
+                log.warn("从resourceJson解析Patient失败，使用字段重建结果: {}", e.getMessage());
+            }
         }
 
         return patient;

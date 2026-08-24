@@ -1032,7 +1032,8 @@ public class InterviewEngineImpl implements InterviewEngine {
             }
         });
 
-        // 异步持久化FHIR资源（不阻塞响应返回）
+        // 同步持久化FHIR资源（改为同步执行，保证问卷记录可靠落库，
+        // 避免异步线程池任务丢失导致 /records 一直为空）
         if (pipelineResult.getQuestionnaireResponse() != null) {
             var qr = pipelineResult.getQuestionnaireResponse();
             var uid = session.getUserId();
@@ -1042,22 +1043,27 @@ public class InterviewEngineImpl implements InterviewEngine {
             var riskLevel = pipelineResult.getRiskLevel();
             var convId = session.getConversationId();
             var sid = session.getSessionId();
-            CompletableFuture.runAsync(() -> {
-                try {
-                    var cache = converter.toQuestionnaireResponseCache(qr, "collection-agent");
-                    cache.setLocalUserId(uid);
-                    cache.setQuestionnaireId(qid);
-                    cache.setQuestionnaireTitle(title);
-                    cache.setTotalScore(totalScore);
-                    cache.setScoreInterpretation(riskLevel);
-                    cache.setConversationId(convId);
-                    cache.setStatus("completed");
-                    qrMapper.insert(cache);
-                    log.info("FHIR资源已持久化: sessionId={}, fhirId={}", sid, cache.getFhirId());
-                } catch (Exception e) {
+            try {
+                String fhirId = persistQuestionnaireResponse(qr, uid, qid, title,
+                        totalScore, riskLevel, convId, sid, true);
+                log.info("FHIR资源已持久化: sessionId={}, fhirId={}", sid, fhirId);
+            } catch (Exception e) {
+                // 兼容旧库：V11迁移未应用时表缺session_id列，
+                // 降级为不含该列的插入，避免问卷记录丢失
+                if (e.getMessage() != null && e.getMessage().contains("Unknown column 'session_id'")) {
+                    log.warn("库表缺少session_id列（V11迁移未应用），降级插入问卷记录: sessionId={}", sid);
+                    try {
+                        String fhirId = persistQuestionnaireResponse(qr, uid, qid, title,
+                                totalScore, riskLevel, convId, sid, false);
+                        log.info("FHIR资源已持久化(降级，无session_id): sessionId={}, fhirId={}",
+                                sid, fhirId);
+                    } catch (Exception e2) {
+                        log.error("持久化FHIR资源失败(降级重试也失败): sessionId={}", sid, e2);
+                    }
+                } else {
                     log.error("持久化FHIR资源失败: sessionId={}", sid, e);
                 }
-            });
+            }
         }
 
         return InterviewResponse.builder()
@@ -1181,45 +1187,44 @@ public class InterviewEngineImpl implements InterviewEngine {
                             ? result.getSummary().substring(0, Math.min(50,
                                     result.getSummary().length())) : "无");
 
-            // 异步持久化完整分析报告 + FHIR资源
+            // 持久化完整分析报告 + FHIR资源（在分析线程内同步执行，
+            // 不再嵌套提交异步线程池，避免持久化任务丢失导致诊断报告/资源不落库）
             final AnalysisResult finalResult = result;
-            CompletableFuture.runAsync(() -> {
-                try {
-                    persistenceService.saveAnalysisReport(finalResult, session, pipelineResult);
-                    log.info("分析报告已持久化: sessionId={}, analysisId={}",
-                            session.getSessionId(), input.getMeta().getAnalysisId());
+            try {
+                persistenceService.saveAnalysisReport(finalResult, session, pipelineResult);
+                log.info("分析报告已持久化: sessionId={}, analysisId={}",
+                        session.getSessionId(), input.getMeta().getAnalysisId());
 
-                    // FHIR资源：DiagnosticReport + RiskAssessment
-                    String patientFhirId = session.getUserId() != null
-                            ? "pat-" + session.getUserId() : null;
-                    String qrReference = null;
-                    if (pipelineResult.getQuestionnaireResponse() != null) {
-                        qrReference = "QuestionnaireResponse/"
-                                + pipelineResult.getQuestionnaireResponse().getIdElement().getIdPart();
-                    }
-
-                    // 持久化 DiagnosticReport
-                    var drCache = converter.toDiagnosticReportCache(
-                            finalResult, patientFhirId, qrReference,
-                            session.getSessionId(), session.getUserId(),
-                            session.getConversationId());
-                    persistenceService.saveFhirDiagnosticReport(drCache);
-                    log.info("FHIR诊断报告已持久化: sessionId={}, fhirId={}",
-                            session.getSessionId(), drCache.getFhirId());
-
-                    // 持久化 RiskAssessment
-                    var raCache = converter.toRiskAssessmentCache(
-                            finalResult, patientFhirId, qrReference,
-                            session.getSessionId(), session.getUserId(),
-                            session.getConversationId());
-                    persistenceService.saveFhirRiskAssessment(raCache);
-                    log.info("FHIR风险评估已持久化: sessionId={}, fhirId={}",
-                            session.getSessionId(), raCache.getFhirId());
-                } catch (Exception e) {
-                    log.error("持久化分析报告或FHIR资源失败: sessionId={}",
-                            session.getSessionId(), e);
+                // FHIR资源：DiagnosticReport + RiskAssessment
+                String patientFhirId = session.getUserId() != null
+                        ? "pat-" + session.getUserId() : null;
+                String qrReference = null;
+                if (pipelineResult.getQuestionnaireResponse() != null) {
+                    qrReference = "QuestionnaireResponse/"
+                            + pipelineResult.getQuestionnaireResponse().getIdElement().getIdPart();
                 }
-            });
+
+                // 持久化 DiagnosticReport
+                var drCache = converter.toDiagnosticReportCache(
+                        finalResult, patientFhirId, qrReference,
+                        session.getSessionId(), session.getUserId(),
+                        session.getConversationId());
+                persistenceService.saveFhirDiagnosticReport(drCache);
+                log.info("FHIR诊断报告已持久化: sessionId={}, fhirId={}",
+                        session.getSessionId(), drCache.getFhirId());
+
+                // 持久化 RiskAssessment
+                var raCache = converter.toRiskAssessmentCache(
+                        finalResult, patientFhirId, qrReference,
+                        session.getSessionId(), session.getUserId(),
+                        session.getConversationId());
+                persistenceService.saveFhirRiskAssessment(raCache);
+                log.info("FHIR风险评估已持久化: sessionId={}, fhirId={}",
+                        session.getSessionId(), raCache.getFhirId());
+            } catch (Exception e) {
+                log.error("持久化分析报告或FHIR资源失败: sessionId={}",
+                        session.getSessionId(), e);
+            }
 
             log.info("分析摘要已生成: sessionId={}, len={}",
                     session.getSessionId(),
@@ -1229,6 +1234,96 @@ public class InterviewEngineImpl implements InterviewEngine {
             log.error("异步分析失败: sessionId={}, error={}",
                     session.getSessionId(), e.getMessage());
         }
+    }
+
+    /**
+     * 持久化问卷响应FHIR资源到本地缓存表（fhir_questionnaire_response_cache）
+     *
+     * @param qr                FHIR问卷响应资源
+     * @param uid               关联的本地用户ID
+     * @param qid               问卷标识（如 ISI / PHQ-9）
+     * @param title             问卷标题
+     * @param totalScore        问卷总分
+     * @param riskLevel         风险等级描述
+     * @param convId            关联对话ID
+     * @param sid               访谈会话ID
+     * @param includeSessionId  是否写入session_id列（V11迁移未应用导致缺列时传false降级）
+     * @return 持久化后的fhirId
+     */
+    private String persistQuestionnaireResponse(
+            org.hl7.fhir.r4.model.QuestionnaireResponse qr,
+            Long uid, String qid, String title,
+            double totalScore, String riskLevel,
+            Long convId, String sid, boolean includeSessionId) {
+        FhirQuestionnaireResponseCache cache;
+        try {
+            cache = converter.toQuestionnaireResponseCache(qr, "collection-agent");
+        } catch (Throwable t) {
+            // converter 转换失败（可能是 FHIR 序列化 Error，catch(Exception) 捕获不到），
+            // 降级手工构建缓存实体，保证问卷记录可靠落库
+            log.error("converter转换FHIR资源异常，降级手工构建缓存实体: sessionId={}, errorType={}, msg={}",
+                    sid, t.getClass().getName(), t.getMessage(), t);
+            cache = buildCacheManually(qr, uid, qid, title, totalScore, riskLevel, convId, sid);
+        }
+        cache.setLocalUserId(uid);
+        cache.setQuestionnaireId(qid);
+        cache.setQuestionnaireTitle(title);
+        cache.setTotalScore(totalScore);
+        cache.setScoreInterpretation(riskLevel);
+        cache.setConversationId(convId);
+        if (includeSessionId) {
+            cache.setSessionId(sid);
+        }
+        // 统一 patient_fhir_id 为 pat-{userId}，规避 converter 从 subject.reference 提取的历史格式差异
+        // （null / 'Patient/pat-x' / 'pat-x'），保证医生端按患者关联可稳定命中
+        cache.setPatientFhirId("pat-" + uid);
+        cache.setStatus("completed");
+        qrMapper.insert(cache);
+        return cache.getFhirId();
+    }
+
+    /**
+     * 手工构建问卷缓存实体 —— 当 converter 转换失败时的降级方案。
+     * 不依赖 FHIR 序列化，保证问卷记录始终能落库。
+     */
+    private FhirQuestionnaireResponseCache buildCacheManually(
+            org.hl7.fhir.r4.model.QuestionnaireResponse qr,
+            Long uid, String qid, String title,
+            double totalScore, String riskLevel,
+            Long convId, String sid) {
+        FhirQuestionnaireResponseCache cache = new FhirQuestionnaireResponseCache();
+        cache.setFhirId(qr.getIdElement().getIdPart());
+        if (qr.hasSubject() && qr.getSubject().hasReference()) {
+            cache.setPatientFhirId(qr.getSubject().getReference());
+        }
+        cache.setQuestionnaireId(qid);
+        cache.setQuestionnaireTitle(title);
+        cache.setStatus("completed");
+        cache.setAuthoredDate(java.time.LocalDateTime.now());
+        cache.setTotalScore(totalScore);
+        cache.setScoreInterpretation(riskLevel);
+        int itemCount = qr.getItem() != null ? qr.getItem().size() : 0;
+        cache.setItemCount(itemCount);
+        cache.setAnsweredCount(itemCount);
+        cache.setVersionId("1");
+        cache.setLastUpdated(java.time.LocalDateTime.now());
+        cache.setSource("collection-agent");
+        cache.setLocalUserId(uid);
+        cache.setConversationId(convId);
+        cache.setSessionId(sid);
+        // resource_json 为 NOT NULL 列：优先尝试序列化，失败则存最小合法 FHIR JSON
+        String resourceJson = null;
+        try {
+            resourceJson = converter.toJson(qr);
+        } catch (Throwable ignored) {
+            // 序列化失败时忽略，使用最小 JSON 兜底
+        }
+        if (resourceJson == null) {
+            resourceJson = "{\"resourceType\":\"QuestionnaireResponse\",\"id\":\""
+                    + qr.getIdElement().getIdPart() + "\",\"status\":\"completed\"}";
+        }
+        cache.setResourceJson(resourceJson);
+        return cache;
     }
 
     /**
@@ -1390,6 +1485,7 @@ public class InterviewEngineImpl implements InterviewEngine {
 
     private Map<String, Object> toHistoryMap(FhirQuestionnaireResponseCache r) {
         Map<String, Object> map = new LinkedHashMap<>();
+        map.put("sessionId", r.getSessionId());
         map.put("fhirId", r.getFhirId());
         map.put("questionnaireId", r.getQuestionnaireId());
         map.put("questionnaireTitle", r.getQuestionnaireTitle());

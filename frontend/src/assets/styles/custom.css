@@ -1,14 +1,14 @@
 /* 自定义CSS汇总 - 完全替代Tailwind CSS */
-@import "./custom-base.css";
-@import "./custom-layout.css";
-@import "./custom-spacing.css";
-@import "./custom-sizing.css";
-@import "./custom-animation.css";
-@import "./custom-typography.css";
-@import "./custom-borders.css";
-@import "./custom-effects.css";
-@import "./custom-grid-extra.css";
-@import "./custom-space.css";
-@import "./custom-states.css";
-@import "./custom-knowledge.css";
-@import "./custom-qa.css";
+@import './custom-base.css';
+@import './custom-layout.css';
+@import './custom-spacing.css';
+@import './custom-sizing.css';
+@import './custom-animation.css';
+@import './custom-typography.css';
+@import './custom-borders.css';
+@import './custom-effects.css';
+@import './custom-grid-extra.css';
+@import './custom-space.css';
+@import './custom-states.css';
+@import './custom-knowledge.css';
+@import './custom-qa.css';

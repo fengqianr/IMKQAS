@@ -46,6 +46,9 @@ public class User implements UserDetails {
     @TableField(value = "health_profile", updateStrategy = FieldStrategy.IGNORED)
     private String healthProfile; // 健康档案JSON: {age, gender, allergies, chronic_diseases}
 
+    @TableField(value = "identity", updateStrategy = FieldStrategy.IGNORED)
+    private String identity; // 个人身份信息JSON: {name, gender, birthDate, idCard, address}
+
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt = LocalDateTime.now();
 

@@ -120,8 +120,9 @@ class DepartmentTriageControllerTest {
                 .andExpect(jsonPath("$.symptoms").value("发烧咳嗽"))
                 .andExpect(jsonPath("$.confidence").value(0.85))
                 .andExpect(jsonPath("$.source").value("RULE_ENGINE"))
-                .andExpect(jsonPath("$.userId").value(123))
-                .andExpect(jsonPath("$.processingTimeMs").value(150L));
+                // Long 字段全局序列化为字符串（避免雪花 ID 精度丢失），断言用字符串比较
+                .andExpect(jsonPath("$.userId").value("123"))
+                .andExpect(jsonPath("$.processingTimeMs").value("150"));
     }
 
     @Test

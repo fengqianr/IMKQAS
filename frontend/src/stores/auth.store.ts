@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authService } from '@/api/services/auth.service'
-import type { LoginRequest, UserInfo } from '@/api/types/auth.types'
+import type { LoginRequest, UserInfo } from '@/api/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   // 状态
@@ -13,7 +13,9 @@ export const useAuthStore = defineStore('auth', () => {
   // 计算属性
   const isAuthenticated = computed(() => !!token.value)
   const userRole = computed(() => user.value?.role || '')
-  const userId = computed(() => user.value?.id || 0)
+  // 后端雪花 Long id 序列化为字符串，可能超出 JS 安全整数（2^53），
+  // 必须保留字符串原值透传，否则 Number() 转换会丢失精度导致后端查不到记录
+  const userId = computed(() => user.value?.id ?? '')
 
   // Actions
   const setToken = (newToken: string) => {
@@ -61,7 +63,8 @@ export const useAuthStore = defineStore('auth', () => {
         setUser({
           id: response.userId,
           username: response.username,
-          phone: request.username, // 假设用户名是手机号
+          name: response.name,
+          phone: response.phone, // 假设用户名是手机号
           role: response.role,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()

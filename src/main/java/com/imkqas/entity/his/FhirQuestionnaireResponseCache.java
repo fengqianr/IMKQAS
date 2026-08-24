@@ -73,6 +73,9 @@ public class FhirQuestionnaireResponseCache {
     @TableField("conversation_id")
     private Long conversationId;
 
+    @TableField("session_id")
+    private String sessionId;
+
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 

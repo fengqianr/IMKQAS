@@ -45,8 +45,8 @@
       <el-button
         type="primary"
         :disabled="selectedRows.length === 0"
-        @click="showBatchApprove"
         style="margin-left: auto"
+        @click="showBatchApprove"
       >
         批量标注 ({{ selectedRows.length }})
       </el-button>
@@ -58,52 +58,49 @@
       :data="displayTerms"
       row-key="id"
       style="width: 100%; margin-top: 16px"
-      @selection-change="handleSelectionChange"
       max-height="calc(100vh - 380px)"
       size="small"
+      border
+      @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" width="40" />
-      <el-table-column prop="term" label="口语表达" min-width="100" show-overflow-tooltip />
-      <el-table-column prop="contextQuery" label="上下文" min-width="140" show-overflow-tooltip />
-      <el-table-column label="实体类型" width="80">
+      <el-table-column type="selection" width="40" :resizable="false" />
+      <el-table-column prop="term" label="口语表达" min-width="100" show-overflow-tooltip :resizable="false" />
+      <!-- 上下文列：可拖拽调整列宽（配合 border），内容过长悬停查看全文 -->
+      <el-table-column prop="contextQuery" label="上下文" min-width="140" show-overflow-tooltip resizable />
+      <el-table-column label="实体类型" width="80" :resizable="false">
         <template #default="{ row }">
           <el-tag size="small" type="info">{{ row.guessedEntityType || '-' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="LLM猜测" min-width="100" show-overflow-tooltip>
+      <el-table-column label="LLM猜测" min-width="100" show-overflow-tooltip :resizable="false">
         <template #default="{ row }">
           <span v-if="row.llmGuess">{{ row.llmGuess }}</span>
           <span v-else style="color: #999">-</span>
         </template>
       </el-table-column>
-      <el-table-column label="LLM置信度" width="90">
+      <el-table-column label="LLM置信度" width="90" :resizable="false">
         <template #default="{ row }">
-          <span v-if="row.llmConfidence != null"
-                :style="{ color: row.llmConfidence >= 0.85 ? '#22c55e' : row.llmConfidence >= 0.6 ? '#f59e0b' : '#ef4444' }">
+          <span
+            v-if="row.llmConfidence != null"
+            :style="{ color: row.llmConfidence >= 0.85 ? '#22c55e' : row.llmConfidence >= 0.6 ? '#f59e0b' : '#ef4444' }"
+          >
             {{ (row.llmConfidence * 100).toFixed(0) }}%
           </span>
           <span v-else style="color: #999">-</span>
         </template>
       </el-table-column>
-      <el-table-column prop="occurrenceCount" label="频次" width="60" align="center" />
-      <el-table-column label="首次出现" width="110">
+      <el-table-column prop="occurrenceCount" label="频次" width="60" align="center" :resizable="false" />
+      <el-table-column label="首次出现" width="110" :resizable="false">
         <template #default="{ row }">
           <span style="font-size: 12px; color: #666">{{ formatDate(row.firstSeenAt) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="240" :resizable="false">
         <template #default="{ row }">
           <div v-if="row.status === 'PENDING'" class="action-cell">
-            <el-input
-              v-model="approveInputs[row.id]"
-              placeholder="标准术语"
-              size="small"
-              style="width: 110px"
-            />
-            <el-button type="success" size="small" @click="approveOne(row)">
-              通过
-            </el-button>
-            <el-button type="danger" size="small" :icon="'Close'" @click="rejectOne(row)" />
+            <el-input v-model="approveInputs[row.id]" placeholder="标准术语" size="small" style="width: 110px" />
+            <el-button type="success" size="small" @click="approveOne(row as UnmappedTermItem)"> 通过 </el-button>
+            <el-button type="danger" size="small" :icon="'Close'" @click="rejectOne(row as UnmappedTermItem)" />
           </div>
           <el-tag v-else size="small" :type="row.status === 'APPROVED' ? 'success' : 'danger'">
             {{ row.status === 'APPROVED' ? '已通过' : '已拒绝' }}
@@ -126,7 +123,9 @@
 
     <!-- 批量标注弹窗 -->
     <el-dialog v-model="batchDialogVisible" title="批量标注" width="420px">
-      <p style="margin-bottom: 12px">已选择 <b>{{ selectedRows.length }}</b> 个词条，请输入统一的标准术语：</p>
+      <p style="margin-bottom: 12px">
+        已选择 <b>{{ selectedRows.length }}</b> 个词条，请输入统一的标准术语：
+      </p>
       <el-input v-model="batchStandardTerm" placeholder="标准医学术语" />
       <template #footer>
         <el-button @click="batchDialogVisible = false">取消</el-button>
@@ -139,8 +138,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminService } from '@/api/services/adminService'
-import type { UnmappedTermItem, AdminStats } from '@/api/services/adminService'
+import { adminService } from '@/api/services/admin.service'
+import type { UnmappedTermItem, AdminStats } from '@/api/services/admin.service'
+import { apiErrorMessage } from '@/utils/error'
 
 // ========== Props & Emits ==========
 const props = defineProps<{ modelValue: boolean }>()
@@ -200,7 +200,7 @@ async function loadData() {
     total.value = res.total
     currentPage.value = res.page
   } catch (e: any) {
-    ElMessage.error('加载词条列表失败: ' + (e.message || '未知错误'))
+    ElMessage.error('加载词条列表失败: ' + apiErrorMessage(e, '未知错误'))
   }
 }
 
@@ -225,7 +225,7 @@ async function approveOne(row: UnmappedTermItem) {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('标注失败: ' + (e.message || '未知错误'))
+    ElMessage.error('标注失败: ' + apiErrorMessage(e, '未知错误'))
   }
 }
 
@@ -273,7 +273,7 @@ async function doBatchApprove() {
     await loadData()
     await loadStats()
   } catch (e: any) {
-    ElMessage.error('批量标注失败: ' + (e.message || '未知错误'))
+    ElMessage.error('批量标注失败: ' + apiErrorMessage(e, '未知错误'))
   } finally {
     batchSubmitting.value = false
   }
@@ -326,7 +326,7 @@ watch(
   flex: 1;
   padding: 12px 16px;
   border-radius: 8px;
-  background: #f8f9fa;
+  background: var(--theme-surface);
   border: 1px solid #e5e7eb;
   text-align: center;
 }
@@ -345,7 +345,7 @@ watch(
   color: #111827;
 }
 .stat-alert-text {
-  color: #dc2626 !important;
+  color: var(--theme-error) !important;
 }
 .filter-bar {
   display: flex;
@@ -355,6 +355,12 @@ watch(
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+/* 编辑输入框在操作列中禁止压缩，确保完整显示 */
+.action-cell :deep(.el-input) {
+  flex-shrink: 0;
 }
 .pagination-wrap {
   display: flex;

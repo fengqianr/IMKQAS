@@ -1,8 +1,14 @@
 import type { RouteRecordRaw } from 'vue-router'
-import LoginView from '@/views/LoginView.vue'
-import QaView from '@/views/QaView.vue'
-import KnowledgeView from '@/views/KnowledgeView.vue'
-import NotFoundView from '@/views/NotFoundView.vue'
+// 静态导入原则：登录/404 为近入口小页面；QaView 是默认首页（/ 重定向到 /qa）且各角色通用，
+// 每次进入应用必经，懒加载只会多一次 chunk 请求延迟，故静态导入（约 147KB）。
+// 其余角色专属的大页面一律路由级懒加载（() => import），非该角色用户永不下载。
+import LoginView from '@/views/auth/LoginView.vue'
+import QaView from '@/views/chat/QaView.vue'
+import NotFoundView from '@/views/common/NotFoundView.vue'
+
+// 角色组常量（与后端 User.Role 枚举及 config/menus.ts 的归并一致）
+const PATIENT_ROLES = ['PATIENT', 'STUDENT', 'NURSE', 'HEALTH_MANAGER']
+const ALL_ROLES = [...PATIENT_ROLES, 'DOCTOR', 'ADMIN']
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -19,13 +25,13 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/register',
     name: 'register',
-    component: () => import('@/views/RegisterView.vue'),
+    component: () => import('@/views/auth/RegisterView.vue'),
     meta: { title: '注册', guestOnly: true }
   },
   {
     path: '/forgot-password',
     name: 'forgot-password',
-    component: () => import('@/views/ForgotPasswordView.vue'),
+    component: () => import('@/views/auth/ForgotPasswordView.vue'),
     meta: { title: '忘记密码', guestOnly: true }
   },
   {
@@ -35,22 +41,76 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: '智能问答', requiresAuth: false, noLayout: true }
   },
   {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('@/views/patient/ProfileView.vue'),
+    meta: { title: '我的健康档案', requiresAuth: true, roles: ALL_ROLES }
+  },
+  {
+    path: '/user',
+    name: 'user-center',
+    component: () => import('@/views/patient/UserCenterView.vue'),
+    meta: { title: '个人中心', requiresAuth: true, roles: PATIENT_ROLES }
+  },
+  {
+    path: '/records',
+    name: 'records',
+    component: () => import('@/views/patient/RecordsView.vue'),
+    meta: { title: '问卷记录', requiresAuth: true, roles: PATIENT_ROLES }
+  },
+  {
+    path: '/patients',
+    name: 'patients',
+    component: () => import('@/views/doctor/PatientSearchView.vue'),
+    meta: { title: '患者检索', requiresAuth: true, roles: ['DOCTOR'] }
+  },
+  {
+    path: '/patients/:id',
+    name: 'patient-detail',
+    component: () => import('@/views/doctor/PatientDetailView.vue'),
+    meta: { title: '患者详情', requiresAuth: true, roles: ['DOCTOR'] }
+  },
+  {
+    path: '/drugs',
+    name: 'drugs',
+    component: () => import('@/views/doctor/DrugSearchView.vue'),
+    meta: { title: '药物查询', requiresAuth: true, roles: ['DOCTOR'] }
+  },
+  {
+    path: '/triage',
+    name: 'triage',
+    component: () => import('@/views/doctor/TriageView.vue'),
+    meta: { title: '批量导诊', requiresAuth: true, roles: ['DOCTOR'] }
+  },
+  {
     path: '/knowledge',
     name: 'knowledge',
-    component: KnowledgeView,
-    meta: { title: '知识库管理', requiresAuth: false, noLayout: true }
+    component: () => import('@/views/knowledge/KnowledgeView.vue'),
+    meta: { title: '知识库管理', requiresAuth: true, roles: ['ADMIN'] }
   },
   {
     path: '/contraindication-rules',
     name: 'contraindication-rules',
-    component: () => import('@/views/ContraindicationRules.vue'),
-    meta: { title: '禁忌规则', requiresAuth: false, noLayout: true }
+    component: () => import('@/views/clinical/ContraindicationRules.vue'),
+    meta: { title: '禁忌规则', requiresAuth: true, roles: ['DOCTOR', 'ADMIN'] }
   },
   {
     path: '/term-review',
     name: 'term-review',
-    component: () => import('@/views/TermReview.vue'),
-    meta: { title: '词条审核', requiresAuth: false, noLayout: true }
+    component: () => import('@/views/clinical/TermReview.vue'),
+    meta: { title: '词条审核', requiresAuth: true, roles: ['ADMIN'] }
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('@/views/admin/DashboardView.vue'),
+    meta: { title: '系统统计', requiresAuth: true, roles: ['ADMIN'] }
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: () => import('@/views/admin/UserManagementView.vue'),
+    meta: { title: '用户管理', requiresAuth: true, roles: ['ADMIN'] }
   },
   {
     path: '/:pathMatch(.*)*',

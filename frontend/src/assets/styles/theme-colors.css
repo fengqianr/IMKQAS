@@ -1,0 +1,118 @@
+/* ============================================================
+ * 三端主题色板（Theme Colors）
+ * ------------------------------------------------------------
+ * 体系：以 App.vue 根节点 data-theme 属性切换主题。
+ *   - :root（admin 默认）   —— 管理端，别名指现有蓝色体系，零视觉变化
+ *   - [data-theme='clinical'] —— 医生端，沿用管理端蓝色（不再单独定义，回落 :root）
+ *   - [data-theme='portal']   —— 患者端，灰绿/暖沙（设计稿 Gentle Care）
+ *
+ * --theme-* 为语义令牌，重构页面一律引用；--color-* 覆写后
+ * Element Plus 组件（el-button/el-input/el-table 等）自动换肤。
+ * ============================================================ */
+
+:root {
+  /* ---- 管理端（默认）：别名指现有体系 ---- */
+  --theme-brand: #005eb8; /* 品牌主色 */
+  --theme-primary: #00478d; /* 主操作/激活 */
+  --theme-on-primary: #ffffff; /* primary 底上文字 */
+  --theme-primary-strong: #00386f; /* 主按钮 hover */
+  --theme-primary-container: #c0d5ff; /* 浅蓝容器 */
+  --theme-on-primary-container: #c8daff;
+  --theme-primary-soft: rgba(0, 71, 141, 0.1); /* 激活浅底 */
+  --theme-secondary: #4a5f83;
+  --theme-secondary-container: #c0d5ff;
+  --theme-on-secondary-container: #475c80;
+  --theme-tertiary-container: #793100;
+  --theme-on-tertiary-container: #ffcfb9;
+  --theme-background: #f8f9fa;
+  --theme-surface: #f8f9fa;
+  --theme-surface-bright: #ffffff; /* 顶栏底 */
+  --theme-surface-container-lowest: #ffffff;
+  --theme-surface-container-low: #f3f4f5; /* 侧边栏底 */
+  --theme-surface-container: #e7e8e9;
+  --theme-surface-container-high: #e7e8e9;
+  --theme-surface-container-highest: #e7e8e9;
+  --theme-on-surface: #191c1d;
+  --theme-on-surface-variant: #4a5f83; /* 次要文字 */
+  --theme-outline: #727783;
+  --theme-outline-variant: #c2c6d4; /* 边框/分隔线 */
+  --theme-error: #ba1a1a;
+  --theme-on-error: #ffffff;
+  --theme-error-container: #ffdad6;
+  --theme-on-error-container: #93000a;
+  --theme-success: #2e7d32;
+  --theme-processing: #ed6c02;
+  --theme-warm-sand: #e9e3d8;
+  --theme-healing-sage: #86a697;
+  --theme-soft-stone: #6b7280;
+  --theme-therapeutic-blue: #8ba6c1;
+  --theme-error-rose: #c18b8b;
+  --theme-primary-fixed: #d6e3ff;
+}
+
+/* ============================================================
+ * 医生端 —— 沿用管理端蓝色配色（ClinicalOS 已弃用深藏青，
+ * data-theme='clinical' 不再定义任何变量，回落到 :root 蓝色体系）
+ * ============================================================ */
+
+/* ============================================================
+ * 患者端 —— 灰绿 / 暖沙（Gentle Care）
+ * ============================================================ */
+:root[data-theme='portal'] {
+  --theme-brand: #466558;
+  --theme-primary: #466558;
+  --theme-on-primary: #ffffff;
+  --theme-primary-strong: #38514a;
+  --theme-primary-container: #86a697;
+  --theme-on-primary-container: #1e3c30;
+  --theme-primary-soft: rgba(70, 101, 88, 0.1);
+  --theme-secondary: #476179;
+  --theme-secondary-container: #c4e0fd;
+  --theme-on-secondary-container: #49637c;
+  --theme-tertiary-container: #a39e94;
+  --theme-on-tertiary-container: #38362e;
+  --theme-background: #fbf9f6;
+  --theme-surface: #fbf9f6;
+  --theme-surface-bright: #fbf9f6;
+  --theme-surface-container-lowest: #ffffff;
+  --theme-surface-container-low: #f5f3f0;
+  --theme-surface-container: #efeeeb;
+  --theme-surface-container-high: #eae8e5;
+  --theme-surface-container-highest: #e4e2df;
+  --theme-on-surface: #1b1c1a;
+  --theme-on-surface-variant: #414844;
+  --theme-outline: #727974;
+  --theme-outline-variant: #c1c8c3;
+  --theme-error: #ba1a1a;
+  --theme-on-error: #ffffff;
+  --theme-error-container: #ffdad6;
+  --theme-on-error-container: #93000a;
+  --theme-success: #2e7d32;
+  --theme-processing: #ed6c02;
+  --theme-warm-sand: #e9e3d8;
+  --theme-healing-sage: #86a697;
+  --theme-soft-stone: #6b7280;
+  --theme-therapeutic-blue: #8ba6c1;
+  --theme-error-rose: #c18b8b;
+  --theme-primary-fixed: #c8ead9;
+
+  /* 覆写 Element Plus 色变量 → 组件自动换肤 */
+  --color-primary: #466558;
+  --color-brand: #466558;
+  --color-primary-container: #86a697;
+  --color-on-primary-container: #1e3c30;
+  --color-background: #fbf9f6;
+  --color-surface: #fbf9f6;
+  --color-surface-bright: #fbf9f6;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f5f3f0;
+  --color-surface-container: #efeeeb;
+  --color-surface-container-high: #eae8e5;
+  --color-on-surface: #1b1c1a;
+  --color-on-surface-variant: #414844;
+  --color-outline: #727974;
+  --color-outline-variant: #c1c8c3;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+}

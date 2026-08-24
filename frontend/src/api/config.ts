@@ -3,14 +3,14 @@ export const API_CONFIG = {
   TIMEOUT: 30000,
   SSE_TIMEOUT: 60000,
   RETRY_COUNT: 3,
-  RETRY_DELAY: 1000,
+  RETRY_DELAY: 1000
 }
 
 export const AUTH_CONFIG = {
   TOKEN_KEY: 'imkqas_token',
   REFRESH_TOKEN_KEY: 'imkqas_refresh_token',
   TOKEN_PREFIX: 'Bearer ',
-  TOKEN_REFRESH_THRESHOLD: 300000, // 5分钟前刷新
+  TOKEN_REFRESH_THRESHOLD: 300000 // 5分钟前刷新
 }
 
 export const HTTP_STATUS = {
@@ -20,5 +20,5 @@ export const HTTP_STATUS = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
-  INTERNAL_SERVER_ERROR: 500,
+  INTERNAL_SERVER_ERROR: 500
 }

@@ -1,20 +1,21 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import { setupElementPlus } from './plugins/element-plus'
 import router from './router'
 import { createPinia } from 'pinia'
-import './api/interceptors/auth.interceptor'
+import '@/api/request'
+// Element Plus 按需化：组件样式由 unplugin-vue-components 编译期引入，
+// 仅 ElMessage/ElMessageBox（命令式调用，非模板组件）需手动导入样式副作用
+import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
 import './assets/styles/variables.css'
 import './assets/styles/design-system.css'
 import './assets/styles/brand-colors.css'
 import './assets/styles/element-plus-overrides.css'
 import './assets/styles/tailwind.css'
+import './assets/styles/theme-colors.css'
 
 const app = createApp(App)
 const pinia = createPinia()
-
-// 配置Element Plus
-setupElementPlus(app)
 
 // 配置路由
 app.use(router)

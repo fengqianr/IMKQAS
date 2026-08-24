@@ -1,5 +1,4 @@
-import axios from 'axios'
-import { API_CONFIG } from '../config'
+import request from '../request'
 import type {
   QaAskRequest,
   QaResponse,
@@ -13,32 +12,17 @@ import type {
   TriageResponseWrapper,
   DrugQueryResponse,
   RagStatsResponse
-} from '../types/qa.types'
+} from '../types/qa'
 import { authService } from './auth.service'
+import { apiErrorMessage } from '@/utils/error'
 
 class QaService {
-  private baseURL = API_CONFIG.BASE_URL
   private sseController: AbortController | null = null
 
-  // 获取认证头
-  private getAuthHeaders() {
-    const token = authService.getToken()
-    return token ? { Authorization: `Bearer ${token}` } : {}
-  }
-
   // 同步问答
-  async ask(request: QaAskRequest): Promise<QaResponse> {
+  async ask(req: QaAskRequest): Promise<QaResponse> {
     try {
-      const response = await axios.post<QaAskResponse>(
-        `${this.baseURL}/qa/ask`,
-        request,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...this.getAuthHeaders()
-          }
-        }
-      )
+      const response = await request.post<QaAskResponse>('/qa/ask', req)
 
       console.log('QA API响应:', response.data)
 
@@ -50,13 +34,13 @@ class QaService {
     } catch (error: any) {
       console.error('问答请求失败:', error)
       console.error('错误详情:', error.response?.data)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
   // 流式问答（使用 fetch + ReadableStream 支持 POST 和 JWT 认证）
   async streamAsk(
-    request: QaAskRequest,
+    req: QaAskRequest,
     onChunk: (chunk: QaStreamChunk) => void,
     onError?: (error: Error) => void,
     onComplete?: () => void
@@ -76,12 +60,12 @@ class QaService {
 
     // 构建表单参数
     const params = new URLSearchParams()
-    params.append('query', request.question)
-    if (request.userId) params.append('userId', request.userId.toString())
-    if (request.conversationId) params.append('conversationId', request.conversationId)
+    params.append('query', req.question)
+    if (req.userId) params.append('userId', req.userId.toString())
+    if (req.conversationId) params.append('conversationId', req.conversationId)
 
     try {
-      const response = await fetch(`${this.baseURL}/qa/stream`, {
+      const response = await fetch(`${request.defaults.baseURL || ''}/qa/stream`, {
         method: 'POST',
         headers,
         body: params.toString(),
@@ -132,7 +116,7 @@ class QaService {
       // 循环读取 SSE 数据流
       const readLoop = async () => {
         try {
-          while (true) {
+          for (;;) {
             const { done, value } = await reader.read()
             if (done) break
 
@@ -179,18 +163,9 @@ class QaService {
   }
 
   // 科室导诊
-  async triage(request: TriageRequest): Promise<TriageResponse> {
+  async triage(req: TriageRequest): Promise<TriageResponse> {
     try {
-      const response = await axios.post<TriageResponseWrapper>(
-        `${this.baseURL}/qa/triage`,
-        request,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...this.getAuthHeaders()
-          }
-        }
-      )
+      const response = await request.post<TriageResponseWrapper>('/qa/triage', req)
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -199,24 +174,19 @@ class QaService {
       }
     } catch (error: any) {
       console.error('科室导诊失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
   // 药物查询
-  async queryDrug(request: DrugQueryRequest): Promise<DrugResponse> {
+  async queryDrug(req: DrugQueryRequest): Promise<DrugResponse> {
     try {
       const params = new URLSearchParams()
-      params.append('name', request.name)
-      if (request.brandName) params.append('brandName', request.brandName)
-      if (request.genericName) params.append('genericName', request.genericName)
+      params.append('name', req.name)
+      if (req.brandName) params.append('brandName', req.brandName)
+      if (req.genericName) params.append('genericName', req.genericName)
 
-      const response = await axios.get<DrugQueryResponse>(
-        `${this.baseURL}/qa/drug?${params.toString()}`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.get<DrugQueryResponse>(`/qa/drug?${params.toString()}`)
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -225,19 +195,14 @@ class QaService {
       }
     } catch (error: any) {
       console.error('药物查询失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 
   // 获取RAG统计信息
   async getRagStats(): Promise<RagStats> {
     try {
-      const response = await axios.get<RagStatsResponse>(
-        `${this.baseURL}/rag/stats`,
-        {
-          headers: this.getAuthHeaders()
-        }
-      )
+      const response = await request.get<RagStatsResponse>('/rag/stats')
 
       if (response.data.success && response.data.data) {
         return response.data.data
@@ -246,7 +211,7 @@ class QaService {
       }
     } catch (error: any) {
       console.error('获取RAG统计失败:', error)
-      throw new Error(error.response?.data?.message || error.message || '网络错误')
+      throw new Error(apiErrorMessage(error))
     }
   }
 }

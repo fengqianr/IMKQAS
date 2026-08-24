@@ -1,0 +1,19 @@
+# 构建产物
+dist
+node_modules
+coverage
+
+# 自动生成文件（unplugin 生成，提交后无需格式化）
+src/components.d.ts
+
+# 依赖锁文件（由包管理器维护自身格式）
+pnpm-lock.yaml
+package-lock.json
+
+# 其他
+public
+*.min.js
+*.min.css
+
+# 原型图（非运行时源码，不属于前端工程）
+image

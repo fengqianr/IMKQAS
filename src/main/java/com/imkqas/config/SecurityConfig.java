@@ -81,14 +81,14 @@ public class SecurityConfig {
                                 "/api/his/interview/**",
                                 // 静态资源
                                 "/favicon.ico",
-                                "/error",
-                                // 词条审核端点（所有用户可访问）
-                                "/api/admin/unmapped-terms/**",
-                                // 禁忌规则管理端点（所有用户可访问）
-                                "/api/admin/contraindications/**"
+                                "/error"
                         ).permitAll()
-                        // 所有端点均可匿名访问（无需登录）
-                        .anyRequest().permitAll())
+                        // 禁忌规则管理端点（ADMIN + DOCTOR 可访问，医生可查看禁忌规则）
+                        .requestMatchers("/api/admin/contraindications/**").hasAnyRole("ADMIN", "DOCTOR")
+                        // 管理员端点（仅ADMIN角色可访问，含词条审核 unmapped-terms）
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // 需要认证的端点
+                        .anyRequest().authenticated())
                 // 添加JWT认证过滤器
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
